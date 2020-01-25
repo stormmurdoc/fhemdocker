@@ -1,9 +1,9 @@
 {
     "bridge": {
-        "name": "Homebridge Morhpeus",
-        "username": "0E:16:7D:92:A6:71",
+        "name": "Homebridge Host Morhpeus",
+        "username": "0E:16:7D:92:A3:50",
         "port": 52019,
-        "pin": "031-45-151"
+        "pin": "031-45-160"
     },
     "accessories": [],
     "platforms": [
