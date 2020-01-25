@@ -145,7 +145,7 @@ services:
      volumes:
        - "/etc/localtime:/etc/localtime:ro"
          #- "/etc/timezone:/etc/timezone:ro"
-       - "./volumes/homebridge:/homebridge"
+       - "./homebridge:/homebridge"
 
 volumes:
   portainer_data:
