@@ -37,3 +37,7 @@ htop
 ls -l
 cd ..
 ll
+ls -l
+cd .ssh/authorized_keys 
+vi .ssh/authorized_keys 
+ll
