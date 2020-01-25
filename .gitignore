@@ -12,3 +12,6 @@
 /mosquitto/log/*
 /mosquitto/data/*
 /homebridge/logs/homebridge.log
+/homebridge/accessories/*
+/homebridge/persist/*
+
