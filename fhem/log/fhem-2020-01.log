@@ -40,3 +40,74 @@
 2020.01.25 11:14:03.771 3: Opening MQTT_Broker device broker:1883
 2020.01.25 11:14:03.782 3: MQTT_Broker device opened
 2020.01.25 11:14:22.169 0: Server shutdown
+2020.01.25 11:21:34.831 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:21:34.832 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:21:34.832 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:21:34.832 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:21:34.834 1: Including fhem.cfg
+2020.01.25 11:21:34.982 3: WEB: port 8083 opened
+2020.01.25 11:21:35.009 2: eventTypes: loaded 50 events from ./log/eventTypes.txt
+2020.01.25 11:21:35.265 3: AptToDate (fhemServerApt) - defined
+2020.01.25 11:21:35.952 3: telnetPort: port 7072 opened
+2020.01.25 11:21:36.083 3: freezemon defined freezemon freezemon
+2020.01.25 11:21:36.083 1: Including ./log/fhem.save
+2020.01.25 11:21:36.100 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:21:36.100 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:21:36.100 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:21:36.100 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:21:38.865 1: usb create starting
+2020.01.25 11:21:38.895 1: usb create end
+2020.01.25 11:21:38.896 2: [Freezemon] freezemon: ready to watch out for delays greater than 1 second(s)
+2020.01.25 11:21:38.896 0: Featurelevel: 5.9
+2020.01.25 11:21:38.896 0: Server started with 93 defined entities (fhem.pl:21044/2020-01-24 perl:5.028001 os:linux user:fhem pid:3837)
+2020.01.25 11:21:38.898 3: Opening MQTT_Broker device broker:1883
+2020.01.25 11:21:38.909 3: MQTT_Broker device opened
+sh: 1: echo: echo: I/O error
+Can't call method "readFromChild" on an undefined value at ./FHEM/42_npmjs.pm line 825.
+2020.01.25 11:23:14.236 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:23:14.237 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:23:14.237 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:23:14.237 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:23:14.240 1: Including fhem.cfg
+2020.01.25 11:23:14.397 3: WEB: port 8083 opened
+2020.01.25 11:23:14.423 2: eventTypes: loaded 50 events from ./log/eventTypes.txt
+2020.01.25 11:23:14.736 3: AptToDate (fhemServerApt) - defined
+2020.01.25 11:23:15.292 3: telnetPort: port 7072 opened
+2020.01.25 11:23:15.418 3: freezemon defined freezemon freezemon
+2020.01.25 11:23:15.418 1: Including ./log/fhem.save
+2020.01.25 11:23:15.431 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:23:15.431 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:23:15.431 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:23:15.431 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:23:17.711 1: usb create starting
+2020.01.25 11:23:17.741 1: usb create end
+2020.01.25 11:23:17.741 2: [Freezemon] freezemon: ready to watch out for delays greater than 1 second(s)
+2020.01.25 11:23:17.742 0: Featurelevel: 5.9
+2020.01.25 11:23:17.742 0: Server started with 93 defined entities (fhem.pl:21044/2020-01-24 perl:5.028001 os:linux user:fhem pid:5931)
+2020.01.25 11:23:17.744 3: Opening MQTT_Broker device broker:1883
+2020.01.25 11:23:17.753 3: MQTT_Broker device opened
+sh: 1: echo: echo: I/O error
+Can't call method "readFromChild" on an undefined value at ./FHEM/42_npmjs.pm line 825.
+2020.01.25 11:25:54.204 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:25:54.204 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:25:54.205 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:25:54.205 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:25:54.207 1: Including fhem.cfg
+2020.01.25 11:25:54.359 3: WEB: port 8083 opened
+2020.01.25 11:25:54.385 2: eventTypes: loaded 50 events from ./log/eventTypes.txt
+2020.01.25 11:25:54.589 3: AptToDate (fhemServerApt) - defined
+2020.01.25 11:25:55.216 3: telnetPort: port 7072 opened
+2020.01.25 11:25:55.316 3: freezemon defined freezemon freezemon
+2020.01.25 11:25:55.316 1: Including ./log/fhem.save
+2020.01.25 11:25:55.329 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:25:55.329 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:25:55.330 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:25:55.330 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:25:57.233 1: usb create starting
+2020.01.25 11:25:57.254 1: usb create end
+2020.01.25 11:25:57.254 2: [Freezemon] freezemon: ready to watch out for delays greater than 1 second(s)
+2020.01.25 11:25:57.254 0: Featurelevel: 5.9
+2020.01.25 11:25:57.254 0: Server started with 93 defined entities (fhem.pl:21044/2020-01-24 perl:5.028001 os:linux user:fhem pid:8991)
+2020.01.25 11:25:57.256 3: Opening MQTT_Broker device broker:1883
+2020.01.25 11:25:57.264 3: MQTT_Broker device opened
+2020.01.25 11:27:06.757 0: Server shutdown
