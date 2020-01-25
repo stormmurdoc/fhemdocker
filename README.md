@@ -25,4 +25,5 @@
 
 ### ctop
 
-[ctop](./media/ctop.png "ctop screenshot")
+
+![ctop](./media/ctop.png "ctop gui")
