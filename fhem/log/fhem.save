@@ -1,43 +1,43 @@
-#Sat Jan 25 11:01:48 2020
+#Sat Jan 25 11:04:39 2020
 setstate DockerImageInfo ok
-setstate DockerImageInfo 2020-01-25 11:01:25 container.cap.e audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.cap.e audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.cap.i audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.cap.i audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.cap.p audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.cap.p audit_write,chown,dac_override,fowner,fsetid,kill,mknod,net_bind_service,net_raw,setfcap,setgid,setpcap,setuid,sys_chroot\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.hostname fa2b2468390c\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.hostname fa2b2468390c\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.hostnetwork 0\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.hostnetwork 0\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.id fa2b2468390c61c81241bdd053d0d9604495c3182f0c7a35d5f46de4c02eda34\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.id fa2b2468390c61c81241bdd053d0d9604495c3182f0c7a35d5f46de4c02eda34\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 container.privileged 0\
+setstate DockerImageInfo 2020-01-25 11:03:36 container.privileged 0\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 id.gid 1000
-setstate DockerImageInfo 2020-01-25 11:01:25 id.gname fhem
-setstate DockerImageInfo 2020-01-25 11:01:25 id.groups [ "fhem": 1000, "tty": 5, "mail": 8, "dialout": 20, "audio": 29, "video": 44, "bluetooth": 6001, "gpio": 6002, "i2c": 6003 ]
-setstate DockerImageInfo 2020-01-25 11:01:25 id.uid 1000
-setstate DockerImageInfo 2020-01-25 11:01:25 id.uname fhem
-setstate DockerImageInfo 2020-01-25 11:01:25 image.created 2020-01-09T11:30:14+00:00
-setstate DockerImageInfo 2020-01-25 11:01:25 image.description A basic Docker image for FHEM house automation system, based on Debian Buster.
-setstate DockerImageInfo 2020-01-25 11:01:25 image.documentation https://github.com/fhem/fhem-docker/blob/e96d817971ec68f3a191c0dfa7a27e87b4d2e8be/README.md
-setstate DockerImageInfo 2020-01-25 11:01:25 image.licenses MIT
-setstate DockerImageInfo 2020-01-25 11:01:25 image.revision e96d817971ec68f3a191c0dfa7a27e87b4d2e8be
-setstate DockerImageInfo 2020-01-25 11:01:25 image.source https://github.com/fhem/fhem-docker/
-setstate DockerImageInfo 2020-01-25 11:01:25 image.title fhem-amd64_linux
-setstate DockerImageInfo 2020-01-25 11:01:25 image.url https://hub.docker.com/r/fhem/fhem-amd64_linux
-setstate DockerImageInfo 2020-01-25 11:01:25 image.vendor Julian Pawlowski
-setstate DockerImageInfo 2020-01-25 11:01:25 image.version 5.9-s20922_v2.2.4
-setstate DockerImageInfo 2020-01-25 11:01:25 ssh-id_ed25519.pub ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXKxuP8k9+1kqXi2SbdJ0ZPbQ/0I3NG5AonQmoP8w+z fhem@fhem-docker\
+setstate DockerImageInfo 2020-01-25 11:03:36 id.gid 1000
+setstate DockerImageInfo 2020-01-25 11:03:36 id.gname fhem
+setstate DockerImageInfo 2020-01-25 11:03:36 id.groups [ "fhem": 1000, "tty": 5, "mail": 8, "dialout": 20, "audio": 29, "video": 44, "bluetooth": 6001, "gpio": 6002, "i2c": 6003 ]
+setstate DockerImageInfo 2020-01-25 11:03:36 id.uid 1000
+setstate DockerImageInfo 2020-01-25 11:03:36 id.uname fhem
+setstate DockerImageInfo 2020-01-25 11:03:36 image.created 2020-01-09T11:30:14+00:00
+setstate DockerImageInfo 2020-01-25 11:03:36 image.description A basic Docker image for FHEM house automation system, based on Debian Buster.
+setstate DockerImageInfo 2020-01-25 11:03:36 image.documentation https://github.com/fhem/fhem-docker/blob/e96d817971ec68f3a191c0dfa7a27e87b4d2e8be/README.md
+setstate DockerImageInfo 2020-01-25 11:03:36 image.licenses MIT
+setstate DockerImageInfo 2020-01-25 11:03:36 image.revision e96d817971ec68f3a191c0dfa7a27e87b4d2e8be
+setstate DockerImageInfo 2020-01-25 11:03:36 image.source https://github.com/fhem/fhem-docker/
+setstate DockerImageInfo 2020-01-25 11:03:36 image.title fhem-amd64_linux
+setstate DockerImageInfo 2020-01-25 11:03:36 image.url https://hub.docker.com/r/fhem/fhem-amd64_linux
+setstate DockerImageInfo 2020-01-25 11:03:36 image.vendor Julian Pawlowski
+setstate DockerImageInfo 2020-01-25 11:03:36 image.version 5.9-s20922_v2.2.4
+setstate DockerImageInfo 2020-01-25 11:03:36 ssh-id_ed25519.pub ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAXKxuP8k9+1kqXi2SbdJ0ZPbQ/0I3NG5AonQmoP8w+z fhem@fhem-docker\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 ssh-id_rsa.pub ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/oZ0jIOIR/TgtL/w+EV0DA+2z3XTAnK6c10Gbr2yKYSw/uEXY5VU0f3rIPXS7yvVPJLcUFQWz/jiMbfTtzaS3YH34SkOORAY8hwZ2rfWZC8rcXodxbdo9qvX/4tPvmwGq0qMsD4d4beUWc2v+AP81Ni3jzn3rs0sXbLBo/WfEwaOSXn+CG2Blny2YfAKhS7pOeSx/bOUay9Ss0ckf3EtTVEgwTMuYmPttQZAW+YX+GNdF2Q7ZUS0y0cbi+AtuzErCd47I3o4BmETyaxJu/wDRToSIAj/c0IDaEshBo8pCRakOV4mWBFUMdWXW2rBoyv2KEb+WZEL3JLPnEv2sb5EXqp/r08wqdQH6Pc7SxHYku8DGl0gAahrynxDA6G6sHqggVOdLxpSIxLIJuuUs+vq4ROwkvfUJcaNE1N9MG/++d993IYjzy1w7wc3U/FoIpvBFrBwLVR//1dKfCIrUnOp2EFaeQsOjFlDEgIFlXdbUvFDABoB4fuVHyvkwprDxWoYC2J9XPzSSARC6tNNccMChwirSnhNxI2YfW+AJK3+ksSW+fCU+8Yw4ECkBsWof5IVjxGs7kZXlpitIxT/B4oj5Svj1sEMHUWW2MNSP/SMtqc/r0KQhoCXf8HR5lxQxOMLLSG/SE357N9PIsZR4I3Gps6iJ6MovjXJG1Cm9henceQ== fhem@fhem-docker\
+setstate DockerImageInfo 2020-01-25 11:03:36 ssh-id_rsa.pub ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/oZ0jIOIR/TgtL/w+EV0DA+2z3XTAnK6c10Gbr2yKYSw/uEXY5VU0f3rIPXS7yvVPJLcUFQWz/jiMbfTtzaS3YH34SkOORAY8hwZ2rfWZC8rcXodxbdo9qvX/4tPvmwGq0qMsD4d4beUWc2v+AP81Ni3jzn3rs0sXbLBo/WfEwaOSXn+CG2Blny2YfAKhS7pOeSx/bOUay9Ss0ckf3EtTVEgwTMuYmPttQZAW+YX+GNdF2Q7ZUS0y0cbi+AtuzErCd47I3o4BmETyaxJu/wDRToSIAj/c0IDaEshBo8pCRakOV4mWBFUMdWXW2rBoyv2KEb+WZEL3JLPnEv2sb5EXqp/r08wqdQH6Pc7SxHYku8DGl0gAahrynxDA6G6sHqggVOdLxpSIxLIJuuUs+vq4ROwkvfUJcaNE1N9MG/++d993IYjzy1w7wc3U/FoIpvBFrBwLVR//1dKfCIrUnOp2EFaeQsOjFlDEgIFlXdbUvFDABoB4fuVHyvkwprDxWoYC2J9XPzSSARC6tNNccMChwirSnhNxI2YfW+AJK3+ksSW+fCU+8Yw4ECkBsWof5IVjxGs7kZXlpitIxT/B4oj5Svj1sEMHUWW2MNSP/SMtqc/r0KQhoCXf8HR5lxQxOMLLSG/SE357N9PIsZR4I3Gps6iJ6MovjXJG1Cm9henceQ== fhem@fhem-docker\
 
-setstate DockerImageInfo 2020-01-25 11:01:25 sudoers [ "# Auto-generated during container start", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm install *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm uninstall *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm update *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/local/bin/cpanm *", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -q update", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -s -q -V upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y install *", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y -q -V dist-upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y -q -V upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/nmap" ]
+setstate DockerImageInfo 2020-01-25 11:03:36 sudoers [ "# Auto-generated during container start", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm install *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm uninstall *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/bin/npm update *", "fhem ALL=(ALL) NOPASSWD:SETENV: /usr/local/bin/cpanm *", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -q update", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -s -q -V upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y install *", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y -q -V dist-upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/apt-get -y -q -V upgrade", "fhem ALL=(ALL) NOPASSWD: /usr/bin/nmap" ]
 setstate Logfile active
 setstate MQTT_Broker disconnected
-setstate MQTT_Broker 2020-01-25 11:01:47 state disconnected
-setstate WEB 2020-01-25 11:01:25 state Initialized
+setstate MQTT_Broker 2020-01-25 11:04:35 state disconnected
+setstate WEB 2020-01-25 11:03:36 state Initialized
 setstate autocreate active
 setstate c_aa defined
 setstate c_ac defined
@@ -125,7 +125,7 @@ setstate fhemInstaller 2020-01-25 10:57:14 .packageListPerl {"outdatedPerl":{"Po
 setstate fhemInstaller 2020-01-19 17:02:00 cpanminusVersion 1.7044
 setstate fhemInstaller 2020-01-25 10:57:14 outdatedPerl check completed
 setstate fhemInstaller 2020-01-19 17:02:00 perlVersion 5.028001
-setstate fhemInstaller 2020-01-25 11:01:27 state up to date
+setstate fhemInstaller 2020-01-25 11:03:37 state up to date
 setstate fhemInstaller 2020-01-19 17:02:22 updatesAvailablePerl 0
 setstate fhemServerApt warnings
 setstate fhemServerApt 2020-01-24 23:17:34 .updatedList {"packages":{"nodejs":{"current":"10.18.0-1nodesource1","new":"10.18.1-1nodesource1"},"libtiff5:amd64":{"new":"4.1.0+git191117-2~deb10u1","current":"4.0.10-4"}}}
@@ -165,7 +165,7 @@ setstate freezemon 2020-01-25 10:58:09 ftDay 0
 setstate freezemon 2020-01-25 10:58:09 ftDayLast 0
 setstate freezemon 2020-01-23 22:09:14 state s:22:09:02 e:22:09:14 f:12.69 d:no bad guy found :-(
 setstate global no definition
-setstate initialUsbCheck 2020-01-25 11:01:26
-setstate initialUsbCheck 2020-01-25 11:01:25 state active
+setstate initialUsbCheck 2020-01-25 11:03:36
+setstate initialUsbCheck 2020-01-25 11:03:36 state active
 setstate siri active
-setstate telnetPort 2020-01-25 11:01:26 state Initialized
+setstate telnetPort 2020-01-25 11:03:36 state Initialized
