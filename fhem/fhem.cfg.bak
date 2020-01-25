@@ -96,6 +96,7 @@ setuuid telnetPort 5e247dcd-f33f-b3b0-a296-7411c4d6fc67c6ea
 define dummy dummy
 setuuid dummy 5e24a574-f33f-b3b0-f070-5a0947796fce6717
 attr dummy genericDeviceType switch
+attr dummy homebridgeMapping homebridgeMapping On=state,cmdOn=on,cmdOff=off
 attr dummy room Homekit
 attr dummy webCmd on:off
 define MQTT_Broker MQTT2_CLIENT broker:1883
