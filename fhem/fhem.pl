@@ -27,7 +27,7 @@
 #
 #  Homepage:  http://fhem.de
 #
-# $Id: fhem.pl 21009 2020-01-18 12:14:41Z rudolfkoenig $
+# $Id: fhem.pl 21044 2020-01-24 17:56:00Z rudolfkoenig $
 
 
 use strict;
@@ -280,7 +280,7 @@ use constant {
 };
 
 $selectTimestamp = gettimeofday();
-$cvsid = '$Id: fhem.pl 21009 2020-01-18 12:14:41Z rudolfkoenig $';
+$cvsid = '$Id: fhem.pl 21044 2020-01-24 17:56:00Z rudolfkoenig $';
 
 my $AttrList = "alias comment:textField-long eventMap:textField-long ".
                "group room suppressReading userReadings:textField-long ".
@@ -334,7 +334,7 @@ my @globalAttrList = qw(
   dnsServer
   dupTimeout
   exclude_from_update
-  featurelevel:5.9,5.8,5.7,5.6,5.5,99.99
+  featurelevel:6.0,5.9,5.8,5.7,5.6,5.5,99.99
   genericDisplayType:switch,outlet,light,blind,speaker,thermostat
   holiday2we
   httpcompress:0,1
@@ -2874,7 +2874,7 @@ CommandAttr($$)
            if(@a && @a < 2);
   my $a1 = $a[1];
   return "bad attribute name $a1 (contains not A-Za-z/\\d_\\.- or is too long)"
-           if($featurelevel > 5.9 && !goodReadingName($a1));
+           if($featurelevel > 5.9 && !goodReadingName($a1) && $a1 ne "?");
 
   my @rets;
   foreach my $sdev (devspec2array($a[0], $a1 && $a1 eq "?" ? undef : $cl)) {
@@ -4884,8 +4884,8 @@ readingsBulkUpdate($$$@)
       } else {
         require "TimeSeries.pm";
         $ts = TimeSeries->new( { method => $method, 
-                  autoreset=>(looks_like_number($duration) ? $duration:undef),
-                  holdTime =>(looks_like_number($holdTime) ? $holdTime:undef)});
+                  autoreset => $duration,
+                  holdTime => $holdTime } );
         $readings->{".ts"}= $ts;
         # access from command line:
         # { $defs{"myClient"}{READINGS}{"myValue"}{".ts"}{max} }
@@ -5779,7 +5779,6 @@ goodReadingName($)
 {
   my ($name) = @_;
   return undef if(!$name);
-  return undef if($featurelevel > 5.9 && length($name) > 64);
   return ($name =~ m/^[a-z0-9._\-\/]+$/i || $name =~ m/^\./);
 }
 
@@ -5790,7 +5789,6 @@ makeReadingName($) # Convert non-valid characters to _
   $name = "UNDEFINED" if(!defined($name));
   return $name if($name =~ m/^\./);
   $name =~ s/[^a-z0-9._\-\/]/_/gi;
-  $name = substr($name, 0, 64) if($featurelevel > 5.9 && length($name) > 64);
   return $name;
 }
 
