@@ -14,4 +14,4 @@
 /homebridge/logs/homebridge.log
 /homebridge/accessories/*
 /homebridge/persist/*
-
+/homebridge/config.json
