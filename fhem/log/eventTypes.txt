@@ -1,13 +1,13 @@
-36 MQTT_Broker CONNECTED
+37 MQTT_Broker CONNECTED
 7 MQTT_Broker DISCONNECTED
 10 dummy state: off
 10 dummy state: on
 1 fhemInstaller cpanminusVersion: .*
 7 fhemInstaller outdatedPerl: check completed
 1 fhemInstaller perlVersion: .*
-94 fhemInstaller state: command 'getCpanVersion' in progress
+95 fhemInstaller state: command 'getCpanVersion' in progress
 7 fhemInstaller state: command 'outdatedPerl' in progress
-102 fhemInstaller state: up to date
+103 fhemInstaller state: up to date
 1 fhemInstaller updatesAvailablePerl: .*
 1 fhemServerApt os-release_BUG_REPORT_URL: https://bugs.debian.org/
 1 fhemServerApt os-release_HOME_URL: https://www.debian.org/
@@ -31,16 +31,16 @@
 4 fhemServerApt toUpgrade: successful
 9 fhemServerApt updatesAvailable: .*
 3 fhemServerNpm installed: successful
-9 fhemServerNpm nodejsVersion: .*
-13 fhemServerNpm outdated: check completed
+10 fhemServerNpm nodejsVersion: .*
+14 fhemServerNpm outdated: check completed
 1 fhemServerNpm state: command 'npm getNodeVersion' in progress
 3 fhemServerNpm state: command 'npm install npm@.*' in progress
 9 fhemServerNpm state: command 'npm outdated' in progress
-2 fhemServerNpm state: command 'npm update npm@.*' in progress
-5 fhemServerNpm state: npm is up to date
-14 fhemServerNpm state: npm updates available
-2 fhemServerNpm updated: successful
-9 fhemServerNpm updatesAvailable: .*
+3 fhemServerNpm state: command 'npm update npm@.*' in progress
+6 fhemServerNpm state: npm is up to date
+15 fhemServerNpm state: npm updates available
+3 fhemServerNpm updated: successful
+10 fhemServerNpm updatesAvailable: .*
 4 freezemon fcDay: .*
 3 freezemon fcDayLast: .*
 1 freezemon freezeDevice: no bad guy found :-(
