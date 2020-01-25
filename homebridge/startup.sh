@@ -21,4 +21,4 @@
 
 HOSTNAME=$(hostname)
 
-[[ -r "config.json.$HOSTNAME" ]] && cp config.json.morpheus config.json;echo "+++ Config copied for hostname "$HOSTNAME" +++"
+[[ -r "config.json.$HOSTNAME" ]] && cp config.json.$HOSTNAME config.json;echo "+++ Config copied for hostname "$HOSTNAME" +++"
