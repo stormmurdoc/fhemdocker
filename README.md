@@ -1,4 +1,10 @@
-# House Automation Stack
+# Home Automation Stack
+
+## Requirements
+
++ docker
++ docker-compose
+
 
 ## Installation raspberrypi
 
