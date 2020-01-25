@@ -1,13 +1,13 @@
-40 MQTT_Broker CONNECTED
+41 MQTT_Broker CONNECTED
 8 MQTT_Broker DISCONNECTED
 11 dummy state: off
 11 dummy state: on
 1 fhemInstaller cpanminusVersion: .*
 7 fhemInstaller outdatedPerl: check completed
 1 fhemInstaller perlVersion: .*
-99 fhemInstaller state: command 'getCpanVersion' in progress
+100 fhemInstaller state: command 'getCpanVersion' in progress
 7 fhemInstaller state: command 'outdatedPerl' in progress
-107 fhemInstaller state: up to date
+108 fhemInstaller state: up to date
 1 fhemInstaller updatesAvailablePerl: .*
 1 fhemServerApt os-release_BUG_REPORT_URL: https://bugs.debian.org/
 1 fhemServerApt os-release_HOME_URL: https://www.debian.org/
