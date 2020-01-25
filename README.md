@@ -25,5 +25,12 @@
 
 ### ctop
 
+#### Description
+
+ctop is a commandline monitoring tool for linux containers
 
 !["ctop"](./.media/ctop.png "ctop gui")
+
+#### Installation
+
+ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can install it using AUR helpers, such as YaY, in Arch Linux and its variants such as Antergos and Manjaro Linux.
