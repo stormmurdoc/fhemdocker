@@ -1,0 +1,18 @@
+#!/bin/bash
+# $Id: prerm 15784 2018-01-05 11:29:16Z betateilchen $
+
+set -e
+
+# detect init system
+test=$(stat /sbin/init |grep "/sbin/init")
+re="systemd$"
+
+if [[ $test =~ $re ]]; then
+   systemctl stop fhem.service
+   systemctl disable fhem.service
+else
+   if test -f /etc/init.d/fhem; then
+      /etc/init.d/fhem stop noaptmark
+   fi
+   update-rc.d fhem remove
+fi

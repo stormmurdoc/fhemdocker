@@ -1,0 +1,17 @@
+set-off        light_exclamation.svg
+set-on         light_exclamation.svg
+toggle         light_toggle.svg
+on-for-timer   light_on-for-timer.svg
+off-for-timer  light_off-for-timer.svg
+dimup          light_dim_up.svg
+dimdown        light_dim_down.svg
+set_on         light_exclamation.svg
+set_off        light_exclamation.svg
+set_ON         light_exclamation.svg
+set_OFF        light_exclamation.svg
+
+set_toggle        light_toggle.svg
+set_on_for_timer  light_on-for-timer.svg
+set_off_for_timer light_off-for-timer.svg
+set_dimup         light_dim_up.svg
+set_dimdown       light_dim_down.svg

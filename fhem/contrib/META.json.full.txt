@@ -1,0 +1,270 @@
+###############################################################################
+# About metadata in FHEM
+#------------------------------------------------------------------------------
+#
+# This aims to be a full example of all possible options to document
+# a FHEM module or FHEM package.
+# It does not necessarially mean that every attribute will need to be used or
+# makes sense in every case. Also, some combinations might be weird, depending
+# on the actual use case. That is, if your module is part of FHEM core
+# (hosted on svn.fhem.de) or externally on a different plattform, which is then
+# considered a 3rd-party module.
+#
+# Please consult https://wiki.fhem.de/wiki/Meta for more information.
+#
+
+=pod
+
+=encoding utf8
+
+=item [helper|device|command]
+=item summary Short description in English
+=item summary_DE Kurzbeschreibung in Deutsch
+
+=begin html
+
+<a name="myModule" id="myModule"></a>
+<h3>
+  myModule
+</h3>
+<ul>
+  Long description about what this module does and what it is for.<br />
+  <br />
+  <a name="myModuledefine" id="myModuledefine"></a><b>Define</b>
+  <ul>
+    <code>define &lt;name&gt; myModule</code><br />
+    <br />
+    Describe a little bit what this define command will do and how the device instance will behave afterwards.<br />
+  </ul><br />
+  <a name="myModuleset" id="myModuleset"></a><b>Set</b>
+  <ul>
+    <li>setCommand1<br />
+      This command does xyz.
+    </li>
+    <li>setCommand2 &lt;parameter&gt;<br />
+      This command does abc and requires a parameter. Example:
+      <ul>
+        <code>get myModule getCommand1 on</code>
+      </ul>
+    </li>
+  </ul><br />
+  <a name="myModuleget" id="myModuleget"></a><b>Get</b>
+  <ul>
+    <li>getCommand1<br />
+      This command does xyz.
+    </li>
+    <li>getCommand2 &lt;parameter&gt;<br />
+      This command does abc and requires a parameter. Example:
+      <ul>
+        <code>get myModule getCommand1 on</code>
+      </ul>
+    </li>
+  </ul><a name="myModuleattr" id="myModuleattr"></a><b>Attributes</b>
+  <ul>
+    <a name="myAttribute1" id="myAttribute1"></a>
+    <li>myAttribute1<br />
+      This attribute configures xyz.
+    </li><br />
+  </ul>
+</ul>
+
+=end html
+
+=begin html_DE
+
+<a name="myModule" id="myModule"></a>
+<h3>
+  myModule
+</h3>
+<ul>
+  Längere Beschreibung, was dieses Modul macht und wofür es gut ist.<br />
+  <br />
+  <a name="myModuledefine" id="myModuledefine"></a><b>Define</b>
+  <ul>
+    <code>define &lt;name&gt; myModule</code><br />
+    <br />
+    Kurze Beschreibung, was dieses define Kommando genau macht und wie die Device Instanz sich anschließend verhalten wird.<br />
+  </ul><br />
+  <a name="myModuleset" id="myModuleset"></a><b>Set</b>
+  <ul>
+    <li>setCommand1<br />
+      Dieses Kommando macht xyz.
+    </li>
+    <li>setCommand2 &lt;parameter&gt;<br />
+      Dieses Kommando macht abc und benötigt einen Parameter. Beispiel:
+      <ul>
+        <code>get myModule getCommand1 on</code>
+      </ul>
+    </li>
+  </ul><br />
+  <a name="myModuleget" id="myModuleget"></a><b>Get</b>
+  <ul>
+    <li>getCommand1<br />
+      Dieses Kommando macht xyz.
+    </li>
+    <li>getCommand2 &lt;parameter&gt;<br />
+      Dieses Kommando macht abc und benötigt einen Parameter. Beispiel:
+      <ul>
+        <code>get myModule getCommand1 on</code>
+      </ul>
+    </li>
+  </ul><a name="myModuleattr" id="myModuleattr"></a><b>Attributes</b>
+  <ul>
+    <a name="myAttribute1" id="myAttribute1"></a>
+    <li>myAttribute1<br />
+      Dieses Attribut konfiguriert xyz.
+    </li><br />
+  </ul>
+</ul>
+
+=end html_DE
+
+=for :application/json;q=META.json 00_myModule.pm
+{
+  "abstract": "Short description, will overwrite '=item summary'",
+  "description": "This can be some extended description or documentation.",
+  "x_lang": {
+    "de": {
+      "abstract": "Kurzbeschreibung auf Deutsch, überschreibt '=item summary_DE'",
+      "description": "Hier kann eine erweiterte Beschreibung oder Dokumentation stehen."
+    }
+  },
+  "license": [
+    "apache_2_0",
+    "mozilla_1_0"
+  ],
+  "version": "v1.0.0",
+  "x_release_date": "1970-01-01",
+  "release_status": "stable",
+  "author": [
+    "I am the maintainer <firstname.lastname@gmail.com>",
+    "I am a co-author <firstname.lastname@gmail.com>",
+    "I am another co-author w/o email <>",
+    "I might be the orignal author long time ago <firstname.lastname@gmail.com>"
+  ],
+  "x_fhem_maintainer": [
+    "maintainer-myFhemForumAndSVNusername",
+    "co-maintainer-myFhemForumAndSVNusername",
+    "another-author-myFhemForumAndSVNusername",
+    "original-author-myFhemForumAndSVNusername"
+  ],
+  "x_fhem_maintainer_github": [
+    "maintainer-myGithubUsername",
+    "co-maintainer-myGithubUsername",
+    null,
+    null
+  ],
+  "keywords": [
+    "additional",
+    "keywords",
+    "that shall",
+    "appear",
+    "for example",
+    "vendorName",
+    "or",
+    "function"
+  ],
+  "prereqs": {
+    "runtime": {
+      "requires": {
+        "FHEM": 5.00918623,
+        "FHEM::Meta": 0.001006,
+        "HttpUtils": 0,
+        "JSON": 0,
+        "perl": 5.014
+      },
+      "recommends": {
+      },
+      "suggests": {
+      }
+    }
+  },
+  "x_prereqs_nodejs": {
+    "runtime": {
+      "requires": {
+        "node": 8.0,
+        "npm": 0
+      },
+      "recommends": {
+      },
+      "suggests": {
+      }
+    }
+  },
+  "x_prereqs_python": {
+    "runtime": {
+      "requires": {
+        "pip": 0
+      },
+      "recommends": {
+      },
+      "suggests": {
+      }
+    }
+  },
+  "resources": {
+    "bugtracker": {
+      "mailto": "bugs@example.com",
+      "web": "https://github.com/fhem/myModule/issues",
+      "x_web_title": "Github Issues for fhem/myModule"
+    },
+    "homepage": "https://myModuleHasAhomepage.com",
+    "x_homepage_title": "myModuleHasAhomepage",
+    "license": [
+      "https://github.com/fhem/myModule/blob/master/LICENSE"
+    ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/fhem/myModule.git",
+      "web": "https://github.com/fhem/myModule/blob/master/subdir/00_myModule.pm",
+      "x_branch": "master",
+      "x_dev": {
+        "type": "git",
+        "url": "https://github.com/fhem/myModule.git",
+        "web": "https://github.com/fhem/myModule/blob/dev/subdir/00_myModule.pm",
+        "x_branch": "dev",
+        "x_filepath": "subdir/",
+        "x_raw": "https://github.com/fhem/myModule/raw/dev/subdir/00_myModule.pm"
+      },
+      "x_filepath": "subdir/",
+      "x_raw": "https://github.com/fhem/myModule/raw/master/subdir/00_myModule.pm"
+    },
+    "x_commandref" : {
+      "title" : "I want to name it differently, not 'Online version'",
+      "web" : "https://myModuleHasAhomepage.com/myModuleHasAnExternalOnlineCommandRef.html"
+    },
+    "x_copyright": {
+      "mailto": "contact@example.com",
+      "title": "My Company Inc.",
+      "web": "https://www.example.com/legal"
+    },
+    "x_privacy": {
+      "mailto": "dataprivacy@example.com",
+      "title": "About data privacy",
+      "web": "https://www.example.com/privacy"
+    },
+    "x_support_commercial": {
+      "mailto": "support@example.com",
+      "title": "My Company",
+      "web": "https://support.example.com"
+    },
+    "x_support_community": {
+      "rss": "https://forum.fhem.de/index.php?action=.xml;type=rss;board=19",
+      "title": "I want to have a special title. Prefix 'FHEM Forum: ' will be added if URL is forum.fhem.de",
+      "web": "https://forum.fhem.de/index.php/board,19.0.html",
+      "subCommunity" : {
+          "rss" : "https://forum.fhem.de/index.php?action=.xml;type=rss;board=93",
+          "title" : "This sub-board will be first contact point",
+          "web" : "https://forum.fhem.de/index.php/board,93.0.html"
+       }
+    },
+    "x_wiki" : {
+      "title" : "I want to have a special title. Prefix 'FHEM Wiki: ' will be added if URL is wiki.fhem.de",
+      "web" : "https://wiki.fhem.de/wiki/myModule_is_simply_different"
+     }
+  },
+  "x_support_status": "supported"
+}
+=end :application/json;q=META.json
+
+=cut

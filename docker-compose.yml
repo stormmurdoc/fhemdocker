@@ -1,0 +1,150 @@
+version: '3'
+
+services:
+   tasmotaadmin:
+    restart: always
+    image: raymondmm/tasmoadmin:latest
+    volumes:
+      - ./tasmotaadmin/data:/data
+        #- "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    ports:
+      - "8081:80"
+    networks:
+      - fhem-network
+
+
+   tasmocompiler:
+    restart: always
+    image: benzino77/tasmocompiler:latest
+    ports:
+      - "8082:3000"
+    networks:
+      - fhem-network
+
+
+   broker:
+     image: eclipse-mosquitto:latest
+     volumes:
+       - "./mosquitto:/mosquitto"
+       - "/etc/localtime:/etc/localtime:ro"
+         #- "/etc/timezone:/etc/timezone:ro"
+
+     networks:
+       - fhem-network
+     ports:
+       - "1883:1883"
+     environment:
+      - TZ=Europe/Berlin
+
+   fhem:
+     image: fhem/fhem:latest
+     restart: always
+     depends_on:
+        - broker
+
+     #devices:
+      # - "/dev/ttyAMA0:/dev/ttyAMA0"
+      # - "/dev/ttyUSB0:/dev/ttyUSB0"
+
+     #dns: 192.168.1.107
+     #dns_search: fritz.box
+     networks:
+       - fhem-network
+     ports:
+       - "8083:8083"
+       - "7072:7072"
+       - "222:22"
+     volumes:
+       - "/etc/localtime:/etc/localtime:ro"
+         #- "/etc/timezone:/etc/timezone:ro"
+       - "./fhem/:/opt/fhem/"
+       - "./pre-init.sh:/docker/pre-init.sh"
+       - "./post-init.sh:/docker/post-init.sh"
+       - "./pre-start.sh:/docker/pre-start.sh"
+       - "./post-start.sh:/docker/post-start.sh"
+     environment:
+       FHEM_UID: 6061
+       FHEM_GID: 6061
+       FHEM_PERM_DIR: 0770
+       FHEM_PERM_FILE: 0660
+       LOGFILE: "./log/fhem-%Y-%m.log"
+       UMASK: 0037
+       BLUETOOTH_GID: 6001
+       GPIO_GID: 6002
+       I2C_GID: 6003
+       # Shutdown timeout
+       TIMEOUT: 10
+       RESTART: 1
+       TELNETPORT: 7072
+       TZ: Europe/Berlin
+       APT_PKGS: "socat rlwrap openssh-server htop tmux vim"
+       #CPAN_PKGS: ""
+       #PIP_PKGS: ""
+       #NPM_PKGS: ""
+       # CONFIGTYPE: configDB
+       # CONFIGTYPE=fhem.cfg.demo
+
+   portainer:
+     image: portainer/portainer:latest
+     restart: always
+     depends_on:
+        - fhem
+     command: -H unix:///var/run/docker.sock --no-auth
+     ports:
+         - "9000:9000"
+     environment:
+         - TZ=Europe/Berlin
+         - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/portainer.crt
+         - REGISTRY_HTTP_TLS_KEY=/certs/portainer.key
+     volumes:
+       - "/etc/localtime:/etc/localtime:ro"
+         #- "/etc/timezone:/etc/timezone:ro"
+       - "/var/run/docker.sock:/var/run/docker.sock"
+       - "portainer_data:/data"
+       - "/home/pirate/certs/portainer.key:/certs/portainer.key"
+       - "/home/pirate/certs/portainer.crt:/certs/portainer.crt"
+     networks:
+         - fhem-network
+
+   adminer:
+     image: adminer:latest
+     restart: always
+     depends_on:
+       - fhem
+     environment:
+       - TZ=Europe/Berlin
+     volumes:
+       - "/etc/localtime:/etc/localtime:ro"
+         #       - "/etc/timezone:/etc/timezone:ro"
+     ports:
+       - 9090:8080
+     networks:
+       - fhem-network
+
+
+   homebridge:
+     image: oznu/homebridge:latest
+     restart: always
+     environment:
+      - TZ=Europe/Berlin
+     depends_on:
+      - fhem
+     network_mode: host
+     environment:
+      - TZ=Europe/Berlin
+      - PGID=1000
+      - PUID=1000
+      - HOMEBRIDGE_CONFIG_UI=1
+      - HOMEBRIDGE_CONFIG_UI_PORT=8080
+     volumes:
+       - "/etc/localtime:/etc/localtime:ro"
+         #- "/etc/timezone:/etc/timezone:ro"
+       - "./volumes/homebridge:/homebridge"
+
+volumes:
+  portainer_data:
+
+networks:
+  fhem-network:
+    driver: bridge

@@ -1,0 +1,18 @@
+{
+    "bridge": {
+        "name": "Homebridge A674",
+        "username": "0E:16:7D:92:A6:74",
+        "port": 52019,
+        "pin": "031-45-154"
+    },
+    "accessories": [],
+    "platforms": [
+        {
+            "platform": "FHEM",
+            "name": "FHEM",
+            "server": "127.0.0.1",
+            "port": "8083",
+            "filter": "room=Homekit"
+        }
+    ]
+}
