@@ -1,13 +1,13 @@
 33 MQTT_Broker CONNECTED
-6 MQTT_Broker DISCONNECTED
+7 MQTT_Broker DISCONNECTED
 10 dummy state: off
 10 dummy state: on
 1 fhemInstaller cpanminusVersion: .*
-6 fhemInstaller outdatedPerl: check completed
+7 fhemInstaller outdatedPerl: check completed
 1 fhemInstaller perlVersion: .*
-87 fhemInstaller state: command 'getCpanVersion' in progress
-6 fhemInstaller state: command 'outdatedPerl' in progress
-94 fhemInstaller state: up to date
+90 fhemInstaller state: command 'getCpanVersion' in progress
+7 fhemInstaller state: command 'outdatedPerl' in progress
+98 fhemInstaller state: up to date
 1 fhemInstaller updatesAvailablePerl: .*
 1 fhemServerApt os-release_BUG_REPORT_URL: https://bugs.debian.org/
 1 fhemServerApt os-release_HOME_URL: https://www.debian.org/
@@ -19,29 +19,32 @@
 1 fhemServerApt os-release_VERSION_CODENAME: buster
 1 fhemServerApt os-release_VERSION_ID: .*
 1 fhemServerApt os-release_language: en
+1 fhemServerApt repoSync Warnings (get showWarningList)
 5 fhemServerApt repoSync: fetched done
+1 fhemServerApt repoSync: fetched warnings
 1 fhemServerApt state: getDistribution in progress
-6 fhemServerApt state: repoSync in progress
+7 fhemServerApt state: repoSync in progress
 9 fhemServerApt state: system is up to date
 10 fhemServerApt state: system updates available
 4 fhemServerApt state: toUpgrade in progress
+1 fhemServerApt state: warnings
 4 fhemServerApt toUpgrade: successful
 9 fhemServerApt updatesAvailable: .*
 3 fhemServerNpm installed: successful
-8 fhemServerNpm nodejsVersion: .*
-12 fhemServerNpm outdated: check completed
+9 fhemServerNpm nodejsVersion: .*
+13 fhemServerNpm outdated: check completed
 1 fhemServerNpm state: command 'npm getNodeVersion' in progress
 3 fhemServerNpm state: command 'npm install npm@.*' in progress
-8 fhemServerNpm state: command 'npm outdated' in progress
+9 fhemServerNpm state: command 'npm outdated' in progress
 2 fhemServerNpm state: command 'npm update npm@.*' in progress
 5 fhemServerNpm state: npm is up to date
-13 fhemServerNpm state: npm updates available
+14 fhemServerNpm state: npm updates available
 2 fhemServerNpm updated: successful
-8 fhemServerNpm updatesAvailable: .*
-3 freezemon fcDay: .*
-2 freezemon fcDayLast: .*
+9 fhemServerNpm updatesAvailable: .*
+4 freezemon fcDay: .*
+3 freezemon fcDayLast: .*
 1 freezemon freezeDevice: no bad guy found :-(
 1 freezemon freezeTime: .*
-3 freezemon ftDay: .*
-2 freezemon ftDayLast: .*
+4 freezemon ftDay: .*
+3 freezemon ftDayLast: .*
 1 freezemon state: s:.* d:no bad guy found :-(

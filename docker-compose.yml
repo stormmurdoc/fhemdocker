@@ -64,8 +64,10 @@ services:
        - "./pre-start.sh:/docker/pre-start.sh"
        - "./post-start.sh:/docker/post-start.sh"
      environment:
-       FHEM_UID: 6061
-       FHEM_GID: 6061
+       #FHEM_UID: 6061
+       #FHEM_GID: 6061
+       FHEM_UID: 1000
+       FHEM_GID: 1000
        FHEM_PERM_DIR: 0770
        FHEM_PERM_FILE: 0660
        LOGFILE: "./log/fhem-%Y-%m.log"
@@ -84,6 +86,9 @@ services:
        #NPM_PKGS: ""
        # CONFIGTYPE: configDB
        # CONFIGTYPE=fhem.cfg.demo
+     links:
+        - broker
+
 
    portainer:
      image: portainer/portainer:latest
