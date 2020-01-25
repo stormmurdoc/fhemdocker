@@ -1,1 +1,13 @@
-*.pdf
+.DS_Store
+.idea
+!.gitkeep
+/fhem/FHEM/FhemUtils/uniqueID
+/fhem/fhem.cfg.bak
+/fhem/backup/*
+/fhem/cache/*
+/fhem/log/*
+/fhem/restoreDir/*
+/fhem/.ssh/*
+/mysql/data/*
+/mosquitto/log/*
+/mosquitto/data/*
