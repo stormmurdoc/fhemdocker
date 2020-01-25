@@ -26,4 +26,4 @@
 ### ctop
 
 
-![ctop](./media/ctop.png "ctop gui")
+!["ctop"](./.media/ctop.png "ctop gui")
