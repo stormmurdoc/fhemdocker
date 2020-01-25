@@ -133,3 +133,24 @@
 2020.01.25 11:01:26.870 0: Featurelevel: 5.9
 2020.01.25 11:01:26.870 0: Server started with 93 defined entities (fhem.pl:21009/2020-01-18 perl:5.028001 os:linux user:fhem pid:6856)
 2020.01.25 11:01:48.649 0: Server shutdown
+2020.01.25 11:03:35.963 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:03:35.963 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:03:35.963 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:03:35.963 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:03:35.964 1: Including fhem.cfg
+2020.01.25 11:03:36.014 3: WEB: port 8083 opened
+2020.01.25 11:03:36.024 2: eventTypes: loaded 50 events from ./log/eventTypes.txt
+2020.01.25 11:03:36.097 3: AptToDate (fhemServerApt) - defined
+2020.01.25 11:03:36.295 3: telnetPort: port 7072 opened
+2020.01.25 11:03:36.325 3: freezemon defined freezemon freezemon
+2020.01.25 11:03:36.325 1: Including ./log/fhem.save
+2020.01.25 11:03:36.329 3: From the FHEM_GLOBALATTR environment: attr global updateInBackground 1
+2020.01.25 11:03:36.329 3: From the FHEM_GLOBALATTR environment: attr global pidfilename ./log/fhem.pid
+2020.01.25 11:03:36.329 3: From the FHEM_GLOBALATTR environment: attr global nofork 0
+2020.01.25 11:03:36.329 3: From the FHEM_GLOBALATTR environment: attr global logfile ./log/fhem-%Y-%m.log
+2020.01.25 11:03:36.973 1: usb create starting
+2020.01.25 11:03:36.982 1: usb create end
+2020.01.25 11:03:36.982 2: [Freezemon] freezemon: ready to watch out for delays greater than 1 second(s)
+2020.01.25 11:03:36.982 0: Featurelevel: 5.9
+2020.01.25 11:03:36.982 0: Server started with 93 defined entities (fhem.pl:21009/2020-01-18 perl:5.028001 os:linux user:fhem pid:6094)
+2020.01.25 11:04:39.693 0: Server shutdown
