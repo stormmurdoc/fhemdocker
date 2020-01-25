@@ -11,3 +11,4 @@
 /mysql/data/*
 /mosquitto/log/*
 /mosquitto/data/*
+/volumes/homebridge/logs/homebridge.log
