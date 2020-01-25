@@ -145,8 +145,6 @@ services:
       - HOMEBRIDGE_CONFIG_UI=1
       - HOMEBRIDGE_CONFIG_UI_PORT=8080
      volumes:
-       - "/etc/localtime:/etc/localtime:ro"
-         #- "/etc/timezone:/etc/timezone:ro"
        - "./homebridge:/homebridge"
 
 volumes:
