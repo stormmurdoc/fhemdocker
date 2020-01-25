@@ -19,3 +19,6 @@
 # If you're running a debian based version of this container please use apt-get to install packages.
 #
 
+HOSTNAME=$(hostname)
+
+[[ -r "config.json.$HOSTNAME" ]] && cp config.json.morpheus config.json;echo "+++ Config copied for hostname "$HOSTNAME" +++"
