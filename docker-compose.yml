@@ -1,6 +1,22 @@
 version: '3'
 
 services:
+   broker:
+     restart: always
+     image: eclipse-mosquitto:latest
+     volumes:
+       - "./mosquitto:/mosquitto"
+       - "/etc/localtime:/etc/localtime:ro"
+         #- "/etc/timezone:/etc/timezone:ro"
+
+     networks:
+       - fhem-network
+     ports:
+       - "1883:1883"
+     environment:
+      - TZ=Europe/Berlin
+
+
    tasmotaadmin:
     restart: always
     image: raymondmm/tasmoadmin:latest
@@ -22,20 +38,6 @@ services:
     networks:
       - fhem-network
 
-
-   broker:
-     image: eclipse-mosquitto:latest
-     volumes:
-       - "./mosquitto:/mosquitto"
-       - "/etc/localtime:/etc/localtime:ro"
-         #- "/etc/timezone:/etc/timezone:ro"
-
-     networks:
-       - fhem-network
-     ports:
-       - "1883:1883"
-     environment:
-      - TZ=Europe/Berlin
 
    fhem:
      image: fhem/fhem:latest
