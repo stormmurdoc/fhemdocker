@@ -1,5 +1,6 @@
 # Home Automation Stack
 
+!["FHEM GUI"](./.media/fhem.png "FHEM gui")
 The stack contains everything to run FHEM on a Docker host. Mosquitto is used as message broker. SIRI functions are realized with the help of a homebridge container. The complete stack runs on x86 as well as arm architectures. It is very easy to clone its complete productive environment and has a simple way to build a test system.
 
 ## Todo
