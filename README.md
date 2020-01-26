@@ -55,6 +55,10 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 !["tasmotaadmin"](./.media/tasmotaadmin.png "Tasmota Admin Screenshot")
 
+### Tasmota Compiler
+
+!["tasmotacompiler"](./.media/tasmotaacompiler.png "Tasmota Compiler Screenshot")
+
 ### Homebridge
 
 !["homebridge"](./.media/homebridge.png "Homebridge Screenshot")
