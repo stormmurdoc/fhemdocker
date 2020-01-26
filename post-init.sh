@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 #
-# $Id: template.sh,v 1.1 2019/11/15 08:34:48 murdoc Exp $
-#
 # This script will be run at the very end of the initialization
 # of the new container, also after your local FHEM configuration
 # was checked and adjusted for compatibility with the container.
@@ -11,7 +9,7 @@
 # to the environment that need to be done only once for the
 # lifetime of that container.
 #
-# Author: patrick@kirchhoffs.de
+# Author: murdoc@storm-clan.de
 #
 # Configuration file: none
 #
