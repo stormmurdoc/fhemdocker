@@ -49,6 +49,12 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
       docker-compose up
 
+## Container
+
+### Tasmota Admin
+
+!["tasmotaadmin"](./.media/tasmotaadmin.png "Tasmota Admin Screenshot")
+
 ### ctop
 
 #### Description
