@@ -1,13 +1,5 @@
 #
-# $Id: .bashrc,v 1.4 2015/05/15 18:48:03 murdoc Exp $
-#
 # bash profile
-#
-# Author: patrick@kirchhoffs.de
-#
-# Configuration file: none
-#
-# Parameters: none
 #
 
 # If not running interactively, don't do anything
@@ -38,6 +30,7 @@ xterm-color)
     ;;
 esac
 
+PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 # Comment in the above and uncomment this below for a color prompt
 #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
@@ -79,7 +72,3 @@ if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
 fi
 
-#load user .profile
-if [ -f ~/.profile ]; then
-    . ~/.profile
-fi

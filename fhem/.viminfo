@@ -10,13 +10,18 @@
 
 # hlsearch on (H) or off (h):
 ~h
+# Last Search Pattern:
+~Msle0~/\<r\>
+
 # Command Line History (newest to oldest):
 :q
-|2,0,1579969104,,"q"
+|2,0,1580075904,,"q"
 :wq
-|2,0,1579727630,,"wq"
+|2,0,1580075845,,"wq"
 
 # Search String History (newest to oldest):
+? \<r\>
+|2,1,1580075815,,"\\<r\\>"
 
 # Expression History (newest to oldest):
 
@@ -25,52 +30,269 @@
 # Debug Line History (newest to oldest):
 
 # Registers:
+"0	LINE	0
+	[[ -r ~/.alias ]] && source ~/.alias
+|3,0,0,1,1,0,1580075811,"[[ -r ~/.alias ]] && source ~/.alias"
+""1	LINE	0
+	fi
+|3,1,1,1,1,0,1580075843,"fi"
+"2	LINE	0
+	    . ~/.profile
+|3,0,2,1,1,0,1580075842,"    . ~/.profile"
+"3	LINE	0
+	if [ -f ~/.profile ]; then
+|3,0,3,1,1,0,1580075842,"if [ -f ~/.profile ]; then"
+"4	LINE	0
+	#load user .profile
+|3,0,4,1,1,0,1580075841,"#load user .profile"
+"-	CHAR	0
+	alias
+|3,0,36,0,1,0,1580075833,"alias"
 
 # File marks:
-'0  2  1423  ~/.ssh/authorized_keys
-|4,48,2,1423,1579969104,"~/.ssh/authorized_keys"
-'1  1  0  /docker/entry.sh
-|4,49,1,0,1579727698,"/docker/entry.sh"
-'2  2  1423  ~/.ssh/authorized_keys
-|4,50,2,1423,1579727630,"~/.ssh/authorized_keys"
-'3  1  0  /home/murdoc/.ssh/known_hosts
-|4,51,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
+'0  1  0  /home/murdoc/.ssh/known_hosts
+|4,48,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+'1  1  0  /home/murdoc/.ssh/known_hosts
+|4,49,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+'2  74  0  ~/.bashrc
+|4,50,74,0,1580075845,"~/.bashrc"
+'3  14  37  ~/.profile
+|4,51,14,37,1580075835,"~/.profile"
+'4  1  0  ~/.profile
+|4,52,1,0,1580075801,"~/.profile"
+'5  1  0  ~/.profile
+|4,53,1,0,1580075801,"~/.profile"
+'6  2  1423  ~/.ssh/authorized_keys
+|4,54,2,1423,1579969104,"~/.ssh/authorized_keys"
+'7  1  0  /docker/entry.sh
+|4,55,1,0,1579727698,"/docker/entry.sh"
+'8  2  1423  ~/.ssh/authorized_keys
+|4,56,2,1423,1579727630,"~/.ssh/authorized_keys"
+'9  1  0  /home/murdoc/.ssh/known_hosts
+|4,57,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
 
 # Jumplist (newest first):
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  74  0  ~/.bashrc
+|4,39,74,0,1580075845,"~/.bashrc"
+-'  74  0  ~/.bashrc
+|4,39,74,0,1580075845,"~/.bashrc"
+-'  74  0  ~/.bashrc
+|4,39,74,0,1580075845,"~/.bashrc"
+-'  74  0  ~/.bashrc
+|4,39,74,0,1580075845,"~/.bashrc"
+-'  1  0  ~/.bashrc
+|4,39,1,0,1580075840,"~/.bashrc"
+-'  1  0  ~/.bashrc
+|4,39,1,0,1580075840,"~/.bashrc"
+-'  1  0  ~/.bashrc
+|4,39,1,0,1580075840,"~/.bashrc"
+-'  1  0  ~/.bashrc
+|4,39,1,0,1580075840,"~/.bashrc"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  14  37  ~/.profile
+|4,39,14,37,1580075835,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075808,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  1  0  ~/.profile
+|4,39,1,0,1580075801,"~/.profile"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
+-'  2  1423  ~/.ssh/authorized_keys
+|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
 -'  2  1423  ~/.ssh/authorized_keys
 |4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
 -'  1  0  /docker/entry.sh
 |4,39,1,0,1579727698,"/docker/entry.sh"
 -'  1  0  /docker/entry.sh
 |4,39,1,0,1579727698,"/docker/entry.sh"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579727630,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579727630,"~/.ssh/authorized_keys"
--'  1  0  ~/.ssh/authorized_keys
-|4,39,1,0,1579727613,"~/.ssh/authorized_keys"
--'  1  0  ~/.ssh/authorized_keys
-|4,39,1,0,1579727613,"~/.ssh/authorized_keys"
--'  1  0  ~/.ssh/authorized_keys
-|4,39,1,0,1579727613,"~/.ssh/authorized_keys"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
--'  1  0  /home/murdoc/.ssh/known_hosts
-|4,39,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /docker/entry.sh
+|4,39,1,0,1579727698,"/docker/entry.sh"
 
 # History of marks within files (newest to oldest):
+
+> /home/murdoc/.ssh/known_hosts
+	*	1580075903	0
+	"	1	0
+
+> ~/.bashrc
+	*	1580075844	0
+	"	74	0
+	.	75	0
+	+	75	0
+
+> ~/.profile
+	*	1580075835	0
+	"	14	37
+	^	14	38
+	.	14	37
+	+	14	0
+	+	13	0
+	+	14	37
 
 > ~/.ssh/authorized_keys
 	*	1579969103	0
@@ -82,8 +304,4 @@
 
 > /docker/entry.sh
 	*	1579727697	0
-	"	1	0
-
-> /home/murdoc/.ssh/known_hosts
-	*	1579727558	0
 	"	1	0
