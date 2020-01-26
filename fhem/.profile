@@ -8,3 +8,7 @@
 #
 set -o vi
 
+#
+# bashrc sourcing
+#
+[[ -r ~/.bashrc ]] && source ~/.bashrc
