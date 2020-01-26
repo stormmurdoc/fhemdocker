@@ -44,6 +44,10 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
       sudo apt-get install python-pip
       sudo pip install docker-compose
 
+### Start all container
+
+      docker-compose up
+
 ### ctop
 
 #### Description
