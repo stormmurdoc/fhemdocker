@@ -8,6 +8,7 @@
 /fhem/log/*
 /fhem/restoreDir/*
 /fhem/.ssh/*
+/fhem/.bash_history
 /mysql/data/*
 /mosquitto/log/*
 /mosquitto/data/*
