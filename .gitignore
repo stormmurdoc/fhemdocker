@@ -15,3 +15,7 @@
 /homebridge/accessories/*
 /homebridge/persist/*
 /homebridge/config.json
+/tasmotaadmin/data/tasmoadmin/devices.csv
+/tasmotaadmin/data/tasmoadmin/MyConfig.json
+
+
