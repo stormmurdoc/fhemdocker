@@ -5,7 +5,6 @@
 + docker
 + docker-compose
 
-
 ## Installation raspberrypi
 
 ### System Update
@@ -20,7 +19,6 @@
 ### Intall additional packages
 
       sudo apt-get install wget git apt-transport-https vim telnet
-
 
 ### Install docker
 
@@ -50,3 +48,8 @@ ctop is a commandline monitoring tool for linux containers
 #### Installation
 
 ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can install it using AUR helpers, such as YaY, in Arch Linux and its variants such as Antergos and Manjaro Linux.
+
+#### Installation Linux
+
+      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-amd64 -O /usr/local/bin/ctop
+      sudo chmod +x /usr/local/bin/ctop
