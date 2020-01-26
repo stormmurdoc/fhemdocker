@@ -1,0 +1,11 @@
+#
+# FHEM
+#
+alias fhem="rlwrap telnet localhost 7072"
+
+#
+# Basic aliases
+#
+alias ll="ls -lart"
+alias l="ls -l"
+
