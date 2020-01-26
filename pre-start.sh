@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 #
-# $Id: template.sh,v 1.1 2019/11/15 08:34:48 murdoc Exp $
-#
 # This script will be run every time the container starts,
 # even before the FHEM Docker Image's own startup preparations.
 # FHEM will not yet be running at this point in time.
 #
-# Author: patrick@kirchhoffs.de
+# Author: murdoc@storm-clan.de
 #
 # Configuration file: none
 #
