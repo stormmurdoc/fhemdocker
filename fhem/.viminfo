@@ -5,7 +5,7 @@
 |1,4
 
 # Value of 'encoding' when this file was written
-*encoding=latin1
+*encoding=utf-8
 
 
 # hlsearch on (H) or off (h):
@@ -15,7 +15,9 @@
 
 # Command Line History (newest to oldest):
 :q
-|2,0,1580075904,,"q"
+|2,0,1580076671,,"q"
+:q!
+|2,0,1580076630,,"q!"
 :wq
 |2,0,1580075845,,"wq"
 
@@ -34,246 +36,279 @@
 	[[ -r ~/.alias ]] && source ~/.alias
 |3,0,0,1,1,0,1580075811,"[[ -r ~/.alias ]] && source ~/.alias"
 ""1	LINE	0
-	fi
-|3,1,1,1,1,0,1580075843,"fi"
+	2 HA_Kalender_3 state: error (data not in ICal format; even not gzip data)
+|3,1,1,1,1,0,1580076627,"2 HA_Kalender_3 state: error (data not in ICal format; even not gzip data)"
 "2	LINE	0
-	    . ~/.profile
-|3,0,2,1,1,0,1580075842,"    . ~/.profile"
+	4 HA_Kalender_3 nextWakeup: .*
+|3,0,2,1,1,0,1580076627,"4 HA_Kalender_3 nextWakeup: .*"
 "3	LINE	0
-	if [ -f ~/.profile ]; then
-|3,0,3,1,1,0,1580075842,"if [ -f ~/.profile ]; then"
+	1 HA_Kalender_3 modeUpcoming:
+|3,0,3,1,1,0,1580076627,"1 HA_Kalender_3 modeUpcoming:"
 "4	LINE	0
-	#load user .profile
-|3,0,4,1,1,0,1580075841,"#load user .profile"
+	1 HA_Kalender_3 modeStarted:
+|3,0,4,1,1,0,1580076627,"1 HA_Kalender_3 modeStarted:"
+"5	LINE	0
+	1 HA_Kalender_3 modeStart:
+|3,0,5,1,1,0,1580076627,"1 HA_Kalender_3 modeStart:"
+"6	LINE	0
+	1 HA_Kalender_3 modeEnded:
+|3,0,6,1,1,0,1580076627,"1 HA_Kalender_3 modeEnded:"
+"7	LINE	0
+	1 HA_Kalender_3 modeEnd:
+|3,0,7,1,1,0,1580076627,"1 HA_Kalender_3 modeEnd:"
+"8	LINE	0
+	1 HA_Kalender_3 modeChanged:
+|3,0,8,1,1,0,1580076627,"1 HA_Kalender_3 modeChanged:"
+"9	LINE	0
+	1 HA_Kalender_3 modeAlarmed:
+|3,0,9,1,1,0,1580076627,"1 HA_Kalender_3 modeAlarmed:"
 "-	CHAR	0
 	alias
 |3,0,36,0,1,0,1580075833,"alias"
 
 # File marks:
-'0  1  0  /home/murdoc/.ssh/known_hosts
-|4,48,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
-'1  1  0  /home/murdoc/.ssh/known_hosts
-|4,49,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
-'2  74  0  ~/.bashrc
-|4,50,74,0,1580075845,"~/.bashrc"
-'3  14  37  ~/.profile
-|4,51,14,37,1580075835,"~/.profile"
-'4  1  0  ~/.profile
-|4,52,1,0,1580075801,"~/.profile"
-'5  1  0  ~/.profile
-|4,53,1,0,1580075801,"~/.profile"
-'6  2  1423  ~/.ssh/authorized_keys
-|4,54,2,1423,1579969104,"~/.ssh/authorized_keys"
-'7  1  0  /docker/entry.sh
-|4,55,1,0,1579727698,"/docker/entry.sh"
-'8  2  1423  ~/.ssh/authorized_keys
-|4,56,2,1423,1579727630,"~/.ssh/authorized_keys"
-'9  1  0  /home/murdoc/.ssh/known_hosts
-|4,57,1,0,1579727560,"/home/murdoc/.ssh/known_hosts"
+'0  216  0  ~/fhem.pl
+|4,48,216,0,1580076671,"~/fhem.pl"
+'1  132  0  ~/configDB.pm
+|4,49,132,0,1580076660,"~/configDB.pm"
+'2  1  0  ~/configDB.pm
+|4,50,1,0,1580076645,"~/configDB.pm"
+'3  1  0  ~/configDB.pm
+|4,51,1,0,1580076645,"~/configDB.pm"
+'4  171  0  ~/log/fhem.save
+|4,52,171,0,1580076638,"~/log/fhem.save"
+'5  1  0  ~/log/eventTypes.txt
+|4,53,1,0,1580076630,"~/log/eventTypes.txt"
+'6  1  0  /home/murdoc/.ssh/known_hosts
+|4,54,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+'7  1  0  /home/murdoc/.ssh/known_hosts
+|4,55,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+'8  74  0  ~/.bashrc
+|4,56,74,0,1580075845,"~/.bashrc"
+'9  14  37  ~/.profile
+|4,57,14,37,1580075835,"~/.profile"
 
 # Jumplist (newest first):
+-'  216  0  ~/fhem.pl
+|4,39,216,0,1580076671,"~/fhem.pl"
+-'  1  0  ~/fhem.pl
+|4,39,1,0,1580076663,"~/fhem.pl"
+-'  132  0  ~/configDB.pm
+|4,39,132,0,1580076660,"~/configDB.pm"
+-'  132  0  ~/configDB.pm
+|4,39,132,0,1580076660,"~/configDB.pm"
+-'  1  0  ~/configDB.pm
+|4,39,1,0,1580076650,"~/configDB.pm"
+-'  1  0  ~/configDB.pm
+|4,39,1,0,1580076650,"~/configDB.pm"
+-'  1  0  ~/configDB.pm
+|4,39,1,0,1580076645,"~/configDB.pm"
+-'  1  0  ~/configDB.pm
+|4,39,1,0,1580076645,"~/configDB.pm"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  171  0  ~/log/fhem.save
+|4,39,171,0,1580076638,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/fhem.save
+|4,39,1,0,1580076634,"~/log/fhem.save"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  ~/log/eventTypes.txt
+|4,39,1,0,1580076630,"~/log/eventTypes.txt"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
 -'  1  0  /home/murdoc/.ssh/known_hosts
 |4,39,1,0,1580075904,"/home/murdoc/.ssh/known_hosts"
 -'  1  0  /home/murdoc/.ssh/known_hosts
 |4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
--'  74  0  ~/.bashrc
-|4,39,74,0,1580075845,"~/.bashrc"
--'  74  0  ~/.bashrc
-|4,39,74,0,1580075845,"~/.bashrc"
--'  74  0  ~/.bashrc
-|4,39,74,0,1580075845,"~/.bashrc"
--'  74  0  ~/.bashrc
-|4,39,74,0,1580075845,"~/.bashrc"
--'  1  0  ~/.bashrc
-|4,39,1,0,1580075840,"~/.bashrc"
--'  1  0  ~/.bashrc
-|4,39,1,0,1580075840,"~/.bashrc"
--'  1  0  ~/.bashrc
-|4,39,1,0,1580075840,"~/.bashrc"
--'  1  0  ~/.bashrc
-|4,39,1,0,1580075840,"~/.bashrc"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  14  37  ~/.profile
-|4,39,14,37,1580075835,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075808,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  1  0  ~/.profile
-|4,39,1,0,1580075801,"~/.profile"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  2  1423  ~/.ssh/authorized_keys
-|4,39,2,1423,1579969104,"~/.ssh/authorized_keys"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
--'  1  0  /docker/entry.sh
-|4,39,1,0,1579727698,"/docker/entry.sh"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
+-'  1  0  /home/murdoc/.ssh/known_hosts
+|4,39,1,0,1580075900,"/home/murdoc/.ssh/known_hosts"
 
 # History of marks within files (newest to oldest):
+
+> ~/fhem.pl
+	*	1580076669	0
+	"	216	0
+
+> ~/configDB.pm
+	*	1580076654	0
+	"	132	0
+
+> ~/log/fhem.save
+	*	1580076637	0
+	"	171	0
+
+> ~/log/eventTypes.txt
+	*	1580076629	0
+	"	1	0
+	.	1	0
+	+	1	0
 
 > /home/murdoc/.ssh/known_hosts
 	*	1580075903	0
