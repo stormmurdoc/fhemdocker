@@ -63,6 +63,10 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 !["homebridge"](./.media/homebridge.png "Homebridge Screenshot")
 
+### Portainer
+
+!["portainer"](./.media/portainer.png "Portainer Screenshot")
+
 
 ## ctop
 
