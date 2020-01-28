@@ -1,7 +1,7 @@
 {
     "bridge": {
         "name": "Homebridge Host raspberrypi4",
-        "username": "0E:16:7D:92:A3:40",
+        "username": "0E:16:7D:92:A3:79",
         "port": 52019,
         "pin": "031-45-164"
     },
