@@ -1,9 +1,9 @@
 {
     "bridge": {
-        "name": "Homebridge Host Morhpeus",
-        "username": "0E:16:7D:92:A3:50",
+        "name": "Homebridge Host raspberrypi4",
+        "username": "0E:16:7D:92:A3:40",
         "port": 52019,
-        "pin": "031-45-160"
+        "pin": "031-45-164"
     },
     "accessories": [],
     "platforms": [

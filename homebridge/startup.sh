@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Docker Homebridge Custom Startup Script - oznu/homebridge
