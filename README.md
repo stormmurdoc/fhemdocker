@@ -15,11 +15,47 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 ## Installation raspberrypi
 
+### Raspian Download
+
+Download the image of your choise: [Raspian Download](https://www.raspberrypi.org/downloads/raspbian/)
+Unzip the image and install it with:
+
+      sudo dd bs=4M if=2019-09-26-raspbian-buster-full.img of=/dev/mmcblk0 conv=fsync
+      sync
+
+Eject the card and insert it again to mount the filesystems boot & rootfs.
+Touch a blank file ssh to enable sshd daemon on first boot.
+
+      sudo touch /media/boot/ssh
+      sync
+      umount /media/boot
+      umount /medua/rootfs
+
+Eject the card and insert into your raspberrpi. After that power on the rpi and login with
+the known user __pi__ and password __raspberry__.
+
+      ssh pi@raspberrypi4
+
+Change your password with the command
+
+      pi@raspberrypi:~ $ passwd
+      Changing password for pi.
+      Current password:
+      New password:
+      Retype new password:
+      passwd: password updated successfully
+      pi@raspberrypi:~ $
+
+
+
 ### System Update
       sudo apt-get update
-      sudo apt-get upgrade
+      sudo apt-get dist-upgrade
 
 ### Raspberry Config
+
+1) Expand the root filesystem (A1 / Advanced Options)
+2) Update raspi-config
 
       sudo raspi-config
       sudo reboot
@@ -28,25 +64,22 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
       sudo apt-get install wget git apt-transport-https vim telnet
 
-### Install docker
+### Install docker & docker-compose
 
-      curl -sSL https://get.docker.com | sh
-      sudo systemctl enable docker
-      sudo systemctl start docker
+After installation put your user pi into the docker group.
+
+      #curl -sSL https://get.docker.com | sh
+      #sudo systemctl enable docker
+      #sudo systemctl start docker
+      sudo apt-get install docker docker-compose
       sudo usermod -aG docker pi
+      sudo reboot
 
-### git repository export
+### git repository export and start all container
+
       cd
       git clone https://github.com/stormmurdoc/fhemdocker.git
       cd fhemdocker
-
-### Installation docker compose
-
-      sudo apt-get install python-pip
-      sudo pip install docker-compose
-
-### Start all container
-
       docker-compose up
 
 ## Container
@@ -82,5 +115,10 @@ ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can
 
 ### Installation Linux
 
+#### x86 Platform
       sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-amd64 -O /usr/local/bin/ctop
+      sudo chmod +x /usr/local/bin/ctop
+
+#### arm Platform
+      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-arm -O /usr/local/bin/ctop
       sudo chmod +x /usr/local/bin/ctop
