@@ -27,7 +27,7 @@
 #
 #  Homepage:  http://fhem.de
 #
-# $Id: fhem.pl 21044 2020-01-24 17:56:00Z rudolfkoenig $
+# $Id: fhem.pl 21056 2020-01-26 13:01:53Z rudolfkoenig $
 
 
 use strict;
@@ -280,7 +280,7 @@ use constant {
 };
 
 $selectTimestamp = gettimeofday();
-$cvsid = '$Id: fhem.pl 21044 2020-01-24 17:56:00Z rudolfkoenig $';
+$cvsid = '$Id: fhem.pl 21056 2020-01-26 13:01:53Z rudolfkoenig $';
 
 my $AttrList = "alias comment:textField-long eventMap:textField-long ".
                "group room suppressReading userReadings:textField-long ".
@@ -307,7 +307,7 @@ my %fuuidHash;                  # for duplicate checking
 $init_done = 0;
 $lastDefChange = 0;
 $readytimeout = ($^O eq "MSWin32") ? 0.1 : 5.0;
-$featurelevel = 5.9; # see also GlobalAttr
+$featurelevel = 6.0; # see also GlobalAttr
 
 
 $modules{Global}{ORDER} = -1;
@@ -2751,7 +2751,7 @@ GlobalAttr($$$$)
   if($type eq "del") {
     my %noDel = ( modpath=>1, verbose=>1, logfile=>1, configfile=>1 );
     return "The global attribute $name cannot be deleted" if($noDel{$name});
-    $featurelevel = 5.9 if($name eq "featurelevel");
+    $featurelevel = 6.0 if($name eq "featurelevel");
     $haveInet6    = 0   if($name eq "useInet6"); # IPv6
     delete($defs{global}{ignoreRegexpObj}) if($name eq "ignoreRegexp");
     return undef;

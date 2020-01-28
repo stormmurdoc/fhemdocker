@@ -1,7 +1,7 @@
 ##############################################
 ##############################################
 # CUL HomeMatic handler
-# $Id: 10_CUL_HM.pm 20954 2020-01-12 14:16:59Z martinp876 $
+# $Id: 10_CUL_HM.pm 21055 2020-01-26 09:02:21Z martinp876 $
 
 package main;
 
@@ -3087,7 +3087,7 @@ sub CUL_HM_parseCommon(@){#####################################################
   if($rxt & 0x10 && $devHlpr->{prt}{sleeping}){ # lazy config
     if($mhp->{mFlgH} & 0x02                  #wakeup device
        && $defs{$mhp->{devH}{IODev}{NAME}}{TYPE} =~ m/^(HMLAN|HMUARTLGW)$/){
-      $devHlpr->{io}{newCh} = 1 if ($devHlpr->{prt}{sProc} == 2);
+      $devHlpr->{io}{newChn} = 1 if ($devHlpr->{prt}{sProc} == 2);
       CUL_HM_appFromQ($mhp->{devN},"cf");# stack cmds if waiting
       $devHlpr->{prt}{sleeping} = 0;
       CUL_HM_ProcessCmdStack($mhp->{devH});
