@@ -31,6 +31,7 @@ attr WEB confirmJSError 0
 attr WEB editConfig 1
 attr WEB plotWeekStartDay 1
 attr WEB reverseLogs 1
+attr WEB room System->FHEM
 attr WEB styleData {\
  "f18": {\
   "Pinned.menu": "true",\
@@ -52,17 +53,21 @@ attr WEB title { if ($FW_room) { "FHEM: $FW_room" } elsif ($FW_detail) { "FHEM: 
 # Fake FileLog entry, to access the fhem log from FHEMWEB 
 define Logfile FileLog ./log/fhem-%Y-%m.log fakelog
 setuuid Logfile 5e247dcd-f33f-b3b0-5362-0574add78947135a
+attr Logfile room System->FHEM
 
 define autocreate autocreate
 setuuid autocreate 5e247dcd-f33f-b3b0-3e69-88d89aa2b895579c
 attr autocreate filelog ./log/%NAME-%Y.log
+attr autocreate room System->FHEM
 
 define eventTypes eventTypes ./log/eventTypes.txt
 setuuid eventTypes 5e247dcd-f33f-b3b0-b7f2-db20f082ca1f7e31
+attr eventTypes room System->FHEM
 
 # Disable this to avoid looking for new USB devices on startup
 define initialUsbCheck notify global:INITIALIZED usb create
 setuuid initialUsbCheck 5e247dcd-f33f-b3b0-1712-b054baaf3f2cacb2
+attr initialUsbCheck room System->FHEM
 define DockerImageInfo DockerImageInfo
 setuuid DockerImageInfo 5e247dcd-f33f-b3b0-f055-3774503f1b7d991f
 attr DockerImageInfo alias Docker Image Info
@@ -93,6 +98,7 @@ attr fhemInstaller icon system_fhem
 attr fhemInstaller room System->Dienste
 define telnetPort telnet 7072
 setuuid telnetPort 5e247dcd-f33f-b3b0-a296-7411c4d6fc67c6ea
+attr telnetPort room System->FHEM
 define dummy dummy
 setuuid dummy 5e24a574-f33f-b3b0-f070-5a0947796fce6717
 attr dummy alias Schalter
