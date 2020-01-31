@@ -49,8 +49,14 @@ Change your password with the command
 
 
 ### System Update
+
       sudo apt-get update
       sudo apt-get dist-upgrade
+
+
+### Set timezone
+
+      sudo dpkg-reconfigure tzdata
 
 ### Raspberry Config
 
