@@ -70,6 +70,9 @@ Change your password with the command
 
       sudo apt-get install wget git apt-transport-https vim telnet zsh zsh-autosuggestions zsh-syntax-highlighting
 
+### Install oh-my-zsh
+
+      sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ### Install docker & docker-compose
 
 After installation put your user pi into the docker group.
