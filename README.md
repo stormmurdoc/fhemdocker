@@ -84,6 +84,16 @@ Change your password with the command
 ### Setup ssh key for user
       ssh-keygen -t rsa -b 8192
 
+### Install .ssh/config file to ignore strictHostKeyChecking
+
+      vi ~/.ssh/config
+
+      Host fhemlocalhost
+      Hostname localhost
+      Port 222
+      User fhem
+      StrictHostKeyChecking no
+
 ### Install docker & docker-compose
 
 After installation put your user pi into the docker group.
