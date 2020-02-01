@@ -81,6 +81,9 @@ Change your password with the command
       apt update
       apt install log2ram
 
+### Setup ssh key for user
+      ssh-keygen -t rsa -b 8192
+
 ### Install docker & docker-compose
 
 After installation put your user pi into the docker group.
