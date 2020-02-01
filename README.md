@@ -73,6 +73,14 @@ Change your password with the command
 ### Install oh-my-zsh
 
       sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+### Install log2ram (/var/log 2 ram)
+
+      echo "deb http://packages.azlux.fr/debian/ buster main" | sudo tee /etc/apt/sources.list.d/azlux.list
+      wget -qO - https://azlux.fr/repo.gpg.key | sudo apt-key add -
+      apt update
+      apt install log2ram
+
 ### Install docker & docker-compose
 
 After installation put your user pi into the docker group.
