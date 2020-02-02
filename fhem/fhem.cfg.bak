@@ -5,12 +5,12 @@ attr global commandref modular
 attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
-attr global motd SecurityCheck:\
-  telnetPort is not password protected\
-  WEB is not password protected\
+attr global motd Messages collected while initializing FHEM:\
+./log/fhem.save: Please define c_sonnenschutzaus first\
+Please define c_sonnenschutzein first\
+Please define c_tuerauf first\
 \
-Protect this FHEM installation by defining an allowed device with define allowed allowed\
-You can disable this message with attr global motd none
+Autosave deactivated
 attr global mseclog 1
 attr global nofork 0
 attr global nrarchive 0
@@ -571,11 +571,6 @@ attr c_play verbose 3
 #########################################################################
 # Alias starten der Synchronisation
 #########################################################################
-define c_startsync cmdalias startsync AS set sync_server on
-setuuid c_startsync 5c445b5c-f33f-cbb9-a18e-501b4b12b0f4638f
-attr c_startsync genericDeviceType ignore
-attr c_startsync room System->cmdAlias
-attr c_startsync verbose 3
 
 #########################################################################
 # Alias zum Fernsehen gucken
