@@ -6,9 +6,7 @@ attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
 attr global motd Messages collected while initializing FHEM:\
-./log/fhem.save: Please define c_sonnenschutzaus first\
-Please define c_sonnenschutzein first\
-Please define c_tuerauf first\
+./log/fhem.save: Please define c_startsync first\
 \
 Autosave deactivated
 attr global mseclog 1
