@@ -162,8 +162,6 @@ services:
          - 443:443
      networks:
          - fhem-network
-     depends_on:
-         - "fhem"
 
 volumes:
   portainer_data:
