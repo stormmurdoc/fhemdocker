@@ -6,8 +6,8 @@ attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
 attr global motd SecurityCheck:\
-  telnetPort is not password protected\
   WEB is not password protected\
+  telnetPort is not password protected\
 \
 Protect this FHEM installation by defining an allowed device with define allowed allowed\
 You can disable this message with attr global motd none
@@ -299,11 +299,6 @@ attr c_say verbose 3
 #########################################################################
 # Alias hoch
 #########################################################################
-define c_hoch cmdalias runter AS {rollos_runter;;}
-setuuid c_hoch 5c445b5a-f33f-cbb9-c9c3-1017661dade2a537
-attr c_hoch genericDeviceType ignore
-attr c_hoch room System->cmdAlias
-attr c_hoch verbose 3
 
 #########################################################################
 # Alias runter
@@ -398,11 +393,6 @@ attr c_sonnenschutzaus verbose 3
 #########################################################################
 # Alias infolicht
 #########################################################################
-define c_infolicht cmdalias infolicht AS set deCONZ_Alle_Lichter alert lselect
-setuuid c_infolicht 5c445b5a-f33f-cbb9-20e9-4643f77e8e5eb570
-attr c_infolicht genericDeviceType ignore
-attr c_infolicht room System->cmdAlias
-attr c_infolicht verbose 3
 
 #########################################################################
 # Alias lauter
@@ -488,11 +478,6 @@ attr c_ac verbose 3
 #########################################################################
 # AVR restart function (due to the fact that my receiver fucked up)
 #########################################################################
-define c_avrrestart cmdalias avrrestart AS set EG.WZ.AVR off;;sleep 4;;set EG.WZ.AVR on;;sleep 4;;set EG.WZ.AVR volume 67
-setuuid c_avrrestart 5c445b5a-f33f-cbb9-64dd-3c2c63dd375329dc
-attr c_avrrestart genericDeviceType ignore
-attr c_avrrestart room System->cmdAlias
-attr c_avrrestart verbose 3
 
 #########################################################################
 # TV einen Kanal hochschalten
@@ -650,11 +635,6 @@ attr c_startsync verbose 3
 #########################################################################
 # Alias zum Fernsehen gucken
 #########################################################################
-define c_fernsehen cmdalias fernsehen AS set ls_Multimedia scene TV
-setuuid c_fernsehen 5c445b5c-f33f-cbb9-5889-0ff7441a9edc0101
-attr c_fernsehen genericDeviceType ignore
-attr c_fernsehen room System->cmdAlias
-attr c_fernsehen verbose 3
 
 #########################################################################
 # Alias zum KODI gucken
@@ -677,11 +657,6 @@ attr c_vor verbose 3
 #########################################################################
 # Alias KODI zurück
 #########################################################################
-define c_zurueck cmdalias zurueck AS set wz_KODI prev all
-setuuid c_zurueck 5c445b5c-f33f-cbb9-0eef-b117644ac51491ac
-attr c_zurueck genericDeviceType ignore
-attr c_zurueck room System->cmdAlias
-attr c_zurueck verbose 3
 
 #########################################################################
 # Alias zum ansagen der Uhrzeit
@@ -722,11 +697,6 @@ attr c_mqsend verbose 3
 #########################################################################
 # Alias zum setzen der Lichtszene im Arbeitszimmer
 #########################################################################
-define c_arbeitszimmer cmdalias arbeitszimmer AS set ls_Arbeitszimmer scene '$EVENT'
-setuuid c_arbeitszimmer 5c445b5e-f33f-cbb9-c965-c821063d4917ef0b
-attr c_arbeitszimmer genericDeviceType ignore
-attr c_arbeitszimmer room System->cmdAlias
-attr c_arbeitszimmer verbose 3
 
 #########################################################################
 # Alias einschalten des Fernsehers
