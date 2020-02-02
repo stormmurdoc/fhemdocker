@@ -1,0 +1,74 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+
+   server {
+       listen 80;
+       return 301 https://$host$request_uri;
+   }
+
+   server {
+
+       listen 443;
+       server_name fhem;
+
+       # check user agent
+       if ($http_user_agent ~* '(iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry|Windows Phone)') {
+       set $ua_type "@mobile";
+       }
+
+       ssl_certificate           /etc/nginx/cert.crt;
+       ssl_certificate_key       /etc/nginx/cert.key;
+
+       ssl on;
+       ssl_session_cache  builtin:1000  shared:SSL:10m;
+       ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+       ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+       ssl_prefer_server_ciphers on;
+
+       #access_log            /var/log/nginx/fhem.access.log;
+
+       location / {
+
+         proxy_set_header        Host $host;
+         proxy_set_header        X-Real-IP $remote_addr;
+         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_set_header        X-Forwarded-Proto $scheme;
+         proxy_http_version      1.1;
+
+         # Gehe zu FHEMWEB wenn kein mobiler Browser
+         if ($ua_type != "@mobile"){
+             proxy_pass          http://fhem:8083;
+         }
+         # Gehe zu FHEMWEB smallscreen wenn mobiler Browser
+         if ($ua_type = "@mobile"){
+             proxy_pass          http://fhem:8084;
+         }
+         proxy_read_timeout  90;
+         #proxy_read_timeout  20736000;
+         #proxy_buffering     off;
+
+         # User Sickboy's Erweiterung für verschlüsselte Websocket-Kommunikation (siehe Diskussionsseite)
+         # Für normale Benutzer derzeit kommentiert, vom Autor Andremotz noch bisher ungetestet
+         #  ... daher derzeit auskommentiert
+         # Wird für 'longpoll' benötigt (z.B. bei FTUI)
+         set $my_http_upgrade "";
+         set $my_connection "Connection";
+
+         if ($http_upgrade = "websocket") {
+           set $my_http_upgrade $http_upgrade;
+           set $my_connection "upgrade";
+         }
+
+         proxy_set_header Upgrade $my_http_upgrade;
+         proxy_set_header Connection $my_connection;
+
+         #auth_basic "Restricted Content";
+         #auth_basic_user_file /etc/nginx/.htpasswd;
+
+         # proxy_redirect      http://localhost:8083 https://localhost;
+       }
+     }
+}
