@@ -7,6 +7,7 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 + [deCONZ Image](https://hub.docker.com/r/marthoc/deconz/) Container Integration
 + DBLog Integration
++ Boot config Raspberrypi for Homematic modul
 
 ## Requirements
 
