@@ -112,6 +112,11 @@ After installation put your user pi into the docker group.
       cd fhemdocker
       docker-compose up
 
+### Access the application
+
+#### FHEM
+      http://localhost:80
+
 ## Container
 
 ### Tasmota Admin
