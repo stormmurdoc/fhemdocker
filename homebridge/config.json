@@ -10,7 +10,7 @@
         {
             "platform": "FHEM",
             "name": "FHEM",
-            "server": "127.0.0.1",
+            "server": "127.1.1.1",
             "port": "80",
             "filter": "room=Homekit"
         }

@@ -2,6 +2,7 @@ version: '3'
 
 services:
    broker:
+     container_name: fhem_mqtt
      restart: always
      image: eclipse-mosquitto:latest
      volumes:
@@ -18,6 +19,7 @@ services:
 
 
    tasmotaadmin:
+    container_name: fhem_tasmotaadmin
     restart: always
     image: raymondmm/tasmoadmin:latest
     volumes:
@@ -31,6 +33,7 @@ services:
 
 
    tasmocompiler:
+    container_name: fhem_tasmotacompiler
     restart: always
     image: benzino77/tasmocompiler:latest
     ports:
@@ -40,11 +43,11 @@ services:
 
 
    fhem:
+     container_name: fhem_fhem
      image: fhem/fhem:latest
      restart: always
      depends_on:
         - broker
-        - reverseproxy
 
      #devices:
      # -{usbport}:/dev/usb1
@@ -94,6 +97,7 @@ services:
 
 
    portainer:
+     container_name: fhem_portainer
      image: portainer/portainer:latest
      restart: always
      depends_on:
@@ -116,6 +120,7 @@ services:
          - fhem-network
 
    adminer:
+     container_name: fhem_adminer
      image: adminer:latest
      restart: always
      depends_on:
@@ -132,12 +137,14 @@ services:
 
 
    homebridge:
+     container_name: fhem_homebridge
      image: oznu/homebridge:latest
      restart: always
      environment:
       - TZ=Europe/Berlin
      depends_on:
       - fhem
+      - reverseproxy
      network_mode: host
      environment:
       - TZ=Europe/Berlin
@@ -147,10 +154,9 @@ services:
       - HOMEBRIDGE_CONFIG_UI_PORT=8080
      volumes:
        - "./homebridge:/homebridge"
-     depends_on:
-       - reverseproxy
 
    reverseproxy:
+     container_name: fhem_nginx
      restart: always
      image: nginx:latest
      volumes:
@@ -162,6 +168,9 @@ services:
          - 443:443
      networks:
          - fhem-network
+     depends_on:
+        - fhem
+
 
 volumes:
   portainer_data:

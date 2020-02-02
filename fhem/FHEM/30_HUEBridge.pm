@@ -1,5 +1,5 @@
 
-# $Id: 30_HUEBridge.pm 21062 2020-01-27 08:43:44Z justme1968 $
+# $Id: 30_HUEBridge.pm 21079 2020-01-30 16:12:23Z justme1968 $
 
 # "Hue Personal Wireless Lighting" is a trademark owned by Koninklijke Philips Electronics N.V.,
 # see www.meethue.com for more information.
@@ -19,6 +19,8 @@ use Data::Dumper;
 use HttpUtils;
 
 use IO::Socket::INET;
+
+require "$attr{global}{modpath}/FHEM/31_HUEDevice.pm";
 
 sub HUEBridge_Initialize($)
 {

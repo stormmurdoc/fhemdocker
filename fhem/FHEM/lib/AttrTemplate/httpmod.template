@@ -1,5 +1,5 @@
 ###########################################
-# $Id: httpmod.template 21038 2020-01-23 09:20:49Z Beta-User $
+# $Id: httpmod.template 21068 2020-01-29 04:45:17Z Beta-User $
 #
 # Comments start with #. Empty lines are ignored.
 # Syntax of one entry: name: line, one optional filter: line, zero or more par: lines,  FHEM-Commands
@@ -492,7 +492,7 @@ attr DEVICE reading02RegOpt g
 attr DEVICE reading02Regex (?si)(.{300})<a.href="\/downloads\/software\/firmware\/hm[^"]+
 attr DEVICE readingMaxAge 10
 attr DEVICE readingMaxAgeReplacementMode delete
-attr DEVICE requestData.* suchbegriff=&quelle=29&suchkategorie=3&themenbereich=1
+attr DEVICE requestData suchbegriff=&quelle=29&suchkategorie=3&themenbereich=1
 attr DEVICE room WHICHROOM
 attr DEVICE showError 1
 attr DEVICE showMatched 1
