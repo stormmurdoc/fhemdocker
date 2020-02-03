@@ -160,3 +160,8 @@ ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can
 #### arm Platform
       sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-arm -O /usr/local/bin/ctop
       sudo chmod +x /usr/local/bin/ctop
+
+## Contributing to fhemdocker
+Contributions are encouraged and welcome!
+
+
