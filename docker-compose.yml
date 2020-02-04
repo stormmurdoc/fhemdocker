@@ -173,7 +173,7 @@ services:
 
    deconz:
      image: marthoc/deconz
-     container_name: deconz
+     container_name: fhem_deconz
      network_mode: host
      restart: always
      volumes:
