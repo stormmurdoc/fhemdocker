@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+.swp
 !.gitkeep
 /fhem/FHEM/FhemUtils/uniqueID
 /fhem/fhem.cfg.bak
