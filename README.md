@@ -5,7 +5,6 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 ## Todo
 
-+ [deCONZ Image](https://hub.docker.com/r/marthoc/deconz/) Container Integration
 + DBLog Integration
 + Boot config Raspberrypi for Homematic modul
 
@@ -139,6 +138,8 @@ After installation put your user pi into the docker group.
 !["portainer"](./.media/portainer.png "Portainer Screenshot")
 
 ### Deconz
+
+[deCONZ Image](https://hub.docker.com/r/marthoc/deconz/) Container Integration
 
 ## Configuring Raspbian for RaspBee
 
