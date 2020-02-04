@@ -171,6 +171,29 @@ services:
      depends_on:
         - fhem
 
+   deconz:
+     image: marthoc/deconz
+     container_name: deconz
+     network_mode: host
+     restart: always
+     volumes:
+       - ./deconz:/root/.local/share/dresden-elektronik/deCONZ
+     devices:
+       - /dev/ttyACM0
+     environment:
+       - TZ=Europe/Berlin
+       - DECONZ_DEVICE=/dev/ttyACM0
+       - DECONZ_WEB_PORT=8090
+       - DECONZ_WS_PORT=8443
+       - DEBUG_INFO=1
+       - DEBUG_APS=0
+       - DEBUG_ZCL=0
+       - DEBUG_ZDP=0
+       - DEBUG_OTAU=0
+         #- DECONZ_VNC_PORT=5900
+         #- DECONZ_VNC_MODE=1
+         #- DECONZ_VNC_PASSWORD=changeme
+       - DECONZ_UPNP=1
 
 volumes:
   portainer_data:
