@@ -145,6 +145,15 @@ services:
      depends_on:
       - fhem
       - reverseproxy
+        command: >
+      /bin/bash -c "
+        while ! nc -z fhem 8083;
+        do
+          echo -+- sleeping - waiting for fhem service -+-;
+          sleep 1;
+        done;
+        echo -+- Connected to fhem - we go on -+-;
+      "
      network_mode: host
      environment:
       - TZ=Europe/Berlin
