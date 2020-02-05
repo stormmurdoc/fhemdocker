@@ -157,6 +157,10 @@ To swap Bluetooth to /dev/S0 (moving RaspBee to /dev/ttyAMA0), run the following
 
 `echo 'dtoverlay=miniuart-bt' | sudo tee -a /boot/config.txt`
 
+This will exchange the UART and the Mini-UART so the Mini-UART is connected to the bluetooth and the UART to the GPIO pins.
+
+On Raspberry Pi 4 verify that file /boot/config.txt does NOT contain a line "enable_uart=0". If the line exists remove or comment (#) this line.
+
 After running the above command and rebooting, RaspBee should be available at /dev/ttyAMA0.
 
 
