@@ -133,17 +133,25 @@ http://localhost:80
 
 !["tasmotaadmin"](./.media/tasmotaadmin.png "Tasmota Admin Screenshot")
 
+[http://localhost:8081](http://localhost:8080 "Weblink Tasmota Admin")
+
 ### Tasmota Compiler
 
 !["tasmotacompiler"](./.media/tasmotacompiler.png "Tasmota Compiler Screenshot")
+
+[http://localhost:8082](http://localhost:8082 "Weblink Tasmota Compiler")
 
 ### Homebridge
 
 !["homebridge"](./.media/homebridge.png "Homebridge Screenshot")
 
+[http://localhost:8080](http://localhost:8080 "Weblink Homebridge")
+
 ### Portainer
 
 !["portainer"](./.media/portainer.png "Portainer Screenshot")
+
+[http://localhost:9000](http://localhost:9000 "Weblink Portainer")
 
 ### Deconz
 
