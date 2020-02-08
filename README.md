@@ -120,7 +120,12 @@ After installation put your user pi into the docker group.
 ### Access the application
 
 #### FHEM
-      http://localhost:80
+
+FHEM tmux session inside the container
+
+!["fhemtmux"](./.media/fhem_tmux.png "FHEM tmux session")
+
+http://localhost:80
 
 ## Container
 
