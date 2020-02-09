@@ -61,6 +61,10 @@ Change your password with the command
 
       sudo dpkg-reconfigure tzdata
 
+### Install ntpd daemon
+
+      sudo apt-get install ntp
+
 ### Raspberry Config
 
 1) Expand the root filesystem (A1 / Advanced Options)
