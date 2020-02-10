@@ -71,7 +71,7 @@ Change your password with the command
 
 ### Intall additional packages
 
-      sudo apt-get install wget git apt-transport-https vim telnet zsh zsh-autosuggestions zsh-syntax-highlighting ntp ksh
+      sudo apt-get install wget git apt-transport-https vim telnet zsh zsh-autosuggestions zsh-syntax-highlighting ntp ksh logwatch
 
 ### Install oh-my-zsh
 
