@@ -102,6 +102,8 @@ Change your password with the command
       Port 222
       User fhem
       StrictHostKeyChecking no
+      UserKnownHostsFile=/dev/null
+
 
 ### Install docker & docker-compose
 
