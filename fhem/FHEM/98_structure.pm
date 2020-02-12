@@ -1,4 +1,4 @@
-# $Id: 98_structure.pm 20453 2019-11-04 12:25:04Z rudolfkoenig $
+# $Id: 98_structure.pm 21131 2020-02-06 08:52:19Z rudolfkoenig $
 ##############################################################################
 #
 #     98_structure.pm
@@ -539,7 +539,7 @@ structure_Attr($@)
     userattr=>1
   );
 
-  return undef if($ignore{$list[1]} || !$init_done);
+  return undef if(($ignore{$list[1]} && $featurelevel <= 5.9) || !$init_done);
 
   my $me = $list[0];
   my $hash = $defs{$me};
@@ -748,6 +748,12 @@ structure_Attr($@)
       if the regexp matches the name of the attribute, then this attribute will
       be propagated to all the members. The default is .* (each attribute) for
       featurelevel <= 5.9, else ^$ (no attribute).
+      Note: the following attibutes were never propagated for featurelevel<=5.9
+      <ul>
+        alias async_delay clientstate_behavior clientstate_priority
+        devStateIcon disable disabledForIntervals group icon room propagateAttr
+        setStateIndirectly stateFormat webCmd userattr
+      </ul>
       </li>
 
     <li>setStateIndirectly<br>
@@ -977,6 +983,13 @@ structure_Attr($@)
       Attribut an allen Mitglieder weitergegeben. F&uuml;r featurelevel <= 5.9
       ist die Voreinstellung .* (d.h. alle Attribute), sonst ^$ (d.h. keine
       Attribute).
+      <br>Achtung: folgende Attribute wurden fuer featurelevel<=5.9 nicht
+      weitervererbt:
+      <ul>
+        alias async_delay clientstate_behavior clientstate_priority
+        devStateIcon disable disabledForIntervals group icon room propagateAttr
+        setStateIndirectly stateFormat webCmd userattr
+      </ul>
       </li>
 
     <li>setStateIndirectly<br>

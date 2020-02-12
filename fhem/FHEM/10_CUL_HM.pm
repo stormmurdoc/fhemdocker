@@ -1,7 +1,7 @@
 ##############################################
 ##############################################
 # CUL HomeMatic handler
-# $Id: 10_CUL_HM.pm 21055 2020-01-26 09:02:21Z martinp876 $
+# $Id: 10_CUL_HM.pm 21093 2020-02-02 13:51:56Z martinp876 $
 
 package main;
 
@@ -3071,7 +3071,20 @@ sub CUL_HM_parseCommon(@){#####################################################
                              $devHlpr->{HM_CMDNR} < 250 && 
                              $devHlpr->{HM_CMDNR} > 5);# this is power on
   $devHlpr->{HM_CMDNR} = hex($mhp->{mNo});# sync msgNo prior to any sending
-  if($rxt & 0x08){ #wakeup device
+  if($rxt & 0x10){             # lazy config
+    if($mhp->{mFlgH} & 0x02    # wakeup message
+       && $devHlpr->{prt}{sleeping}
+       && (   $defs{$mhp->{devH}{IODev}{NAME}}{helper}{VTS_LZYCFG} # for TSCUL VTS0.34 up
+           || $defs{$mhp->{devH}{IODev}{NAME}}{TYPE} =~ m/^(?:HMLAN|HMUARTLGW)$/s )){
+      CUL_HM_appFromQ($mhp->{devN},"cf");# stack cmds if waiting
+      $devHlpr->{prt}{sleeping} = 0;
+      CUL_HM_ProcessCmdStack($mhp->{devH});
+    }
+    else{
+      $devHlpr->{prt}{sleeping} = 1 if (!$devHlpr->{prt}{sProc}); # set back to sleeping with next trigger, if nothing to do
+    }
+  }  
+  elsif($rxt & 0x08){ #wakeup device
     if(($mhp->{mFlgH} & 0xA2) == 0x82){ #wakeup signal
       CUL_HM_appFromQ($mhp->{devN},"wu");# stack cmds if waiting
       if ($mhp->{devH}{cmdStack}){
@@ -3084,18 +3097,6 @@ sub CUL_HM_parseCommon(@){#####################################################
       $devHlpr->{prt}{sleeping} = 1 if($mhp->{mFlgH} & 0x20) ;
     }
   }
-  if($rxt & 0x10 && $devHlpr->{prt}{sleeping}){ # lazy config
-    if($mhp->{mFlgH} & 0x02                  #wakeup device
-       && $defs{$mhp->{devH}{IODev}{NAME}}{TYPE} =~ m/^(HMLAN|HMUARTLGW)$/){
-      $devHlpr->{io}{newChn} = 1 if ($devHlpr->{prt}{sProc} == 2);
-      CUL_HM_appFromQ($mhp->{devN},"cf");# stack cmds if waiting
-      $devHlpr->{prt}{sleeping} = 0;
-      CUL_HM_ProcessCmdStack($mhp->{devH});
-    }
-    else{
-      $devHlpr->{prt}{sleeping} = 1;
-    }
-  }  
   
   my $repeat;
   $devHlpr->{supp_Pair_Rep} = 0 if ($mhp->{mTp} ne "00"); # noansi: reset pairing suppress flag as we got something different from device 

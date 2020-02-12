@@ -1,6 +1,6 @@
 
 
-# $Id: 31_HUEDevice.pm 21039 2020-01-23 13:02:06Z justme1968 $
+# $Id: 31_HUEDevice.pm 21136 2020-02-07 09:20:50Z justme1968 $
 
 # "Hue Personal Wireless Lighting" is a trademark owned by Koninklijke Philips Electronics N.V.,
 # see www.meethue.com for more information.
@@ -1385,7 +1385,6 @@ HUEDevice_Parse($$)
   $hash->{helper}{json} = $result;
 
   if( $hash->{helper}->{devtype} eq 'G' ) {
-
     #if( !defined($attr{$name}{subType}) && $hash->{type} ) {
     #  if( $hash->{type} eq 'Room' ) {
     #    $attr{$name}{subType} = 'room';
@@ -1608,8 +1607,8 @@ HUEDevice_Parse($$)
       $readings{valve} = ceil((100/255) * $state->{valve}) if( defined ($state->{valve}) );
     }
 
-    $hash->{lastupdated} = ReadingsVal( $name, '.lastupdated', undef ) if( !$hash->{lastupdated} );
-    $hash->{lastupdated_local} = ReadingsVal( $name, '.lastupdated_local', undef ) if( !$hash->{lastupdated_local} );
+    $hash->{lastupdated} = ReadingsVal( $name, '.lastupdated', '' ) if( !$hash->{lastupdated} );
+    $hash->{lastupdated_local} = ReadingsVal( $name, '.lastupdated_local', '' ) if( !$hash->{lastupdated_local} );
     return undef if( $hash->{lastupdated}
                      && $hash->{lastupdated} eq $lastupdated
                      && (!$readings{state} || $readings{state} eq ReadingsVal( $name, 'state', '' ))  );
