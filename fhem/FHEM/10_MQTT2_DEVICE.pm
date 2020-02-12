@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 10_MQTT2_DEVICE.pm 20964 2020-01-13 17:02:05Z rudolfkoenig $
+# $Id: 10_MQTT2_DEVICE.pm 21168 2020-02-10 15:48:13Z rudolfkoenig $
 package main;
 
 use strict;
@@ -347,6 +347,7 @@ MQTT2_DEVICE_Get($@)
   my ($gets,$cmdList) = MQTT2_getCmdHash(AttrVal($hash->{NAME}, "getList", ""));
   return "Unknown argument $a[1], choose one of $cmdList" if(!$gets->{$a[1]});
   return undef if(IsDisabled($hash->{NAME}));
+  Log3 $hash, 3, "MQTT2_DEVICE get ".join(" ", @a);
 
   my ($getReading, $cmd) = split(" ",$gets->{$a[1]},2);
   if($hash->{CL}) {
@@ -380,6 +381,7 @@ MQTT2_DEVICE_Set($@)
   return SetExtensions($hash, $cmdList, @a) if(!$cmd);
   return undef if(IsDisabled($name));
 
+  Log3 $hash, 3, "MQTT2_DEVICE set ".join(" ", @a);
   my $a1 = (@a > 1 ? $a[1] : '');
   $cmd = MQTT2_buildCmd($hash, \@a, $cmd);
   return if(!$cmd);
