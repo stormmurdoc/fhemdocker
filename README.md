@@ -73,6 +73,15 @@ Change your password with the command
 
       sudo apt-get install wget git apt-transport-https vim telnet zsh zsh-autosuggestions zsh-syntax-highlighting ntp ksh logwatch
 
+### Configure ntpd daemon
+
+      sudo vi /etc/ntp.conf
+
+Disable all pool server and add your local time server
+
+      server 192.168.1.1
+
+
 ### Install oh-my-zsh
 
       sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
