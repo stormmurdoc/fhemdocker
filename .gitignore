@@ -2,6 +2,7 @@
 .idea
 .swp
 !.gitkeep
+!.keep
 /fhem/FHEM/FhemUtils/uniqueID
 /fhem/fhem.cfg.bak
 /fhem/backup/*
