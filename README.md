@@ -154,6 +154,9 @@ http://localhost:80
 
 ### Homebridge
 
+Default User: admin
+Default Passwort: admin
+
 !["homebridge"](./.media/homebridge.png "Homebridge Screenshot")
 
 [http://localhost:8080](http://localhost:8080 "Weblink Homebridge")
