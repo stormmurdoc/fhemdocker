@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 #
 # Description: Add user & group for mosquitto broker
 #
@@ -19,7 +19,7 @@ OS=$(awk '/^ID=/' /etc/*-release | sed 's/ID=//' | tr '[:upper:]' '[:lower]')
 # Function for Arch Linux
 env_arch() {
    echo "arch"
-   #useradd -u 1883 -M -s /sbin/nologin mosquitto
+   useradd -u 1883 -M -s /sbin/nologin mosquitto
 }
 
 #
@@ -27,7 +27,7 @@ env_arch() {
 #
 env_raspbian() {
    echo "raspbian"
-   #addgroup -S -g 1883 mosquitto
+   addgroup -S -g 1883 mosquitto
 }
 
 #
