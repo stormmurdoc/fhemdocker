@@ -43,6 +43,6 @@ fi
 #
 case "$OS" in
    arch) env_arch ;;
-   raspian) env_raspbian ;;
+   raspbian) env_raspbian ;;
    *) echo "unknown os - exiting" ; exit 1 ;;
 esac
