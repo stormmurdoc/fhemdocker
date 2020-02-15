@@ -9,14 +9,14 @@ services:
        - "./mosquitto:/mosquitto"
        - "/etc/localtime:/etc/localtime:ro"
          #- "/etc/timezone:/etc/timezone:ro"
-
      networks:
        - fhem-network
      ports:
        - "1883:1883"
      environment:
       - TZ=Europe/Berlin
-
+      - PUID=1000
+      - PGID=1000
 
    tasmotaadmin:
     container_name: fhem_tasmotaadmin
@@ -161,6 +161,7 @@ services:
      image: nginx:latest
      volumes:
         - ./reverseproxy/config/nginx.conf:/etc/nginx/nginx.conf
+        - ./reverseproxy/config/.htpasswd:/etc/nginx/.htpasswd
         - ./reverseproxy/config/cert.key:/etc/nginx/cert.key
         - ./reverseproxy/config/cert.crt:/etc/nginx/cert.crt
      ports:

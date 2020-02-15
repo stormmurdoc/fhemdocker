@@ -5,10 +5,7 @@ attr global commandref modular
 attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
-attr global motd Messages collected while initializing FHEM:\
-./log/fhem.save: Please define c_startsync first\
-\
-Autosave deactivated
+attr global motd
 attr global mseclog 1
 attr global nofork 0
 attr global nrarchive 0
@@ -27,6 +24,7 @@ attr WEB codemirrorParam { "lineWrapping": true, "height": "auto" }
 attr WEB confirmDelete 0
 attr WEB confirmJSError 0
 attr WEB editConfig 1
+attr WEB menuEntries Apptime,cmd=apptime maxDly,Tasmota-Admin,http://localhost:8081,Tamsota Comp,http://localhost:8082,Portainer,http://localhost:9000,Homebridge,http://localhost:8080/login,deCONZ,http://localhost:8090/pwa/login.html
 attr WEB plotWeekStartDay 1
 attr WEB reverseLogs 1
 attr WEB room System->FHEM
@@ -48,7 +46,7 @@ attr WEB styleData {\
 }
 attr WEB title { if ($FW_room) { "FHEM: $FW_room" } elsif ($FW_detail) { "FHEM: $FW_detail" } else { "FHEM" } }
 
-# Fake FileLog entry, to access the fhem log from FHEMWEB 
+# Fake FileLog entry, to access the fhem log from FHEMWEB
 define Logfile FileLog ./log/fhem-%Y-%m.log fakelog
 setuuid Logfile 5e247dcd-f33f-b3b0-5362-0574add78947135a
 attr Logfile room System->FHEM
@@ -65,6 +63,7 @@ attr eventTypes room System->FHEM
 # Disable this to avoid looking for new USB devices on startup
 define initialUsbCheck notify global:INITIALIZED usb create
 setuuid initialUsbCheck 5e247dcd-f33f-b3b0-1712-b054baaf3f2cacb2
+attr initialUsbCheck disable 1
 attr initialUsbCheck room System->FHEM
 define DockerImageInfo DockerImageInfo
 setuuid DockerImageInfo 5e247dcd-f33f-b3b0-f055-3774503f1b7d991f
@@ -104,6 +103,7 @@ attr dummy genericDeviceType switch
 attr dummy homebridgeMapping homebridgeMapping On=state,cmdOn=on,cmdOff=off
 attr dummy room Homekit
 attr dummy webCmd on:off
+
 define MQTT_Broker MQTT2_CLIENT broker:1883
 setuuid MQTT_Broker 5e28940b-f33f-b3b0-af22-02716a652081c1b4
 attr MQTT_Broker autocreate no
@@ -116,42 +116,13 @@ attr MQTT_Broker msgAfterConnect services/fhem/fhempi3/status connected
 attr MQTT_Broker msgBeforeDisconnect services/fhem/fhempi3/status disconnected
 attr MQTT_Broker room System->Dienste,System->MQTT
 attr MQTT_Broker verbose 3
+
 define siri siri
 setuuid siri 5e28a2c1-f33f-b3b0-d4e4-b23be54595b3ea95
 attr siri devStateIcon active:10px-kreis-gruen disconnected:10px-kreis-rot Initialized:10px-kreis-gelb
 attr siri genericDeviceType ignore
 attr siri icon building_security@grey
 attr siri room System->Dienste
-
-#########################################################################
-# Alias Videoscan Kodi
-#########################################################################
-define c_videoscan cmdalias videoscan AS set wz_KODI videolibrary scan
-setuuid c_videoscan 5cf5770a-f33f-cbb9-0678-7830cce27244d122
-attr c_videoscan genericDeviceType ignore
-attr c_videoscan room System->cmdAlias
-attr c_videoscan verbose 3
-
-#########################################################################
-# Alias Audiscan Kodi
-#########################################################################
-
-#########################################################################
-# Alias zum ausschalten des PCs
-#########################################################################
-define c_pcaus cmdalias pcaus AS {ssh_cmd("nebukadnezar",'sudo /sbin/shutdown -h 0',"murdoc")}
-setuuid c_pcaus 5c445b5a-f33f-cbb9-259a-03dc30da6a9e09ec
-attr c_pcaus genericDeviceType ignore
-attr c_pcaus room System->cmdAlias
-attr c_pcaus verbose 3
-
-#########################################################################
-# Alias zum einschalten des PCs
-#########################################################################
-
-#########################################################################
-# Schaltet die Lichtszene Küche ein
-#########################################################################
 
 #########################################################################
 # Alias zum umbenennen eines FHEM Raumes
@@ -217,19 +188,6 @@ attr c_v5 room System->cmdAlias
 attr c_v5 verbose 3
 
 #########################################################################
-# Alias Infolicht
-#########################################################################
-
-#########################################################################
-# Alias MAX Backup
-#########################################################################
-define c_maxbackup cmdalias maxbackup AS {MAX_Backup("*");;;;}
-setuuid c_maxbackup 5c445b5a-f33f-cbb9-5e95-9eb5e81ae88f8da7
-attr c_maxbackup genericDeviceType ignore
-attr c_maxbackup room System->cmdAlias
-attr c_maxbackup verbose 3
-
-#########################################################################
 # Alias Apptime Average
 #########################################################################
 define c_aa cmdalias aa AS apptime average
@@ -266,28 +224,6 @@ attr c_grep room System->cmdAlias
 attr c_grep verbose 3
 
 #########################################################################
-# Alias say
-#########################################################################
-define c_say cmdalias say .* AS set MyTTS tts '$EVENT'
-setuuid c_say 5c445b5a-f33f-cbb9-7ede-e6de34b572a1e1c7
-attr c_say genericDeviceType ignore
-attr c_say room System->cmdAlias
-attr c_say verbose 3
-
-#########################################################################
-# Alias hoch
-#########################################################################
-
-#########################################################################
-# Alias runter
-#########################################################################
-define c_hminfo cmdalias hminfo AS set hm protoEvents short
-setuuid c_hminfo 5c445b5a-f33f-cbb9-eb37-26de47b12789597d
-attr c_hminfo genericDeviceType ignore
-attr c_hminfo room System->cmdAlias
-attr c_hminfo verbose 3
-
-#########################################################################
 # Alias hmcheck
 #########################################################################
 define c_hmcheck cmdalias hmcheck AS set hm configCheck
@@ -322,48 +258,6 @@ setuuid c_ls 5c445b5a-f33f-cbb9-4b0b-067cf5608a47b5a0
 attr c_ls genericDeviceType ignore
 attr c_ls room System->cmdAlias
 attr c_ls verbose 3
-
-#########################################################################
-# Alias wohnzimmeraus
-#########################################################################
-define c_wohnzimmeraus cmdalias wohnzimmerein AS set ls_Erdgeschoss scene Wohnzimmer_ein
-setuuid c_wohnzimmeraus 5c445b5a-f33f-cbb9-8162-04c9cb40006aa274
-attr c_wohnzimmeraus genericDeviceType ignore
-attr c_wohnzimmeraus room System->cmdAlias
-attr c_wohnzimmeraus verbose 3
-
-#########################################################################
-# Alias wohnzimmerein
-#########################################################################
-define c_wohnzimmerein cmdalias erdgeschossaus AS set ls_Erdgeschoss scene aus
-setuuid c_wohnzimmerein 5c445b5a-f33f-cbb9-ab98-4fffa17e2fdcd8a0
-attr c_wohnzimmerein genericDeviceType ignore
-attr c_wohnzimmerein room System->cmdAlias
-attr c_wohnzimmerein verbose 3
-
-#########################################################################
-# Alias kuecheaus
-#########################################################################
-
-#########################################################################
-# Alias sonnenschutzein
-#########################################################################
-
-#########################################################################
-# Alias sonnenschutzaus
-#########################################################################
-
-#########################################################################
-# Alias infolicht
-#########################################################################
-
-#########################################################################
-# Alias lauter
-#########################################################################
-
-#########################################################################
-# Alias leiser
-#########################################################################
 
 #########################################################################
 # Alias alias
@@ -411,10 +305,6 @@ attr c_ifconfig room System->cmdAlias
 attr c_ifconfig verbose 3
 
 #########################################################################
-# Alias hmstatusInfoDly05
-#########################################################################
-
-#########################################################################
 # Alias apptime clear
 #########################################################################
 define c_ac cmdalias ac AS apptime clear
@@ -424,28 +314,6 @@ attr c_ac room System->cmdAlias
 attr c_ac verbose 3
 
 #########################################################################
-# AVR restart function (due to the fact that my receiver fucked up)
-#########################################################################
-
-#########################################################################
-# TV einen Kanal hochschalten
-#########################################################################
-define c_tvup cmdalias tvup AS set EG.WZ.Fernseher CHUP
-setuuid c_tvup 5c445b5a-f33f-cbb9-5b85-b4ef943f44e5aacb
-attr c_tvup genericDeviceType ignore
-attr c_tvup room System->cmdAlias
-attr c_tvup verbose 3
-
-#########################################################################
-# TV einen Kanal herunterschalten
-#########################################################################
-define c_tvdown cmdalias tvdown AS set EG.WZ.Fernseher CHDOWN
-setuuid c_tvdown 5c445b5a-f33f-cbb9-1190-9d9c043434259cad
-attr c_tvdown genericDeviceType ignore
-attr c_tvdown room System->cmdAlias
-attr c_tvdown verbose 3
-
-#########################################################################
 # FHEM Logfile löschen
 #########################################################################
 define c_dellog cmdalias dellog AS {qx(truncate $currlogfile --size 0);;;;Log 1, "Logfile gelöscht";;;;}
@@ -453,15 +321,6 @@ setuuid c_dellog 5c445b5a-f33f-cbb9-cf3c-f12e051b83676d32
 attr c_dellog genericDeviceType ignore
 attr c_dellog room System->cmdAlias
 attr c_dellog verbose 3
-
-#########################################################################
-# Alias zum neustarten des RPI
-#########################################################################
-define c_pi_restart cmdalias pi_restart AS {qx(echo 'shutdown restart' | /usr/bin/socat - TCP:192.168.1.40:7072 &);;}
-setuuid c_pi_restart 5c445b5a-f33f-cbb9-7ff4-7901a99e35d2d4ca
-attr c_pi_restart genericDeviceType ignore
-attr c_pi_restart room System->cmdAlias
-attr c_pi_restart verbose 3
 
 #########################################################################
 # Alias zum anzeigen von Devices die den Status disconnected haben
@@ -480,15 +339,6 @@ setuuid c_lastloglines 5c445b5b-f33f-cbb9-cb67-3c4d9a69dbea66bd
 attr c_lastloglines genericDeviceType ignore
 attr c_lastloglines room System->cmdAlias
 attr c_lastloglines verbose 3
-
-#########################################################################
-# Alias zum anzeigen der WLAN Nutzer
-#########################################################################
-define c_who cmdalias who AS list (pc_|Handy_|Uhr).*:FILTER=STATE=present state
-setuuid c_who 5c445b5b-f33f-cbb9-58bc-6904d2dad9cabf7a
-attr c_who genericDeviceType ignore
-attr c_who room System->cmdAlias
-attr c_who verbose 3
 
 #########################################################################
 # Alias zum anzeigen der verwendeten Homematic Geräten
@@ -545,71 +395,6 @@ attr c_setex room System->cmdAlias
 attr c_setex verbose 3
 
 #########################################################################
-# Alias KODI pause
-#########################################################################
-define c_pause cmdalias pause AS set wz_KODI pause
-setuuid c_pause 5c445b5b-f33f-cbb9-5f0a-568983a96a23e469
-attr c_pause genericDeviceType ignore
-attr c_pause room System->cmdAlias
-attr c_pause verbose 3
-
-#########################################################################
-# Alias KODI play
-#########################################################################
-define c_play cmdalias play AS set wz_KODI play
-setuuid c_play 5c445b5b-f33f-cbb9-d907-c046e721ff2fd1e9
-attr c_play genericDeviceType ignore
-attr c_play room System->cmdAlias
-attr c_play verbose 3
-
-#########################################################################
-# Alias zum ändern der Lichtwfarbe im Erdgeschoss
-#########################################################################
-
-#########################################################################
-# Alias starten der Synchronisation
-#########################################################################
-
-#########################################################################
-# Alias zum Fernsehen gucken
-#########################################################################
-
-#########################################################################
-# Alias zum KODI gucken
-#########################################################################
-
-#########################################################################
-# Alias KODI vor
-#########################################################################
-define c_vor cmdalias vor AS set wz_KODI next all
-setuuid c_vor 5c445b5c-f33f-cbb9-9bf5-a02eb1992deeda9a
-attr c_vor genericDeviceType ignore
-attr c_vor room System->cmdAlias
-attr c_vor verbose 3
-
-#########################################################################
-# Alias KODI zurück
-#########################################################################
-
-#########################################################################
-# Alias zum ansagen der Uhrzeit
-#########################################################################
-define c_time cmdalias time AS {fhem("say Es ist jetzt $hour Uhr $min")}
-setuuid c_time 5c445b5c-f33f-cbb9-227d-c2a4046d7a523f41
-attr c_time genericDeviceType ignore
-attr c_time room System->cmdAlias
-attr c_time verbose 3
-
-#########################################################################
-# Alias zum ansagen der Aussentemperatur
-#########################################################################
-define c_temp cmdalias temp AS say Die Aussentemperatur beträgt [EG.GT.Umweltsensor:temperature:d] Grad Celsius
-setuuid c_temp 5c445b5c-f33f-cbb9-3514-36f74c08a6aa953f
-attr c_temp genericDeviceType ignore
-attr c_temp room System->cmdAlias
-attr c_temp verbose 3
-
-#########################################################################
 # Alias zum anzeigen von Devices die deaktiviert sind
 #########################################################################
 define c_showdisableddevices cmdalias showdisableddevices AS { join("\n", grep { $attr{$_}{disable} } sort keys %attr ) }
@@ -619,36 +404,6 @@ attr c_showdisableddevices room System->cmdAlias
 attr c_showdisableddevices verbose 3
 
 #########################################################################
-# Alias zum senden von MQTT Nachrichten an den Broker
-#########################################################################
-define c_mqsend cmdalias mqsend .* AS {qx(/usr/bin/mosquitto_pub -q 2 -t $EVTPART0 -m $EVTPART1)}
-setuuid c_mqsend 5c445b5e-f33f-cbb9-6138-64a333f22dbed6d9
-attr c_mqsend genericDeviceType ignore
-attr c_mqsend room System->cmdAlias
-attr c_mqsend verbose 3
-
-#########################################################################
-# Alias zum setzen der Lichtszene im Arbeitszimmer
-#########################################################################
-
-#########################################################################
-# Alias einschalten des Fernsehers
-#########################################################################
-define c_tvein cmdalias tvein AS set ls_Multimedia scene TV
-setuuid c_tvein 5c445b5e-f33f-cbb9-5e5b-17c46c529464e7f4
-attr c_tvein genericDeviceType ignore
-attr c_tvein room System->cmdAlias
-attr c_tvein verbose 3
-
-#########################################################################
-# Alias öffnen der Terrassentür Rolladen
-#########################################################################
-
-#########################################################################
-# Alias zum aktivieren des Sky Receivers
-#########################################################################
-
-#########################################################################
 # Alias zum starken absenken der Verstärkerlautstärke
 #########################################################################
 define c_vielleiser cmdalias vielleiser AS set EG.WZ.AVR volume 50
@@ -656,15 +411,6 @@ setuuid c_vielleiser 5c445b5e-f33f-cbb9-6b7a-444a807dfa9b313d
 attr c_vielleiser genericDeviceType ignore
 attr c_vielleiser room System->cmdAlias
 attr c_vielleiser verbose 3
-
-#########################################################################
-# Alias zum starken erhöhen der Verstärkerlautstärke
-#########################################################################
-define c_viellauter cmdalias viellauter AS set EG.WZ.AVR volume 75
-setuuid c_viellauter 5c445b5e-f33f-cbb9-31c4-d7693bd6dd008713
-attr c_viellauter genericDeviceType ignore
-attr c_viellauter room System->cmdAlias
-attr c_viellauter verbose 3
 
 #########################################################################
 # Alias zum anzeigen der FHEM internen Timer
@@ -685,24 +431,6 @@ attr c_showmyip room System->cmdAlias
 attr c_showmyip verbose 3
 
 #########################################################################
-# Alias KODI next title
-#########################################################################
-define c_next cmdalias next AS set wz_KODI next
-setuuid c_next 5c445b61-f33f-cbb9-a97c-4de334d7905c30c6
-attr c_next genericDeviceType ignore
-attr c_next room System->cmdAlias
-attr c_next verbose 3
-
-#########################################################################
-# Alias KODI prev title
-#########################################################################
-define c_prev cmdalias prev AS set wz_KODI prev
-setuuid c_prev 5c445b61-f33f-cbb9-cb96-4f163988290c303c
-attr c_prev genericDeviceType ignore
-attr c_prev room System->cmdAlias
-attr c_prev verbose 3
-
-#########################################################################
 # Alias zum Anzeigen von Devices die nicht verbunden sind
 #########################################################################
 define c_showdisconnectedDevices cmdalias showalluserreadings AS list userReadings=^.+$
@@ -711,14 +439,4 @@ attr c_showdisconnectedDevices genericDeviceType ignore
 attr c_showdisconnectedDevices room System->cmdAlias
 attr c_showdisconnectedDevices verbose 3
 
-#########################################################################
-# Alias zum senden einer MQTT Nachricht
-#########################################################################
-define c_mqttmsg cmdalias mqttmsg .* AS {qx(/usr/bin/mosquitto_pub -h 192.168.1.101 -t \'$EVTPART0\' -m \'$EVTPART1\')}
-setuuid c_mqttmsg 5c445b5e-f33f-cbb9-0064-793eb9f4bee926c9
-attr c_mqttmsg genericDeviceType ignore
-attr c_mqttmsg room System->cmdAlias
-attr c_mqttmsg verbose 3
-define freezemon freezemon
-setuuid freezemon 5e28b926-f33f-b3b0-d378-c0d73cd0016b23cd
-attr freezemon room System->FHEM
+
