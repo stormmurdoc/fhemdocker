@@ -142,6 +142,8 @@ services:
      restart: always
      environment:
       - TZ=Europe/Berlin
+      - PUID=1000
+      - PGID=1000
      depends_on:
       - reverseproxy
      network_mode: host
@@ -158,6 +160,10 @@ services:
      container_name: fhem_nginx
      restart: always
      image: nginx:latest
+     environment:
+      - TZ=Europe/Berlin
+      - PGID=1000
+      - PUID=1000
      volumes:
         - ./reverseproxy/config/nginx.conf:/etc/nginx/nginx.conf
         - ./reverseproxy/config/.htpasswd:/etc/nginx/.htpasswd
