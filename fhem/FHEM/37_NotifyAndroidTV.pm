@@ -1,4 +1,4 @@
-# $Id: 37_NotifyAndroidTV.pm 16138 2018-02-09 20:36:36Z justme1968 $
+# $Id: 37_NotifyAndroidTV.pm 21188 2020-02-13 07:36:24Z justme1968 $
 
 package main;
 
@@ -161,7 +161,7 @@ NotifyAndroidTV_Set($$@)
       if( $options->{$option} ) {
         if( defined( $options->{$option}{$param_h->{$option}}) ) {
           $param_h->{$option} = $options->{$option}{$param_h->{$option}};
-        } elsif( grep {$_==$param_h->{$option}} values %{$options->{$option}} )  {
+        } elsif( grep {$_ eq $param_h->{$option}} values %{$options->{$option}} )  {
           $param_h->{$option} = $param_h->{$option};
         } else {
           $param_h->{$option} = undef;
