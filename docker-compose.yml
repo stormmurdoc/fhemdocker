@@ -8,15 +8,12 @@ services:
      volumes:
        - "./mosquitto:/mosquitto"
        - "/etc/localtime:/etc/localtime:ro"
-         #- "/etc/timezone:/etc/timezone:ro"
      networks:
        - fhem-network
      ports:
        - "1883:1883"
      environment:
       - TZ=Europe/Berlin
-      - PUID=1000
-      - PGID=1000
 
    tasmotaadmin:
     container_name: fhem_tasmotaadmin
