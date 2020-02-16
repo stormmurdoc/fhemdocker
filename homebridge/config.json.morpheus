@@ -10,8 +10,12 @@
         {
             "platform": "FHEM",
             "name": "FHEM",
-            "server": "172.21.0.5",
-            "port": "8083",
+            "server": "localhost",
+            "port": "80",
+            "auth": {
+                "user": "admin",
+                "pass": "admin"
+            },
             "filter": "room=Homekit"
         }
     ]
