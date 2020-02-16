@@ -143,7 +143,6 @@ services:
      environment:
       - TZ=Europe/Berlin
      depends_on:
-      - fhem
       - reverseproxy
      network_mode: host
      environment:

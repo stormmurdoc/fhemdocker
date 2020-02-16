@@ -5,7 +5,12 @@ attr global commandref modular
 attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
-attr global motd
+attr global motd SecurityCheck:\
+  telnetPort is not password protected\
+  WEB is not password protected\
+\
+Protect this FHEM installation by defining an allowed device with define allowed allowed\
+You can disable this message with attr global motd none
 attr global mseclog 1
 attr global nofork 0
 attr global nrarchive 0

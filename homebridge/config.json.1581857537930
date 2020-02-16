@@ -10,12 +10,8 @@
         {
             "platform": "FHEM",
             "name": "FHEM",
-            "server": "localhost",
-            "port": "80",
-            "auth": {
-                "user": "admin",
-                "pass": "admin"
-            },
+            "server": "fhem_fhem.fhemdocker_fhem-network",
+            "port": "8083",
             "filter": "room=Homekit"
         }
     ]
