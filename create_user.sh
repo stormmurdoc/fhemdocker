@@ -18,7 +18,7 @@ OS=$(awk '/^ID=/' /etc/*-release | sed 's/ID=//' | tr '[:upper:]' '[:lower]')
 #
 # Function for Arch Linux
 env_arch() {
-   echo "arch"
+   echo "Operating System ID: arch"
    useradd -u 1883 -M -s /sbin/nologin mosquitto
    useradd -u 101 -M -s /sbin/nologin nginx
 }
@@ -27,8 +27,10 @@ env_arch() {
 # Function for Raspian
 #
 env_raspbian() {
-   echo "raspbian"
-   addgroup -S -g 1883 mosquitto
+   echo "Operating System ID: raspbian"
+   adduser --uid 1883 --quiet --no-create-home --disabled-login mosquitto
+   adduser --uid 101 --quiet --no-create-home --disabled-login nginx
+   #addgroup -S -g 1883 mosquitto
 }
 
 #
