@@ -70,6 +70,12 @@ Change your password with the command
       sudo raspi-config
       sudo reboot
 
+### Disable swap
+
+      sudo dphys-swapfile swapoff && \
+      sudo dphys-swapfile uninstall && \
+      sudo systemctl disable dphys-swapfile
+
 ### Intall additional packages
 
       sudo apt-get install wget git apt-transport-https vim telnet zsh zsh-autosuggestions zsh-syntax-highlighting ntp ksh logwatch
