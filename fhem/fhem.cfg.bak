@@ -6,8 +6,8 @@ attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
 attr global motd SecurityCheck:\
-  telnetPort is not password protected\
   WEB is not password protected\
+  telnetPort is not password protected\
 \
 Protect this FHEM installation by defining an allowed device with define allowed allowed\
 You can disable this message with attr global motd none
@@ -24,7 +24,7 @@ attr global verbose 3
 
 define WEB FHEMWEB 8083 global
 setuuid WEB 5e247dcd-f33f-b3b0-c91a-db94891309acd126
-attr WEB JavaScripts codemirror/fhem_codemirror.js
+attr WEB JavaScripts codemirror/fhem_codemirror.js input/jquery-input-history.js
 attr WEB codemirrorParam { "lineWrapping": true, "height": "auto" }
 attr WEB confirmDelete 0
 attr WEB confirmJSError 0

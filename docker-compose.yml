@@ -198,6 +198,25 @@ services:
          #- DECONZ_VNC_MODE=1
          #- DECONZ_VNC_PASSWORD=changeme
        - DECONZ_UPNP=1
+   watchtower:
+    image: containrrr/watchtower
+    container_name: fhem_watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+     #- /root/.docker/config.json:/config.json
+     #command: --interval 1 watchtower eclipse-mosquitto tasmoadmin tasmocompiler fhem portainer adminer homebridge nginx deconz
+    command: --interval 60
+    environment:
+      - TZ='Europe/Berlin'
+     #- REPO_USER='githubuser'
+     #- REPO_PASS='password'
+     #- WATCHTOWER_NOTIFICATIONS=email
+     #- WATCHTOWER_NOTIFICATION_EMAIL_FROM=server@Domain.tld
+     #- WATCHTOWER_NOTIFICATION_EMAIL_TO=mail@domain.tld
+     #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER=mail.domain.tld
+     #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER=mail@domain.tld
+     #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=Secret
+    restart: always
 
 volumes:
   portainer_data:
