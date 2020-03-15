@@ -200,6 +200,11 @@ On Raspberry Pi 4 verify that file /boot/config.txt does NOT contain a line "ena
 
 After running the above command and rebooting, RaspBee should be available at /dev/ttyAMA0.
 
+### Watchtower
+
+This container automatically update all running container within a given time interval.
+
+[https://containrrr.github.io/watchtower/](https://containrrr.github.io/watchtower/ "Homepage Watchtower")
 
 ## ctop
 
