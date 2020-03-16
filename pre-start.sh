@@ -14,7 +14,4 @@ SCRIPTNAME=$(basename $0)
 USERNAME=$(whoami)
 
 echo "+++ $SCRIPTNAME (USER/ID: $USERNAME/$UID) started +++"
-echo "+++ starting ssh daemon +++"
-/etc/init.d/ssh start
-
 exit 0

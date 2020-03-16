@@ -83,7 +83,7 @@ services:
        RESTART: 1
        TELNETPORT: 7072
        TZ: Europe/Berlin
-       APT_PKGS: "cvs ranger zsh socat rlwrap openssh-server htop tmux vim"
+       APT_PKGS: "cvs ranger zsh socat rlwrap htop tmux vim"
        #CPAN_PKGS: ""
        #PIP_PKGS: ""
        #NPM_PKGS: ""
