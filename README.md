@@ -105,18 +105,6 @@ Disable all pool server and add your local time server
 ### Setup ssh key for user
       ssh-keygen -t rsa -b 8192
 
-### Install .ssh/config file to ignore strictHostKeyChecking
-
-      vi ~/.ssh/config
-
-      Host fhemlocalhost
-      Hostname localhost
-      Port 222
-      User fhem
-      StrictHostKeyChecking no
-      UserKnownHostsFile=/dev/null
-
-
 ### Install docker & docker-compose
 
 After installation put your user pi into the docker group.
@@ -231,4 +219,11 @@ ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can
 ## Contributing to fhemdocker
 Contributions are encouraged and welcome!
 
+## Accessing the docker container via remote
 
+If you want to commit a FHEM command via the local telnet daemon you can use the script fcmd.sh.
+
+      Username: pi
+      Hostname: raspberrypi4
+
+      fcmd.sh <FHEM Command>
