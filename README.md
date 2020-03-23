@@ -216,6 +216,20 @@ ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can
       sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-arm -O /usr/local/bin/ctop
       sudo chmod +x /usr/local/bin/ctop
 
+## Known Issues
+
+### FHEM website not reachable
+
+["Error nginx"](./.media/nginx_error.png "nginx error screenshot")
+
+If you're not able to login. Please check the permissons of the .htpasswd file in
+
+      ./fhemdocker/reverseproxy/config/.htpasswd
+
+Set the right to 644 with
+
+      chmod 644 ./fhemdocker/reverseproxy/config/.htpasswd
+
 ## Contributing to fhemdocker
 Contributions are encouraged and welcome!
 
