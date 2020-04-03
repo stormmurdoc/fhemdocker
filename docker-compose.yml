@@ -3,7 +3,7 @@ version: '3'
 services:
    broker:
      container_name: fhem_mqtt
-     restart: always
+     restart: unless-stopped
      image: eclipse-mosquitto:latest
      volumes:
        - "./mosquitto:/mosquitto"
@@ -17,7 +17,7 @@ services:
 
    tasmotaadmin:
     container_name: fhem_tasmotaadmin
-    restart: always
+    restart: unless-stopped
     image: raymondmm/tasmoadmin:latest
     volumes:
       - ./tasmotaadmin/data:/data
@@ -31,7 +31,7 @@ services:
 
    tasmocompiler:
     container_name: fhem_tasmotacompiler
-    restart: always
+    restart: unless-stopped
     image: benzino77/tasmocompiler:latest
     ports:
       - "8082:3000"
@@ -42,7 +42,7 @@ services:
    fhem:
      container_name: fhem_fhem
      image: fhem/fhem:latest
-     restart: always
+     restart: unless-stopped
      depends_on:
         - broker
 
@@ -96,7 +96,7 @@ services:
    portainer:
      container_name: fhem_portainer
      image: portainer/portainer:latest
-     restart: always
+     restart: unless-stopped
      depends_on:
         - fhem
      command: -H unix:///var/run/docker.sock --no-auth
@@ -119,7 +119,7 @@ services:
    adminer:
      container_name: fhem_adminer
      image: adminer:latest
-     restart: always
+     restart: unless-stopped
      depends_on:
        - fhem
      environment:
@@ -136,7 +136,7 @@ services:
    homebridge:
      container_name: fhem_homebridge
      image: oznu/homebridge:latest
-     restart: always
+     restart: unless-stopped
      environment:
       - TZ=Europe/Berlin
       - PUID=1000
@@ -155,7 +155,7 @@ services:
 
    reverseproxy:
      container_name: fhem_nginx
-     restart: always
+     restart: unless-stopped
      image: nginx:latest
      environment:
       - TZ=Europe/Berlin
@@ -178,7 +178,7 @@ services:
      image: marthoc/deconz
      container_name: fhem_deconz
      network_mode: host
-     restart: always
+     restart: unless-stopped
      volumes:
        - ./deconz/root/:/root/.local/share/dresden-elektronik/deCONZ
        - ./deconz/otau/:/root/otau
@@ -216,7 +216,7 @@ services:
      #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER=mail.domain.tld
      #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER=mail@domain.tld
      #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=Secret
-    restart: always
+    restart: unless-stopped
 
 volumes:
   portainer_data:
