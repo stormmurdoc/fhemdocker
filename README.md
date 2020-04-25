@@ -7,10 +7,6 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 + Mosquitto user-/groupid problem
 + DBLog Integration
-+ Boot config Raspberrypi for Homematic modul
-
-define myHmUART HMUARTLGGW /dev/ttyAMA0
-
 
 ## Requirements
 
