@@ -1,0 +1,1236 @@
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+[37m[6/3/2020, 10:43:16 PM][0m [36m[HB Supervisor][0m OS: Linux 5.4.43-1-lts x64
+[37m[6/3/2020, 10:43:16 PM][0m [36m[HB Supervisor][0m Homebridge Path: /usr/local/lib/node_modules/homebridge/bin/homebridge
+[37m[6/3/2020, 10:43:16 PM][0m [36m[HB Supervisor][0m UI Path: /usr/local/lib/node_modules/homebridge-config-ui-x/dist/bin/standalone.js
+[37m[6/3/2020, 10:43:16 PM][0m [36m[HB Supervisor][0m Starting Homebridge with extra flags: -P /homebridge/node_modules
+[37m[6/3/2020, 10:43:16 PM][0m [36m[HB Supervisor][0m Started Homebridge v1.1.0 with PID: 405
+[37m[6/3/2020, 10:43:16 PM] [39mLoaded config.json with 0 accessories and 1 platforms.
+[37m[6/3/2020, 10:43:16 PM] [39m---
+[37m[6/3/2020, 10:43:16 PM] [39mLoaded plugin: homebridge-dummy@0.4.1
+[37m[6/3/2020, 10:43:16 PM] [39mRegistering accessory 'homebridge-dummy.DummySwitch'
+[37m[6/3/2020, 10:43:16 PM] [39m---
+[37m[6/3/2020, 10:43:16 PM] [39mLoaded plugin: homebridge-fhem@0.5.13
+homebridge API version: 2.6
+this is homebridge-fhem 0.5.13
+[0;37m[6/3/2020, 10:43:17 PM] [0m[0;36m[Config][0m [0;33mHomebridge Config UI X v4.21.0 is listening on :: port 8080[0m
+[37m[6/3/2020, 10:43:17 PM] [39mRegistering platform 'homebridge-fhem.FHEM'
+[37m[6/3/2020, 10:43:17 PM] [39m---
+[37m[6/3/2020, 10:43:17 PM] [39mLoaded plugin: homebridge-config-ui-x@4.21.0
+[37m[6/3/2020, 10:43:17 PM] [39mRegistering platform 'homebridge-config-ui-x.config'
+[37m[6/3/2020, 10:43:17 PM] [39m---
+[37m[6/3/2020, 10:43:17 PM] [39mLoading 1 platforms...
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mInitializing FHEM platform...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216997770
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+Server listening on: http://<ip>:8282
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216997992
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:17 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216998197
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mfetching: http://localhost:80/fhem?cmd=jsonlist2%20room=Homekit&XHR=1
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m[31mThere was a problem connecting to FHEM[39m
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m[31m  500: Internal Server Error[39m
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216998402
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216998614
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216998818
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:18 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216999024
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216999228
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216999432
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216999636
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591216999847
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:19 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217000050
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217000255
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217000459
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217000663
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217000867
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:20 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217001071
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217001276
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217001480
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217001684
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217001889
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:21 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217002095
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217002299
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217002505
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217002709
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217002913
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:22 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217003118
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217003321
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217003525
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217003729
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217003935
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:23 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217004140
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217004344
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217004549
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217004754
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217004959
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:24 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217005163
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217005366
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217005570
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217005774
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217005979
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:25 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217006186
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217006390
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217006595
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217006801
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:26 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217007005
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217007209
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217007414
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217007626
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217007830
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:27 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217008035
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217008238
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217008442
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217008654
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217008859
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:28 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217009063
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217009268
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217009472
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217009676
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217009880
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:29 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217010084
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217010288
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217010493
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217010696
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217010900
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:30 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217011104
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217011308
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217011511
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217011717
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217011922
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:31 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217012127
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217012330
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217012535
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217012741
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217012945
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:32 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217013150
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217013353
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217013557
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217013762
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217013966
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:33 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217014169
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217014373
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217014579
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217014784
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217014988
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:34 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217015192
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217015396
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217015600
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217015805
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:35 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217016009
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217016215
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217016420
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217016625
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217016833
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mChecking devices and attributes...
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  executing: http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1
+longpoll ended, reconnect in: 200msec
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=jsonlist2%20TYPE=siri&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39mThere was a problem connecting to FHEM (http://localhost:80/fhem?cmd=%7BAttrVal(%22global%22,%22userattr%22,%22%22)%7D&XHR=1).
+[37m[6/3/2020, 10:43:36 PM] [39m[36m[FHEM] [39m  500: Internal Server Error
+[37m[6/3/2020, 10:44:43 PM][0m [36m[HB Supervisor][0m OS: Linux 5.4.43-1-lts x64
+[37m[6/3/2020, 10:44:43 PM][0m [36m[HB Supervisor][0m Homebridge Path: /usr/local/lib/node_modules/homebridge/bin/homebridge
+[37m[6/3/2020, 10:44:43 PM][0m [36m[HB Supervisor][0m UI Path: /usr/local/lib/node_modules/homebridge-config-ui-x/dist/bin/standalone.js
+[37m[6/3/2020, 10:44:43 PM][0m [36m[HB Supervisor][0m Starting Homebridge with extra flags: -P /homebridge/node_modules
+[37m[6/3/2020, 10:44:43 PM][0m [36m[HB Supervisor][0m Started Homebridge v1.1.0 with PID: 406
+[37m[6/3/2020, 10:44:44 PM] [39mLoaded config.json with 0 accessories and 1 platforms.
+[37m[6/3/2020, 10:44:44 PM] [39m---
+[37m[6/3/2020, 10:44:44 PM] [39mLoaded plugin: homebridge-dummy@0.4.1
+[37m[6/3/2020, 10:44:44 PM] [39mRegistering accessory 'homebridge-dummy.DummySwitch'
+[37m[6/3/2020, 10:44:44 PM] [39m---
+[37m[6/3/2020, 10:44:44 PM] [39mLoaded plugin: homebridge-fhem@0.5.13
+homebridge API version: 2.6
+this is homebridge-fhem 0.5.13
+[0;37m[6/3/2020, 10:44:45 PM] [0m[0;36m[Config][0m [0;33mHomebridge Config UI X v4.21.0 is listening on :: port 8080[0m
+[37m[6/3/2020, 10:44:45 PM] [39mRegistering platform 'homebridge-fhem.FHEM'
+[37m[6/3/2020, 10:44:45 PM] [39m---
+[37m[6/3/2020, 10:44:45 PM] [39mLoaded plugin: homebridge-config-ui-x@4.21.0
+[37m[6/3/2020, 10:44:45 PM] [39mRegistering platform 'homebridge-config-ui-x.config'
+[37m[6/3/2020, 10:44:45 PM] [39m---
+[37m[6/3/2020, 10:44:45 PM] [39mLoading 1 platforms...
+[37m[6/3/2020, 10:44:45 PM] [39m[36m[FHEM] [39mInitializing FHEM platform...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217085304
+[37m[6/3/2020, 10:44:45 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+Server listening on: http://<ip>:8282
+longpoll error: Error: read ECONNRESET, retry in: 5000msec
+[37m[6/3/2020, 10:44:45 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:46 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:46 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:47 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:47 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:48 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:48 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:49 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:49 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:50 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217090318
+longpoll error: Error: read ECONNRESET, retry in: 10000msec
+[37m[6/3/2020, 10:44:50 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:51 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:51 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:52 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:52 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:53 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:53 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:54 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:54 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:55 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:55 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:56 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:56 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:57 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:57 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:58 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:58 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:59 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:44:59 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217100320
+longpoll error: Error: read ECONNRESET, retry in: 15000msec
+[37m[6/3/2020, 10:45:00 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:00 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:01 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:01 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:02 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:02 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:03 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:03 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:04 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:04 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:05 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:05 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:06 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:06 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:07 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:07 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:08 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:08 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:09 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:09 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:10 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:10 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:11 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:11 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:12 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:12 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:13 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:13 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:14 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:14 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217115323
+longpoll error: Error: read ECONNRESET, retry in: 20000msec
+[37m[6/3/2020, 10:45:15 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:15 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:16 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:16 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:17 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:17 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:18 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:18 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:19 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:19 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:20 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:20 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:21 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:21 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:22 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:22 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:23 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:23 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:24 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:24 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:25 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:25 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:26 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:26 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:27 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:27 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:28 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:28 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:29 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:29 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:30 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:30 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:31 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:31 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:32 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:32 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:33 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:33 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:34 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:34 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217135326
+longpoll error: Error: read ECONNRESET, retry in: 25000msec
+[37m[6/3/2020, 10:45:35 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:35 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:36 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:36 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:37 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:37 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:38 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:38 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:39 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:39 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:40 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:40 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:41 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:41 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:42 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:42 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:43 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:43 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:44 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:44 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:45 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:45 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:46 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:46 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:47 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:47 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:48 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:48 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:49 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:49 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:50 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:50 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:51 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:51 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:52 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:52 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:53 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:53 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:54 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:54 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:55 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:55 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:56 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:56 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:57 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:57 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:58 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:58 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:59 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:45:59 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+starting longpoll: http://localhost:80/fhem?XHR=1&inform=type=status;addglobal=1;filter=.*;since=null;fmt=JSON&timestamp=1591217160327
+longpoll error: Error: read ECONNRESET, retry in: 30000msec
+[37m[6/3/2020, 10:46:00 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:00 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:01 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:01 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:02 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:02 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:03 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+[37m[6/3/2020, 10:46:03 PM] [39m[36m[FHEM] [39mFetching FHEM devices...
+
+
+    [1;37mThank you for using the [4;36moznu/homebridge[0m [1;37mdocker image![0m
+
+  If you find this project useful please [1;33mSTAR[0m it on GitHub:
+
+         [4;37mhttps://github.com/oznu/docker-homebridge[0m
+
+
