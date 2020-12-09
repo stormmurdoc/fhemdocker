@@ -11,6 +11,7 @@
 /fhem/restoreDir/*
 /fhem/.ssh/*
 /fhem/.bash_history
+/fhem/.npm/*
 /fhem/.telnet_history
 /mysql/data/*
 /mosquitto/log/*

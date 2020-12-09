@@ -47,12 +47,10 @@ Change your password with the command
       pi@raspberrypi:~ $
 
 
-
 ### System Update
 
       sudo apt-get update
       sudo apt-get dist-upgrade
-
 
 ### Set timezone
 
@@ -83,7 +81,6 @@ Change your password with the command
 Disable all pool server and add your local time server
 
       server 192.168.1.1
-
 
 ### Install oh-my-zsh
 
