@@ -46,19 +46,18 @@ services:
     restart: unless-stopped
     depends_on:
       - broker
-
-    #devices:
-    # -{usbport}:/dev/usb1
-    # - "/dev/ttyAMA0:/dev/ttyAMA0"
+    devices:
+      - "/dev/serial/by-id/usb-busware.de_CUL868-if00:/dev_docker/CUL_EG"
+      - "/dev/i2c-11:/dev/i2c-11"
     # - "/dev/ttyUSB0:/dev/ttyUSB0"
     # dns: 192.168.1.107
     # dns_search: fritz.box
     networks:
       - fhem-network
     ports:
-      #- "8083:8083"
+      - "8083:8083"
       #- "7072:7072"
-      - "222:22"
+      #- "222:22"
     volumes:
       - "./fhem/:/opt/fhem/"
       - "./pre-init.sh:/docker/pre-init.sh"
