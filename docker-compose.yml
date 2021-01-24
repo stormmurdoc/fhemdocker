@@ -1,5 +1,5 @@
 version: '3'
-### HR ### neu xxx
+### HR ### neu xxx yyy zzz
 
 services:
   broker:
@@ -15,6 +15,7 @@ services:
       - "1883:1883"
     environment:
      - TZ=Europe/Berlin
+
 
   tasmotaadmin:
     container_name: fhem_tasmotaadmin
@@ -48,7 +49,10 @@ services:
       - broker
     devices:
       - "/dev/serial/by-id/usb-busware.de_CUL868-if00:/dev_docker/CUL_EG"
-      - "/dev/i2c-11:/dev/i2c-11"
+    #  - "/dev/serial/by-path/.............:/dev_docker/CUL_EG"
+    #  - "/dev/serial/by-path/.............:/dev_docker/CUL_OG"
+    #  - "/dev/serial/by-path/.............:/dev_docker/CUL_MAX"
+    #  - "/dev/i2c-11:/dev/i2c-99"
     # - "/dev/ttyUSB0:/dev/ttyUSB0"
     # dns: 192.168.1.107
     # dns_search: fritz.box
@@ -131,28 +135,6 @@ services:
       - fhem-network
 
 
-  homebridge:
-    container_name: fhem_homebridge
-    image: oznu/homebridge:latest
-    restart: unless-stopped
-    environment:
-      - TZ=Europe/Berlin
-      - PUID=1000
-      - PGID=1000
-    depends_on:
-      - reverseproxy
-      - fhem
-    network_mode: host
-    command: sh -c "sleep 2 && until ping -qc1 fhem; do sleep 1; done &>/dev/null"
-    environment:
-      - TZ=Europe/Berlin
-      - PGID=1000
-      - PUID=1000
-      - HOMEBRIDGE_CONFIG_UI=1
-      - HOMEBRIDGE_CONFIG_UI_PORT=8080
-    volumes:
-      - "./homebridge:/homebridge"
-
   reverseproxy:
     container_name: fhem_nginx
     restart: unless-stopped
@@ -174,6 +156,7 @@ services:
       - fhem-network
     depends_on:
       - fhem
+
 
   deconz:
     image: marthoc/deconz
@@ -199,6 +182,7 @@ services:
         #- DECONZ_VNC_MODE=1
         #- DECONZ_VNC_PASSWORD=changeme
       - DECONZ_UPNP=1
+
   watchtower:
     image: containrrr/watchtower
     container_name: fhem_watchtower
