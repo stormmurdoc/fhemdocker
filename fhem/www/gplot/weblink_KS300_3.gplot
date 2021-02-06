@@ -1,0 +1,19 @@
+# Created by FHEM/98_SVG.pm, 2017-11-05 17:46:33
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<L1>'
+set ytics ("no" 0, "yes" 1)
+set y2tics 
+set grid
+set ylabel "Rain (l/m2)"
+set y2label "Temperature in C"
+set yrange [0:]
+
+#f.KS300 4:KS300.*:0:
+#f.KS300 12:KS300.*:0:$fld[11]=~"yes":0.2
+
+plot "<IN>" using 1:2 axes x1y2 title 'Temperature' ls l0fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'israining' ls l3fill lw 1 with histeps

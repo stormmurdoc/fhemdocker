@@ -1,0 +1,24 @@
+# Created by FHEM/98_SVG.pm, 2019-11-06 19:17:30
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<L1>'
+set ytics nomirror
+set y2tics 
+set grid y2tics
+set ylabel "Temperature in C"
+set y2label "Temperature in C"
+
+#f.LUX 4:LUX_0.flowTemperature\x3a:0:
+#f.LUX 4:LUX_0.returnTemperatureTarget\x3a:0:
+#f.LUX 4:LUX_0.returnTemperature\x3a:0:
+#f.LUX 4:LUX_0.ambientTemperature\x3a:0:
+#f.LUX 4:averageAmbientTemperature:0:
+
+plot "<IN>" using 1:2 axes x1y1 title 'Vorlauftemperatur' ls l0fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Rücklauftemperatur SOLL' ls l1fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Rücklauftemperatur' ls l2fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Außentemperatur' ls l3fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'durchschnittliche Außentemperatur' ls l4fill lw 1 with lines

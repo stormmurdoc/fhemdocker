@@ -1,0 +1,21 @@
+# Created by FHEM/98_SVG.pm, 2017-01-15 20:33:45
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<L1>'
+set ytics ("off" 0, "on" 1)
+set y2tics 
+set grid y2tics
+set ylabel ""
+set y2label "Temperature in C"
+set yrange [-0.1:1.1]
+
+#f.ZWave_SENSOR1 4:ZWave_SENSOR1.temperature\x3a:0:
+#f.ZWave_SENSOR1 4:ZWave_SENSOR1.luminance\x3a:0:
+#f.ZWave_SENSOR1 4:ZWave_SENSOR1.alarm\x3a:0:$fld[5]=~"Motion"?0.5:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'Temp' ls l0 lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y2 title 'Lux' ls l1 lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Mot' ls l2 lw 2 with points

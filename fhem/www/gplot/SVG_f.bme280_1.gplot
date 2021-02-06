@@ -1,0 +1,21 @@
+# Created by FHEM/98_SVG.pm, 2019-01-13 12:54:16
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics 
+set y2tics 
+set grid
+set ylabel "Druck"
+set y2label "Temperature"
+set y2range [0:40]
+
+#f.bme280 4:ESPEasy_ESP_Easy_BME280.*::
+#f.bme280 6:ESPEasy_ESP_Easy_BME280.*::
+#f.bme280 8:ESPEasy_ESP_Easy_BME280.*::
+
+plot "<IN>" using 1:2 axes x1y2 title 'Feuchte' ls l0 lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Druck' ls l1 lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y2 title 'Temp' ls l2 lw 1 with lines

@@ -1,0 +1,19 @@
+# Created by FHEM/98_SVG.pm, 2019-11-21 20:07:06
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics 
+set y2tics 
+set grid
+set ylabel "Humidity"
+set y2label "Temperature"
+set y2range [-2:23]
+
+#f.AQARA_THP1 4:AQ5_T.temperature\x3a::
+#f.AQARA_THP1 4:AQ6_H.humidity\x3a::
+
+plot "<IN>" using 1:2 axes x1y2 title 'Temperatur' ls l0 lw 3 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Feuchte' ls l1 lw 3 with lines

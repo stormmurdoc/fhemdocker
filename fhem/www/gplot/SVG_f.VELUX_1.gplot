@@ -1,0 +1,17 @@
+# Created by FHEM/98_SVG.pm, 2019-06-23 16:42:47
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics ("closed" 0, "opened" 1)
+set y2tics ("closed" 0, "opened" 1)
+set grid
+set ylabel "Velux"
+set y2label "Velux"
+set y2range [0:1]
+
+#f.VELUX 3:VELUX.*::$fld[2]=~"opened"?0.8:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'Status' ls l1fill lw 1 with steps

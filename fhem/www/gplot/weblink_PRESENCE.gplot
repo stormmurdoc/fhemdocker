@@ -1,0 +1,37 @@
+# Created by FHEM/98_SVG.pm, 2018-11-21 12:13:18
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics -
+set y2tics -
+set grid y2tics
+set ylabel ""
+set y2label ""
+set y2range [0.5:9.5]
+
+#f.PRESENCE 3:p.pccontrol.presence\x3a::$fld[3]=~"present"?8:0
+#f.PRESENCE 3:p.pc_leo.presence\x3a::$fld[3]=~"present"?7:0
+#f.PRESENCE 3:p.pc_jonas.presence\x3a::$fld[3]=~"present"?6:0
+#f.PRESENCE 3:p.noteX99.presence\x3a::$fld[3]=~"present"?5:0
+#f.PRESENCE 3:p.galaxyA3.presence\x3a::$fld[3]=~"present"?4:0
+#f.PRESENCE 3:p.android_jonas.presence\x3a::$fld[3]=~"present"?3:0
+#f.PRESENCE 3:p.honor.presence\x3a::$fld[3]=~"present"?2:0
+#f.PRESENCE 3:p.ps4.presence\x3a::$fld[3]=~"present"?1:0
+#f.MAX_TUER 3:MAXT_TUER1.onoff\x3a::$fld[3]=~"1"?8:0
+#f.MAX_TUER 3:MAXT_GARAGE.onoff\x3a::$fld[3]=~"1"?8:0
+#f.PRESENCE 3:p.tv_og.presence\x3a::$fld[3]=~"present"?9:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'PC_H' ls l0fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'PC_L' ls l1fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'PC_J' ls l2fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'H_H' ls l3fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'H_A' ls l4fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'H_J' ls l5fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'H_L' ls l6fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'PS' ls l0fill lw 4 with points,\
+     "<IN>" using 1:2 axes x1y1 title 'Tür' ls l0 lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y1 title 'Garage' ls l1 lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y2 title 'TV_OG' ls l5fill lw 4 with points

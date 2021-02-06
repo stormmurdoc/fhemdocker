@@ -1,0 +1,23 @@
+# Created by FHEM/98_SVG.pm, 2019-06-23 21:25:16
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title 'LUX'
+set ytics ("off" 0, "on" 0.6)
+set y2tics ("off" 0, "on" 0.6)
+set grid
+set ylabel "on/off"
+set y2label ""
+set yrange [0:1]
+
+#f.LUX 3:LUX_0.heatingSystemCircPump\x3a:0:$fld[3]=~"on"?0.2:0
+#f.LUX "0":LUX_0.hotWaterSwitchingValve\x3a:0:$fld[3]=~"on"?0.8:0
+#f.LUX "0":LUX_0.opStateHeatPump1\x3a:0:$fld[4]=~"läuft"?0.4:0
+#f.zirkulationspumpe 3:XX_Zirkulationspumpe.*:0:$fld[2]=~"on"?0.2:0
+
+plot "<IN>" using 1:2 axes x1y1 title 'Pumpe' ls l0 lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y1 title 'Warmwasser' ls l2fill lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y1 title 'Heizung' ls l3fill lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y1 title 'Zirkulation' ls l1fill lw 1 with steps

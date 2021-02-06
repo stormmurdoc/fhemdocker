@@ -1,0 +1,18 @@
+# Created by FHEM/98_SVG.pm, 2019-04-10 07:52:23
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics 
+set y2tics 
+set grid
+set ylabel "PIR"
+set y2label "PIR"
+set yrange [0:1]
+set y2range [0:1]
+
+#f.Motion_pir 4:Motion_pir.POWER2\x3a::$fld[3]=~"on"?0.6:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'Pir' ls l0 lw 1 with steps

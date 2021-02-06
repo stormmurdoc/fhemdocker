@@ -1,0 +1,25 @@
+# Created by FHEM/98_SVG.pm, 2018-11-17 11:44:03
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics ("Zu" 0, "Auf" 1)
+set y2tics ("Zu" 0, "Auf" 1)
+set grid
+set ylabel "Status"
+set y2label "Status"
+set y2range [0:1]
+
+#f.MAX_TUER 3:MAXT_TUER1.onoff\x3a::$fld[3]
+#f.MAX_TUER 3:MAXT_GARAGE.onoff\x3a::$fld[3]=~"1"?0.8:0
+#f.MAX_TUER 3:MAXT_WOHNEN.onoff\x3a::$fld[3]=~"1"?0.6:0
+#f.MAX_TUER 3:MAXT_TUER2.onoff\x3a::$fld[3]=~"1"?0.4:0
+#f.MAX_TUER 3:MAXT_GARTENHAUS.onoff\x3a::$fld[3]=~"1"?0.2:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'Eingang' ls l0fill lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y2 title 'Garage' ls l2fill lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y2 title 'Wohnen' ls l4fill lw 1 with steps,\
+     "<IN>" using 1:2 axes x1y2 title 'Hinten' ls l1fill lw 2 with steps,\
+     "<IN>" using 1:2 axes x1y2 title 'Gartenhaus' ls l5fill lw 1 with steps

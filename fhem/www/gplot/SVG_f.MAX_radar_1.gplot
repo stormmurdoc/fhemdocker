@@ -1,0 +1,16 @@
+# Created by FHEM/98_SVG.pm, 2019-02-16 21:41:39
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics 
+set y2tics 
+set grid
+set ylabel "Humidity"
+set y2label "Temperature"
+
+#f.MAX_radar 4:MAX_radar.onoff\x3a::$fld[3]=~"1"?0.6:0
+
+plot "<IN>" using 1:2 axes x1y2 title 'Radar' ls l0 lw 1 with fsteps

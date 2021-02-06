@@ -1,0 +1,20 @@
+# Created by FHEM/98_SVG.pm, 2019-12-17 20:57:02
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<TL>'
+set ytics 
+set y2tics 
+set grid
+set ylabel ""
+set y2label ""
+set yrange [0:1]
+set y2range [0:1]
+
+#f.AQ14 3:AQ14.reachable\x3a::$fld[3]=~"1"?0.8:0
+#f.AQ14 3:AQ14.*::$fld[2]=~".*Press"?0.5:-0.1
+
+plot "<IN>" using 1:2 axes x1y1 title 'Reachable' ls l0fill_stripe lw 3 with points,\
+     "<IN>" using 1:2 axes x1y2 title 'Press' ls l1fill lw 3 with points

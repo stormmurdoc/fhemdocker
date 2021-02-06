@@ -1,0 +1,20 @@
+# Created by FHEM/98_SVG.pm, 2017-02-11 14:04:45
+set terminal png transparent size <SIZE> crop
+set output '<OUT>.png'
+set xdata time
+set timefmt "%Y-%m-%d_%H:%M:%S"
+set xlabel " "
+set title '<L1>'
+set ytics nomirror
+set y2tics 
+set grid y2tics
+set ylabel "Humidity (%)"
+set y2label "Temperature in C"
+
+#f.HMS100TF_2 4:HMS100TF_2.*:0:
+#f.HMS100TF_2 6:HMS100TF_2.*:0:
+#f.HMS100TF_2 10:HMS100TF_2.*:0:
+
+plot "<IN>" using 1:2 axes x1y2 title 'Temperature' ls l0 lw 4 with lines,\
+     "<IN>" using 1:2 axes x1y1 title 'Humidity' ls l2fill lw 1 with lines,\
+     "<IN>" using 1:2 axes x1y2 title 'Dewpoint' ls l4 lw 2 with lines
