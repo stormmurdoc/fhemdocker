@@ -234,3 +234,5 @@ If you want to commit a FHEM command via the local telnet daemon you can use the
       Hostname: raspberrypi4 (replace it with your hostname)
 
       fcmd.sh <FHEM Command>
+
+# End
