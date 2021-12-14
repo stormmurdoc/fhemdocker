@@ -202,11 +202,11 @@ ctop is available in [AUR](https://aur.archlinux.org/packages/ctop/), so you can
 ### Installation Linux
 
 #### x86 Platform
-      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-amd64 -O /usr/local/bin/ctop
+      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.5/ctop-0.7.5-linux-amd64 -O /usr/local/bin/ctop
       sudo chmod +x /usr/local/bin/ctop
 
 #### arm Platform
-      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.3/ctop-0.7.3-linux-arm -O /usr/local/bin/ctop
+      sudo wget https://github.com/bcicen/ctop/releases/download/v0.7.5/ctop-0.7.5-linux-arm -O /usr/local/bin/ctop
       sudo chmod +x /usr/local/bin/ctop
 
 ## Known Issues
