@@ -37,7 +37,7 @@ env_raspbian() {
 # I'm root?
 #
 if [ "$EUID" -ne 0 ]
-then echo "Please run as root or with sudo $(basename $0)"
+then echo "Please run as root or with sudo $(basename "$0")"
   exit
 fi
 

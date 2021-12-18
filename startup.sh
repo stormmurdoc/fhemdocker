@@ -9,7 +9,7 @@
 # Parameters: none
 #
 
-SCRIPT=$(basename $0)
+SCRIPT=$(basename "$0")
 
 echo "+++ $SCRIPT started +++"
 

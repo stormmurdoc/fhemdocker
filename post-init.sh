@@ -15,7 +15,7 @@
 #
 # Parameters: none
 #
-SCRIPTNAME=$(basename $0)
+SCRIPTNAME=$(basename "$0")
 USERNAME=$(whoami)
 
 echo "+++ $SCRIPTNAME (USER/ID: $USERNAME/$UID) started +++"

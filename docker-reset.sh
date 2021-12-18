@@ -13,7 +13,7 @@
 docker-compose down
 
 # Deleting all containers
-docker rm $(docker ps -a -q)
+docker rm "$(docker ps -a -q)"
 
 # Deleting all images
-docker rmi $(docker images -q)
+docker rmi "$(docker images -q)"

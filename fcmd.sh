@@ -6,4 +6,6 @@
 #
 # Parameters: $1 : FHEM Command
 #
-ssh 2>/dev/null pi@raspberrypi4 -n "echo "$@" | docker exec --interactive fhem_fhem socat -t50 - TCP:localhost:7072"
+
+# shellcheck disable=SC2145
+ssh 2>/dev/null pi@raspberrypi4 -n "echo $@ | docker exec --interactive fhem_fhem socat -t50 - TCP:localhost:7072"
