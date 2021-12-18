@@ -17,6 +17,11 @@
                 "pass": "admin"
             },
             "filter": "room=Homekit"
+        },
+        {
+            "name": "Config",
+            "port": 8080,
+            "platform": "config"
         }
     ]
 }
