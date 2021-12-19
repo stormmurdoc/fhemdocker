@@ -6,7 +6,7 @@
 #
 # Christian Hoenig
 #
-# $Id: 10_WS980.pm 20815 2019-12-23 08:01:40Z choenig $
+# $Id: 10_WS980.pm 24727 2021-07-11 12:24:22Z choenig $
 #
 ########################################################################################
 #
@@ -33,7 +33,7 @@ use warnings;
 use IO::Socket::INET;
 use POSIX qw(strftime);
 
-my $version = "1.1.1";
+my $version = "1.5.0";
 
 #------------------------------------------------------------------------------------------------------
 # global constants
@@ -75,29 +75,29 @@ use constant REQUESTS => {
 use constant HAS_TIME => 0x40;
 use constant HAS_DATE => 0x80;
 use constant VALUES => {
-		0x01 => {"name" => "temperatureInside",  "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    }, # °C  ## x / 10.0 - 40.0
-		0x02 => {"name" => "temperature",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    }, # °C  ## x / 10.0 - 40.0
-		0x03 => {"name" => "dewPoint",           "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    }, # °C  ## x / 10.0 - 40.0
-		0x04 => {"name" => "windChill",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    }, # °C  ## x / 10.0 - 40.0
-		0x05 => {"name" => "heatIndex",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    }, # °C  ## x / 10.0 - 40.0
-		0x06 => {"name" => "humidityInside",     "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "%"     }, # %
-		0x07 => {"name" => "humidity",           "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "%"     }, # %
-		0x08 => {"name" => "pressureAbs",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "hPa"   }, # hPa
-		0x09 => {"name" => "pressureRel",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "hPa"   }, # hPa
-		0x0A => {"name" => "windDirection",      "bytes" => 2, "factor" =>  1, "format" => "%d"  , "unit" => "deg"   }, # °
-		0x0B => {"name" => "wind",               "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "m/s"   }, # m/s
-		0x0C => {"name" => "windGusts",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "m/s"   }, # m/s
-		0x0D => {"name" => "rainEvent",          "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x0E => {"name" => "rainRate",           "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x0F => {"name" => "rainPerHour",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, #
-		0x10 => {"name" => "rainPerDay",         "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x11 => {"name" => "rainPerWeek",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x12 => {"name" => "rainPerMonth",       "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x13 => {"name" => "rainPerYear",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x14 => {"name" => "rainTotal",          "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    }, # mm
-		0x15 => {"name" => "brightness",         "bytes" => 4, "factor" => 10, "format" => "%d"  , "unit" => "lux"   }, # lux
-		0x16 => {"name" => "uv",                 "bytes" => 2, "factor" =>  1, "format" => "%d"  , "unit" => "uW/m^2"}, # uW/m^2
-		0x17 => {"name" => "uvIndex",            "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "uvi"   }, # 0-15 index ??
+		0x01 => {"name" => "temperatureInside",  "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    , "error" => 0x7FFF    }, # °C  ## x / 10.0 - 40.0
+		0x02 => {"name" => "temperature",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    , "error" => 0x7FFF    }, # °C  ## x / 10.0 - 40.0
+		0x03 => {"name" => "dewPoint",           "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    , "error" => 0x7FFF    }, # °C  ## x / 10.0 - 40.0
+		0x04 => {"name" => "windChill",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    , "error" => 0x7FFF    }, # °C  ## x / 10.0 - 40.0
+		0x05 => {"name" => "heatIndex",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "°C"    , "error" => 0x7FFF    }, # °C  ## x / 10.0 - 40.0
+		0x06 => {"name" => "humidityInside",     "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "%"     , "error" => 0xFF      }, # %
+		0x07 => {"name" => "humidity",           "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "%"     , "error" => 0xFF      }, # %
+		0x08 => {"name" => "pressureAbs",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "hPa"   , "error" => 0xFFFF    }, # hPa   err=?
+		0x09 => {"name" => "pressureRel",        "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "hPa"   , "error" => 0xFFFF    }, # hPa   err=?
+		0x0A => {"name" => "windDirection",      "bytes" => 2, "factor" =>  1, "format" => "%d"  , "unit" => "deg"   , "error" => 0x0FFF    }, # °
+		0x0B => {"name" => "wind",               "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "m/s"   , "error" => 0xFFFF    }, # m/s
+		0x0C => {"name" => "windGusts",          "bytes" => 2, "factor" => 10, "format" => "%.1f", "unit" => "m/s"   , "error" => 0xFFFF    }, # m/s
+		0x0D => {"name" => "rainEvent",          "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x0E => {"name" => "rainRate",           "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x0F => {"name" => "rainPerHour",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, #       err=?
+		0x10 => {"name" => "rainPerDay",         "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x11 => {"name" => "rainPerWeek",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x12 => {"name" => "rainPerMonth",       "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x13 => {"name" => "rainPerYear",        "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x14 => {"name" => "rainTotal",          "bytes" => 4, "factor" => 10, "format" => "%.1f", "unit" => "mm"    , "error" => 0xFFFFFFFF}, # mm    err=?
+		0x15 => {"name" => "brightness",         "bytes" => 4, "factor" => 10, "format" => "%d"  , "unit" => "lux"   , "error" => 0x00FFFFFF}, # lux
+		0x16 => {"name" => "uv",                 "bytes" => 2, "factor" =>  1, "format" => "%d"  , "unit" => "uW/m^2", "error" => 0xFFFF    }, # uW/m^2
+		0x17 => {"name" => "uvIndex",            "bytes" => 1, "factor" =>  1, "format" => "%d"  , "unit" => "uvi"   , "error" => 0xFF      }, # 0-15 index ??
 };
 
 use constant UNIT_CONVERSIONS => {
@@ -138,7 +138,7 @@ use constant UNIT_CONVERSIONS => {
 		"fnc"  => {
 			"lux"   => sub { my ($c) = @_; return $c },
 			"fc"    => sub { my ($c) = @_; return $c * 0.09290304000008},
-			"w/m^2" => sub { my ($c) = @_; return $c * 0.001464128843338},
+			"w/m^2" => sub { my ($c) = @_; return $c * 0.0079},  # 0.001464128843338 @ 555nm
 		},
 	},
 };
@@ -151,7 +151,7 @@ sub WS980_Initialize($)
 {
 	my ($hash) = @_;
 
-	Log3 undef, 5, "WS980 - WS980_Initialize() called";
+	WS980_Log(undef, 5, "called");
 
 	$hash->{DefFn}     = "WS980_DefFn";
 	$hash->{UndefFn}   = "WS980_UndefFn";
@@ -165,6 +165,7 @@ sub WS980_Initialize($)
 	$hash->{AttrList}  = "altitude ".
 	                     "events:textField-long ".
 	                     "connection:Keep-Alive,Close ".
+	                     "invalidValues:updateReading,skip,skipAndLog ".
 	                     "requests:multiple-strict,".join(",", sort keys %{REQUESTS()})." ".
 	                     "showRawBuffer:1 ".
 	                     "silentReconnect:1 ".
@@ -201,8 +202,8 @@ sub WS980_DefFn($$)
 	}
 
 	my ($name, $ip, $interval) = @a;
-	Log3 $name, 5, "WS980 ($name) - WS980_DefFn() called";
-
+	WS980_Log($hash, 5, "called");
+	
 	my $port = 45000;
 	# try to auto-discover the IP
 	if (!defined($ip)) {
@@ -241,7 +242,7 @@ sub WS980_UndefFn($$)
 	my ($hash, $arg) = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - WS980_UndefFn() called";
+	WS980_Log($hash, 5, "called");
 
 	delete $modules{WS980}{defptr}{$hash->{IP}};
 
@@ -293,6 +294,20 @@ sub WS980_AttrFn(@)
 		}
 	}
 
+	#######################
+	#### invalidValues ####
+
+	if ($attrName eq "invalidValues") {
+		if ($cmd eq "set") {
+			if ($attrVal eq "updateReading" || $attrVal eq "skip" || $attrVal eq "skipAndLog") {
+				return undef;
+			}
+			else {
+				return "'invalidValues' must be either updateReading, skip or skipAndLog";
+			}
+		}
+	}
+
 	################
 	#### events ####
 
@@ -325,11 +340,11 @@ sub WS980_AttrFn(@)
 		if ($cmd eq "set" and $attrVal eq "1") {
 			WS980_Close($hash);
 			readingsSingleUpdate ( $hash, "state", "disabled", 1 );
-			Log3 $name, 2, "WS980 ($name) - disabled";
+			WS980_Log($hash, 2, "disabled");
 		}
 		elsif ($cmd eq "del") {
 			readingsSingleUpdate ( $hash, "state", "active", 1 );
-			Log3 $name, 2, "WS980 ($name) - enabled";
+			WS980_Log($hash, 2, "enabled");
 		}
 	}
 
@@ -379,7 +394,7 @@ sub WS980_autodiscoverIP($)
 	my ($hash) = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - WS980_autodiscoverIP";
+	WS980_Log($hash, 5, "called");
 
 	my $socket = IO::Socket::INET->new(
 		PeerAddr => inet_ntoa(INADDR_BROADCAST),
@@ -392,7 +407,7 @@ sub WS980_autodiscoverIP($)
 	);
 
 	if (!$socket) {
-		Log3 $name, 1, "WS980 ($name) - autodiscovery failed: no socket";
+		WS980_Log($hash, 1, "autodiscovery failed: no socket");
 		return (undef,undef);
 	}
 
@@ -404,13 +419,13 @@ sub WS980_autodiscoverIP($)
 	);
 
 	if (!$recvSocket) {
-		Log3 $name, 1, "WS980 ($name) - autodiscovery failed: no recvSocket";
+		WS980_Log($hash, 1, "autodiscovery failed: no recvSocket");
 		return (undef,undef);
 	}
 
 	# set receive timeout to 500msecs second (format is: secs, microsecs)
 	if (!$recvSocket->setsockopt(SOL_SOCKET, SO_RCVTIMEO, pack('l!l!', 0, 500*1000))) {
-		Log3 $name, 1, "WS980 ($name) - autodiscovery failed: could not set SO_RCVTIMEO on recvSocket";
+		WS980_Log($hash, 1, "autodiscovery failed: could not set SO_RCVTIMEO on recvSocket");
 		return (undef,undef);
 	}
 
@@ -419,9 +434,9 @@ sub WS980_autodiscoverIP($)
 	my $req = WS980_createRequestRaw("\x12");
 
 	# send request
-	Log3 $name, 4, "WS980 ($name) - broadcasting auto-discovery: " . WS980_hexDump($req);
+	WS980_Log($hash, 4, "broadcasting auto-discovery: " . WS980_hexDump($req));
 	if ($socket->send($req) == 0) {
-		Log3 $name, 1, "WS980 ($name) - autodiscovery failed: cannot send request";
+		WS980_Log($hash, 1, "autodiscovery failed: cannot send request");
 		return (undef,undef);
 	}
 	$socket->close();
@@ -433,13 +448,21 @@ sub WS980_autodiscoverIP($)
 
 	# ffff 12 LLLL ?? ?? ?? ?? ?? ?? I1 I2 I3 I4 PPPP LN NN..NN C2
 	#              84 f3 eb 21 8c d1
-	Log3 $name, 4, "WS980 ($name) - received raw reply: " . WS980_hexDump($rawbuf);
+	WS980_Log($hash, 4, "received raw reply: " . WS980_hexDump($rawbuf));
 
 	my ($typeStr, $buf) = WS980_handleReply($hash, $rawbuf);
-	my ($ip1, $ip2, $ip3, $ip4, $port, $stationName) = unpack("x[6]CCCCnC/A", $buf);
-	Log3 $name, 2, "WS980 ($name) - reply: $ip1, $ip2, $ip3, $ip4, $port, $stationName";
 
-	return (sprintf("%d.%d.%d.%d", $ip1, $ip2, $ip3, $ip4), $port);
+	if (defined($buf)) {
+		my ($ip1, $ip2, $ip3, $ip4, $port, $stationName) = unpack("x[6]CCCCnC/A", $buf);
+		WS980_Log($hash, 2, "autodiscovery-reply: $ip1, $ip2, $ip3, $ip4, $port, $stationName");
+
+		return (sprintf("%d.%d.%d.%d", $ip1, $ip2, $ip3, $ip4), $port);
+	}
+	else
+	{
+		WS980_Log($hash, 1, "autodiscovery failed: looks like the reply could not be decoded");
+		return (undef,undef);
+	}
 }
 
 
@@ -452,7 +475,7 @@ sub WS980_updateValues($)
 	my $name = $hash->{NAME};
 	my $ip = $hash->{IP};
 
-	Log3 $name, 5, "WS980 ($name) - WS980_updateValues called";
+	WS980_Log($hash, 5, "called");
 
 	my $interval = $hash->{INTERVAL};
 	RemoveInternalTimer($hash, "WS980_updateValues");
@@ -462,7 +485,7 @@ sub WS980_updateValues($)
 
 	if ($hash->{helper}{requestInProgress} == 1) {
 		my $logLevel = AttrVal($name, "silentReconnect", "") eq "1" ? 4 : 3;
-		Log3 $name, $logLevel, "WS980 ($name) - looks like the last request did not receive an answer, trying to reconnect";
+		WS980_Log($hash, $logLevel, "looks like the last request did not receive an answer, trying to reconnect");
 		WS980_Close($hash);
 	}
 
@@ -487,7 +510,7 @@ sub WS980_writeNextActiveRequest($)
 	my ($hash) = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - activeRquests: " . join(" ", @{$hash->{helper}{activeRequests}});
+	WS980_Log($hash, 5, "activeRquests: " . join(" ", @{$hash->{helper}{activeRequests}}));
 
 	my $valueType = shift(@{$hash->{helper}{activeRequests}});
 	if (!defined($valueType)) {
@@ -503,7 +526,7 @@ sub WS980_writeNextActiveRequest($)
 	my $buf = WS980_createRequest($hash, $valueType);
 	if (defined $buf) {
 		my $logLevel = AttrVal($name, "silentReconnect", "") eq "1" ? 4 : 3;
-		Log3 $name, $logLevel, "WS980 ($name) - Sending new request for '$valueType'...";
+		WS980_Log($hash, $logLevel, "Sending new request for '$valueType'...");
 		WS980_WriteFn($hash, $buf);
 	} else {
 		WS980_Close($hash);
@@ -519,7 +542,10 @@ sub WS980_handleMultiValuesUpdate($$$)
 	my ($hash, $valueType, $buf) = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - decoding block: " . WS980_hexDump($buf);
+	WS980_Log($hash, 5, "decoding block: " . WS980_hexDump($buf));
+
+	my $showRawBuffer = AttrVal($name, "showRawBuffer", "0") eq "1" ? 1 : 0;
+	my $invalidValues = AttrVal($name, "invalidValues", "updateReading");
 
 	for (my $i = 0; $i < length($buf); )
 	{
@@ -555,19 +581,20 @@ sub WS980_handleMultiValuesUpdate($$$)
 		my $factor = VALUES->{$id}{"factor"};
 		my $format = VALUES->{$id}{"format"};
 		my $unit   = VALUES->{$id}{"unit"};
+		my $errVal = VALUES->{$id}{"error"};
 
-		my $ffff   = "\xff"x($bytes);
-
-		my $value = substr($buf, $i, $bytes);
+		my $rawValue = substr($buf, $i, $bytes);
 		$i += $bytes;
 
-		# just print the hex values if $format is "raw"
-		if ($format eq "raw") {
-			$value = WS980_hexDump($value);
-		} elsif ($value eq $ffff) {
-			$value = "n/a";
+		my $value = hex(WS980_binToHex($rawValue));
+		if ($value eq $errVal) {
+			if ($invalidValues eq "updateReading") {
+				$value = 'n/a';
+			} else {
+				WS980_Log($hash, 4, "skipping invalid value of \"$reading\"") if ($invalidValues eq "skipAndLog");
+				next;
+			}
 		} else {
-			$value = hex(WS980_binToHex($value));
 			# convert negative values
 			my $lbit = 1 << ($bytes * 2 * 4) - 1;
 			if ($value & $lbit) {
@@ -590,6 +617,9 @@ sub WS980_handleMultiValuesUpdate($$$)
 			# and format
 			$value = sprintf($format, $value)
 		}
+
+		# append raw if ($showRawBuffer)
+		$value .= " " . WS980_hexDump($rawValue) if ($showRawBuffer);
 
 		my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime();
 		if ($hasDate) {
@@ -841,7 +871,7 @@ sub WS980_Open($)
 	return 1 if ($hash->{CD});
 
 	my $logLevel = AttrVal($name, "silentReconnect", "") eq "1" ? 4 : 3;
-	Log3 $name, $logLevel, "WS980 ($name) - Creating socket connection to $ip:$port";
+	WS980_Log($hash, $logLevel, "Creating socket connection to $ip:$port");
 
 	my $socket = new IO::Socket::INET(
 		PeerAddr => $ip,
@@ -868,7 +898,7 @@ sub WS980_Open($)
 
 	$hash->{ConnectionState} = 'connected';
 
-	Log3 $name, $logLevel, "WS980 ($name) - Socket Connected";
+	WS980_Log($hash, $logLevel, "Socket Connected");
 	return 1;
 }
 
@@ -881,12 +911,12 @@ sub WS980_ReadFn($)
 	my ($hash) = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - ReadFn started";
+	WS980_Log($hash, 5, "called");
 
 	my $rawbuf;
 	my $len = sysread($hash->{CD}, $rawbuf, 10240);
 
-	Log3 $name, 4, "WS980 ($name) - received reply: " . WS980_hexDump($rawbuf);
+	WS980_Log($hash, 4, "received reply: " . WS980_hexDump($rawbuf));
 
 	$hash->{helper}{requestInProgress} = 0;
 
@@ -915,7 +945,7 @@ sub WS980_ReadFn($)
 	}
 	else
 	{
-		Log3 $name, 1, "WS980 ($name) - looks like the reply could not be decoded, skipping";
+		WS980_Log($hash, 1, "looks like the reply could not be decoded, skipping");
 	}
 
 	WS980_writeNextActiveRequest($hash);
@@ -969,7 +999,7 @@ sub WS980_updateRain24h($)
 	my $curTS  = int(gettimeofday() / $interval);
 	return if ($lastTS == $curTS);
 
-	Log3 $name, 5, "WS980 ($name) - updating rain24h ...";
+	WS980_Log($hash, 5, "updating rain24h ...");
 	readingsSingleUpdate($hash, ".rain24h_lastTS", $curTS, 1);
 
 	my $curRainTotal = ReadingsNum($name, "rainTotal", -1);
@@ -1006,10 +1036,10 @@ sub WS980_updateRelPressure($)
 	}
 
 	my $relPressure = WS980_calculateRelPressure_QFF(
-		ReadingsVal($name, "temperature", 0.0),
-		ReadingsVal($name, "pressureAbs", 0.0),
+		ReadingsNum($name, "temperature", 0.0),
+		ReadingsNum($name, "pressureAbs", 0.0),
 		$altitude,
-		ReadingsVal($name, "humidity", 0.0));
+		ReadingsNum($name, "humidity", 0.0));
 
 	readingsSingleUpdate($hash, "pressureRel_calculated", sprintf("%.1f", $relPressure), 1);
 }
@@ -1078,7 +1108,7 @@ sub WS980_parseEventsAttr($$)
 	$attrVal =~ s/\s//g;   # " " -> ""
 	$attrVal =~ s/\|+/|/g; # || -> |
 
-	Log3 $name, 5, "WS980 ($name) - WS980_parseEventsAttr for $attrVal";
+	WS980_Log($hash, 5, "WS980_parseEventsAttr for $attrVal");
 
 	# parse attribute
 	my %eventsConfig;
@@ -1093,7 +1123,7 @@ sub WS980_parseEventsAttr($$)
 		$eventsConfig{$eventReading}{"limit"} = $limit;
 		$eventsConfig{$eventReading}{"hyst"}  = int($hysterese);
 
-		Log3 $name, 5, "WS980 ($name) - adding event-configuration for $eventReading: $srcReading, $type, $limit, $hysterese";
+		WS980_Log($hash, 5, "adding event-configuration for $eventReading: $srcReading, $type, $limit, $hysterese");
 	}
 
 	# remember config in $hash->{helper}
@@ -1102,7 +1132,7 @@ sub WS980_parseEventsAttr($$)
 	# delete removed events
 	foreach my $oldReading (keys %oldEventsConfig) {
 		if (!defined($eventsConfig{$oldReading})) {
-			Log3 $name, 5, "WS980 ($name) - removing event-configuration for $oldReading";
+			WS980_Log($hash, 5, "removing event-configuration for $oldReading");
 			CommandDeleteReading( undef, "$name ".    $oldReading);
 			CommandDeleteReading( undef, "$name ".".".$oldReading."_hyst");
 		}
@@ -1122,7 +1152,7 @@ sub WS980_updateEvents($)
 	my ($hash)  = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - WS980_updateEvents";
+	WS980_Log($hash, 5, "called");
 	if (!$hash->{helper}{eventsConfig}) {
 		return
 	}
@@ -1146,7 +1176,7 @@ sub WS980_updateEvents($)
 
 		if ($type eq "<") {
 			if ($prevState == -1) {
-				Log3 $name, 5, "WS980 ($name) - adding event $readingName";
+				WS980_Log($hash, 5, "adding event $readingName");
 				readingsBulkUpdate($hash, $readingName,     $srcValue <= $limit ? "1" : "0", 1);
 				readingsBulkUpdate($hash, $hystReadingName, "0",                             0);
 			} else {
@@ -1171,7 +1201,7 @@ sub WS980_updateEvents($)
 		}
 		elsif ($type eq ">") {
 			if ($prevState == -1) {
-				Log3 $name, 5, "WS980 ($name) - adding event $readingName";
+				WS980_Log($hash, 5, "adding event $readingName");
 				readingsBulkUpdate($hash, $readingName,     $srcValue >= $limit ? "1" : "0", 1);
 				readingsBulkUpdate($hash, $hystReadingName, "0",                             0);
 			} else {
@@ -1209,17 +1239,20 @@ sub WS980_WriteFn($$)
 	my ($hash, $buf)  = @_;
 	my $name = $hash->{NAME};
 
-	Log3 $name, 5, "WS980 ($name) - WriteFn called";
+	WS980_Log($hash, 5, "called");
 
-	return Log3 $name, 1, "WS980 ($name) - socket not connected" unless($hash->{CD});
+	if (!$hash->{CD}) {
+		WS980_Log($hash, 1, "socket not connected");
+		return;
+	}
 
-	Log3 $name, 5, "WS980 ($name) - sending " . WS980_hexDump($buf);
+	WS980_Log($hash, 5, "sending " . WS980_hexDump($buf));
 	my $bytes = syswrite($hash->{CD}, $buf);
 
 	# success?
 	if (defined($bytes) && $bytes == length($buf)) {
 		$hash->{helper}{requestInProgress} = 1;
-		Log3 $name, 5, "WS980 ($name) - sent $bytes bytes";
+		WS980_Log($hash, 5, "sent $bytes bytes");
 	} else {
 		my $err = "Wrote incomplete data";
 		if (!defined ($bytes)) {
@@ -1250,20 +1283,7 @@ sub WS980_Close($)
 	$hash->{ConnectionState} = 'disconnected';
 
 	my $logLevel = AttrVal($name, "silentReconnect", "") eq "1" ? 4 : 3;
-	Log3 $name, $logLevel, "WS980 ($name) - Socket Disconnected";
-}
-
-
-#------------------------------------------------------------------------------------------------------
-# updates lastError-Reading and logs the message
-#------------------------------------------------------------------------------------------------------
-sub WS980_error($$)
-{
-	my ($hash, $msg) = @_;
-	my $name = $hash->{NAME};
-
-	readingsSingleUpdate($hash, "lastError", $msg, 1);
-	Log3 $name, 1, "WS980 ($name) - ERROR: $msg";
+	WS980_Log($hash, $logLevel, "Socket Disconnected");
 }
 
 
@@ -1336,6 +1356,34 @@ sub WS980_checkChecksum($)
 	return $actual == $expected;
 }
 
+
+#------------------------------------------------------------------------------------------------------
+# updates lastError-Reading and logs the message
+#------------------------------------------------------------------------------------------------------
+sub WS980_error($$)
+{
+	my ($hash, $msg) = @_;
+	my $name = $hash->{NAME};
+
+	readingsSingleUpdate($hash, "lastError", $msg, 1);
+	WS980_Log($hash, 1, "ERROR: $msg");
+}
+
+
+#------------------------------------------------------------------------------------------------------
+# Util: Log
+#------------------------------------------------------------------------------------------------------
+sub WS980_Log($$$)
+{
+	my ($hash, $logLevel, $logMessage) = @_;
+	my $line       = ( caller(0) )[2];
+	my $modAndSub  = ( caller(1) )[3];
+	my $subroutine = ( split(':', $modAndSub) )[2];
+	my $name       = ( ref($hash) eq "HASH" ) ? $hash->{NAME} : "WS980";
+
+	Log3($hash, $logLevel, "${name} (WS980::${subroutine}:${line}) " . $logMessage);
+}
+
 1;
 
 
@@ -1346,14 +1394,14 @@ sub WS980_checkChecksum($)
 
 =begin html
 
-<a name="WS980"></a>
+<a id="WS980"></a>
 <h3>WS980</h3>
 <ul>
 	<b>WS980 - Requests weather data locally from WS980WiFi weather stations</b><br>
 
 	<br>
 
-	<a name="WS980define"></a>
+	<a id="WS980-define"></a>
 	<b>Define</b><br>
 	<br>
 	<code>define &lt;name&gt; WS980 [IP] [INTERVAL]</code><br>
@@ -1370,7 +1418,7 @@ sub WS980_checkChecksum($)
 	<br>
 	<br>
 
-	<a name="WS980readings"></a>
+	<!-- <a name="WS980readings"></a> -->
 	<b>Readings</b>
 	<ul>
 		<li>
@@ -1480,29 +1528,35 @@ sub WS980_checkChecksum($)
 	</ul>
 	<br>
 
-	<a name="WS980set"></a>
+	<a id="WS980-set"></a>
 	<b>Set</b>
 	<ul>
-		<li>
+		<li><a id="WS980-set-update"></a>
 			<i>update</i><br>
 			manually update current weather data
 		</li>
 	</ul>
 	<br>
 
-	<a name="WS980attribut"></a>
+	<a id="WS980-attr"></a>
 	<b>Attributes</b>
 	<ul>
-		<li><a name="altitude"></a>
+		<li><a id="WS980-attr-altitude"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>altitude </b>&lt;<b>height</b>&gt;</code></dt>
 			Specifies the mean sea level in meters. Default is 0. Used to calculate the <code>pressureRel_calculated</code>-reading. If unset, the altitude from global is used.
 		</li>
-		<li><a name="connection"></a>
+		<li><a id="WS980-attr-connection"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>connection </b>&lt;<b>Keep-Alive</b>|<b>Close</b>&gt;</code></dt>
 			<code>Keep-Alive</code>: The connection to the WS980 is kept open as long as possible. Reconnect is only done if necessary. <code>Keep-Alive</code> is default and a good setting in most cases.<br>
 			<code>Close</code>: The connection is opened on-the-fly and closed directly after doing requests. <code>Close</code> should only be used if you have multiple clients connection to your WS980 which might cause frequent read-timeouts. <code>ConnectionState</code> will display <code>disconnected</code> most of the time, this is OK!
 		</li>
-		<li><a name="events"></a>
+		<li><a id="WS980-attr-invalidValues"></a>
+			<dt><code><b>attr</b> &lt;name&gt; <b>invalidValues </b>&lt;<b>updateReading</b>|<b>skip</b>|<b>skipAndLog</b>&gt;</code></dt>
+			<code>updateReading</code>: The reading will be set to n/a when an invalid value is received. <code>updateReading</code> is default.<br>
+			<code>skip</code>: Invalid values will silently be skipped, the corresponding reading will not be updated.<br>
+			<code>skipAndLog</code>: Invalid values will be logged, and the corresponding reading will not be updated.<br>
+		</li>
+		<li><a id="WS980-attr-events"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>events </b>&lt;<b>Configuration</b>&gt;|&lt;<b>Configuration</b>&gt;|...</code></dt>
 			Allows to configure custom events based on the readings of this instance.<br>
 			&lt;<b>Configuration</b>&gt; must have the form:
@@ -1525,40 +1579,40 @@ sub WS980_checkChecksum($)
 			<dt><code><b>attr</b> &lt;name&gt; <b>dusk:brightness&lt;30,20|brightSunlight:brightness&gt;80000,5000</b></code></dt>
 			<br>
 		</li>
-		<li><a name="requests"></a>
+		<li><a id="WS980-attr-requests"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>requests </b>current todayMax ... </code></dt>
 			A comma or space separated list of values to requests. If empty, all known values are requested.<br>
 			Valid values: firmware, current, todayMax, todayMin, historyMax, historyMin.
 		</li>
-		<li><a name="showRawBuffer"></a>
+		<li><a id="WS980-attr-showRawBuffer"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>showRawBuffer </b>1</code></dt>
 			used for development: show raw data received from the WS980WiFi
 		</li>
-		<li><a name="silentReconnect"></a>
+		<li><a id="WS980-attr-silentReconnect"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>silentReconnect </b>1</code></dt>
 			If set to 1, then it will set the loglevel for connect- and reconnect-messages to 2 instead of 1
 		</li>
-		<li><a name="unit_temperature"></a>
+		<li><a id="WS980-attr-unit_temperature"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>unit_temperature </b>&lt;<b>unit</b>&gt;</code></dt>
 			set the unit used for temperature-readings. Default: °C
 		</li>
-		<li><a name="unit_pressure"></a>
+		<li><a id="WS980-attr-unit_pressure"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>unit_pressure </b>&lt;<b>unit</b>&gt;</code></dt>
 			set the unit used for pressure-readings. Default: hPa
 		</li>
-		<li><a name="unit_wind"></a>
+		<li><a id="WS980-attr-unit_wind"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>unit_wind </b>&lt;<b>unit</b>&gt;</code></dt>
 			set the unit used for wind-readings. Default: m/s
 		</li>
-		<li><a name="unit_rain"></a>
+		<li><a id="WS980-attr-unit_rain"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>unit_rain </b>&lt;<b>unit</b>&gt;</code></dt>
 			set the unit used for rain-readings. Default: mm
 		</li>
-		<li><a name="unit_light"></a>
+		<li><a id="WS980-attr-unit_light"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>unit_light </b>&lt;<b>unit</b>&gt;</code></dt>
 			set the unit used for brightness-readings. Default: lux
 		</li>
-		<li><a name="disable"></a>
+		<li><a id="WS980-attr-disable"></a>
 			<dt><code><b>attr</b> &lt;name&gt; <b>disable </b>1</code></dt>
 			disables this WS980-instance
 		</li>

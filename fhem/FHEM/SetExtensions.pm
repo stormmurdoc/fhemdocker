@@ -1,5 +1,5 @@
 ##############################################
-# $Id: SetExtensions.pm 19208 2019-04-17 19:27:09Z rudolfkoenig $
+# $Id: SetExtensions.pm 25286 2021-12-03 10:16:56Z rudolfkoenig $
 
 package main;
 use strict;
@@ -94,6 +94,9 @@ SetExtensions($$@)
     $fixedIt = 1;
   }
 
+  # Forum #124505
+  $list =~ s/:\{([^ ]+)\}/$cmdFromAnalyze=$1; ":".(eval $1)/ge if($cmd eq "?");
+
   if(!$onCmd || !$offCmd) { # No extension
     return AttrTemplate_Set($hash, $list, $name, $cmd, @a);
   }
@@ -151,11 +154,14 @@ SetExtensions($$@)
     CommandDefine(undef, "${name}_till at $hms_till set $name $cmd2");
 
   } elsif($cmd eq "blink") {
-    my $p2 = $a[1];
-    return "$cmd requires 2 numbers as argument"
-        if($param !~ m/^\d+$/ || $p2 !~ m/^\d*\.?\d*$/);
+    my $p2 = $a[1]; # 3rd. parameter is used internally, to spcify the phase
+    return "$cmd requires count as integer and duration as float"
+        if(!defined($param) ||
+           !defined($p2) ||
+           $param !~ m/^\d+$/ ||
+           $p2 !~ m/^\d*\.?\d*$/);
 
-    if($param) {
+    if($param) { # count reached 0
       delete($hash->{SetExtensionsCommand}) if($param == 1 && $a[2]);
       SE_DoSet($name, $a[2] ? $offCmd : $onCmd);
       $param-- if($a[2]);

@@ -5,12 +5,13 @@
 # e-mail: omega at online dot de
 #
 ##############################################
-# $Id: 02_RSS.pm 16812 2018-06-03 19:52:27Z neubert $
+# $Id: 02_RSS.pm 25063 2021-10-11 10:55:33Z neubert $
 
 package main;
 use strict;
 use warnings;
 use GD;
+use Image::LibRSVG;
 use feature qw/switch/;
 use vars qw(%data);
 use HttpUtils;
@@ -58,7 +59,7 @@ sub RSS_Initialize($) {
 
     #$hash->{AttrFn}  = "RSS_Attr";
     $hash->{AttrList} =
-"size itemtitle bg bgcolor tmin refresh areas autoreread:1,0 viewport noscroll urlOverride";
+"size itemtitle bgroot bg bgcolor tmin refresh areas autoreread:1,0 viewport noscroll urlOverride";
     $hash->{SetFn}    = "RSS_Set";
     $hash->{NotifyFn} = "RSS_Notify";
 
@@ -449,28 +450,8 @@ sub RSS_itemImg {
     return unless ( defined($arg) );
     return if ( $arg eq "" );
     my $I;
-    if ( $srctype eq "url" || $srctype eq "urlq" ) {
-        my $data;
-        if ( $srctype eq "url" ) {
-            $data = GetFileFromURL( $arg, 3, undef, 1 );
-        }
-        else {
-            $data = GetFileFromURLQuiet( $arg, 3, undef, 1 );
-        }
-        if ( $imgtype eq "gif" ) {
-            $I = GD::Image->newFromGifData($data);
-        }
-        elsif ( $imgtype eq "png" ) {
-            $I = GD::Image->newFromPngData($data);
-        }
-        elsif ( $imgtype eq "jpeg" ) {
-            $I = GD::Image->newFromJpegData($data);
-        }
-        else {
-            return;
-        }
-    }
-    elsif ( $srctype eq "file" ) {
+
+    if ( $srctype eq "file" ) {
         if ( $imgtype eq "gif" ) {
             $I = GD::Image->newFromGif($arg);
         }
@@ -480,11 +461,28 @@ sub RSS_itemImg {
         elsif ( $imgtype eq "jpeg" ) {
             $I = GD::Image->newFromJpeg($arg);
         }
+        elsif ( $imgtype eq "svg" ) { # SVG: replace $arg with PNG data and act as if "png data" were given.
+            my $rsvg = new Image::LibRSVG();
+            $rsvg->loadImage($arg);
+            $arg = $rsvg->getImageBitmap();
+            $imgtype = "png";
+            $srctype = "data";
+        }
         else {
             return;
         }
     }
-    elsif ( $srctype eq "data" ) {
+    elsif ( $srctype eq "url" || $srctype eq "urlq" ) { # URL: replace $arg with data and act as if "data" were given
+        if ( $srctype eq "url" ) {
+            $arg = GetFileFromURL( $arg, 3, undef, 1 );
+        }
+        else {
+            $arg = GetFileFromURLQuiet( $arg, 3, undef, 1 );
+        }
+        $srctype = "data";
+    }
+
+    if ( $srctype eq "data" ) { # No elsif here, run this also if we saved data in $arg above.
         if ( $imgtype eq "gif" ) {
             $I = GD::Image->newFromGifData($arg);
         }
@@ -494,13 +492,19 @@ sub RSS_itemImg {
         elsif ( $imgtype eq "jpeg" ) {
             $I = GD::Image->newFromJpegData($arg);
         }
+        elsif ( $imgtype eq "svg" ) {
+            my $rsvg = new Image::LibRSVG();
+            $rsvg->loadImageFromString($arg);
+            $I = GD::Image->newFromPngData($rsvg->getImageBitmap());
+        }
         else {
             return;
         }
     }
-    else {
-        return;
-    }
+
+    # If any of the cases above was true, we should have an image now. Otherwise return.
+    return if(!defined($I));
+
     eval {
         my ( $width, $height ) = $I->getBounds();
         if ( $scale =~ s/([wh])([\d]*)/$2/ )
@@ -927,8 +931,10 @@ sub RSS_returnIMG($$) {
         #
         # check if background directory is set
         my $reason = "?";    # remember reason for undefined image
-        my $bgdir = AttrVal( $name, "bg", "undef" );
-        if ( defined($bgdir) ) {
+        my $bgroot = AttrVal( $name, "bgroot", "");
+        my $bgdirs = AttrVal( $name, "bg", undef );  # comma-separated list of directories
+        if ( defined($bgdirs) ) {
+
             my $bgnr;        # item number
             if (   defined( $defs{$name}{fhem} )
                 && defined( $defs{$name}{fhem}{bgnr} ) )
@@ -954,66 +960,73 @@ sub RSS_returnIMG($$) {
             }
 
             # detect pictures
-            if ( opendir( BGDIR, $bgdir ) ) {
-                my @bgfiles = grep { $_ !~ /^\./ } readdir(BGDIR);
+            my @bgfiles; 
+            for my $bgdiritem (split(/,/, $bgdirs)) {
+                my $bgdir= $bgroot . $bgdiritem;
+                if ( opendir( BGDIR, $bgdir ) ) {
+                    push(@bgfiles, map { $bgdir . "/" . $_ } grep { $_ !~ /^\./ } readdir(BGDIR));
+                    closedir(BGDIR);
+                } else {
+                    Log3 $name, 2, "$name: Cannot open directory $bgdiritem";
+                }
+            }
+            #foreach my $f (@bgfiles) {
+            #    Debug sprintf("File \"%s\"\n", $f);
+            #}
 
-                #foreach my $f (@bgfiles) {
-                #  Debug sprintf("File \"%s\"\n", $f);
-                #}
-                closedir(BGDIR);
+            # get item number
+            if ( $#bgfiles >= 0 ) {
+                if ( $bgnr > $#bgfiles ) { $bgnr = 0; }
+                $defs{$name}{fhem}{bgnr} = $bgnr;
+                my $bgfile = $bgfiles[$bgnr];
+                my $filetype = ( split( /\./, $bgfile ) )[-1];
+                readingsSingleUpdate($defs{$name}, "bgFilename", $bgfile, 1);
+                readingsSingleUpdate($defs{$name}, "bgFiletype", $filetype, 1);
+                my $bg;
+                $bg = newFromGif GD::Image($bgfile)
+                    if $filetype =~ m/^gif$/i;
+                $bg = newFromJpeg GD::Image($bgfile)
+                    if $filetype =~ m/^jpe?g$/i;
+                $bg = newFromPng GD::Image($bgfile)
+                    if $filetype =~ m/^png$/i;
 
-                # get item number
-                if ( $#bgfiles >= 0 ) {
-                    if ( $bgnr > $#bgfiles ) { $bgnr = 0; }
-                    $defs{$name}{fhem}{bgnr} = $bgnr;
-                    my $bgfile = $bgdir . "/" . $bgfiles[$bgnr];
-                    my $filetype = ( split( /\./, $bgfile ) )[-1];
-                    my $bg;
-                    $bg = newFromGif GD::Image($bgfile)
-                      if $filetype =~ m/^gif$/i;
-                    $bg = newFromJpeg GD::Image($bgfile)
-                      if $filetype =~ m/^jpe?g$/i;
-                    $bg = newFromPng GD::Image($bgfile)
-                      if $filetype =~ m/^png$/i;
+                if ( defined($bg) ) {
+                    my ( $bgwidth, $bgheight ) = $bg->getBounds();
+                    if ( $bgwidth != $width or $bgheight != $height ) {
 
-                    if ( defined($bg) ) {
-                        my ( $bgwidth, $bgheight ) = $bg->getBounds();
-                        if ( $bgwidth != $width or $bgheight != $height ) {
-
-                            # we need to resize
-                            my ( $w, $h );
-                            my ( $u, $v ) =
-                              ( $bgwidth / $width, $bgheight / $height );
-                            if ( $u > $v ) {
-                                $w = $width;
-                                $h = $bgheight / $u;
-                            }
-                            else {
-                                $h = $height;
-                                $w = $bgwidth / $v;
-                            }
-                            $S->copyResized(
-                                $bg,
-                                ( $width - $w ) / 2,
-                                ( $height - $h ) / 2,
-                                0, 0, $w, $h, $bgwidth, $bgheight
-                            );
+                        # we need to resize
+                        my ( $w, $h );
+                        my ( $u, $v ) =
+                            ( $bgwidth / $width, $bgheight / $height );
+                        if ( $u > $v ) {
+                            $w = $width;
+                            $h = $bgheight / $u;
                         }
                         else {
-                            # size is as required
-                            # kill the predefined image and take the original
-                            undef $S;
-                            $S = $bg;
+                            $h = $height;
+                            $w = $bgwidth / $v;
                         }
+                        $S->copyResized(
+                            $bg,
+                            ( $width - $w ) / 2,
+                            ( $height - $h ) / 2,
+                            0, 0, $w, $h, $bgwidth, $bgheight
+                        );
                     }
                     else {
+                        # size is as required
+                        # kill the predefined image and take the original
                         undef $S;
-                        $reason =
-"Something was wrong with background image \"$bgfile\".";
+                        $S = $bg;
                     }
+                }
+                else {
+                    undef $S;
+                    $reason = "Something was wrong with background image \"$bgfile\".";
                 }
             }
         }
+
         #
         # evaluate layout
         #
@@ -1214,8 +1227,14 @@ sub plotFromUrl(@) {
     by FHEMWEB file editor.</li><br>
     <li>size<br>The dimensions of the picture in the format
     <code>&lt;width&gt;x&lt;height&gt;</code>.</li><br>
-    <li>bg<br>The directory that contains the background pictures (must be in JPEG, GIF or PNG format, file
+    <li>bg<br>A comma-separated list of directories that contain the background pictures (must be in JPEG, GIF or PNG format, file
     format is guessed from file name extension).</li><br>
+    <li>bgroot<br>A common prefix for all directories in the <code>bg</code> attribute. Needs to include a trailing path delimiter. Useful for 
+    setting subdirectories of a common root directory as background directories by only listing their names in the <code>bg</code> attributes
+    and not the full paths.<br><br>
+    Example 1: <code>attr myRSS bg /opt/fhem/PictureFrame/Bergansichten,/data/Files/Pictures</code><br>
+    Example 2: <code>attr myRSS bgroot /opt/fhem/PictureFrame/; attr myRSS bg Bergansichten,Waldbilder</code><br>
+    </li><br>
     <li>bgcolor &lt;color&gt;<br>Sets the background color. </li><br>
     <li>tmin<br>The background picture is shown at least <code>tmin</code> seconds,
     no matter how frequently the RSS feed consumer accesses the page.</li><br>
@@ -1395,7 +1414,7 @@ sub plotFromUrl(@) {
     <li>rect &lt;x1&gt; &lt;y1&gt; &lt;x2&gt; &lt;y2&gt; [&lt;filled&gt;]<br>Draws a rectangle with corners at positions (&lt;x1&gt;, &lt;y1&gt;) and (&lt;x2&gt;, &lt;y2&gt;), which is filled if the &lt;filled&gt; parameter is set and not zero.<br>If x2 or y2 is preceeded with a + (plus sign) then the coordinate is relative to x1 or y1, or in other words, it is the width-1 or height-1 of the rectangle, respectively.</li><br>
 
     <li>img &lt;x&gt; &lt;y&gt; &lt;['w' or 'h']s&gt; &lt;imgtype&gt; &lt;srctype&gt; &lt;arg&gt; <br>Renders a picture at the
-    position (&lt;x&gt;, &lt;y&gt;). The &lt;imgtype&gt; is one of <code>gif</code>, <code>jpeg</code>, <code>png</code>.
+    position (&lt;x&gt;, &lt;y&gt;). The &lt;imgtype&gt; is one of <code>gif</code>, <code>jpeg</code>, <code>png</code>, <code>svg</code>.
     The picture is scaled by the factor &lt;s&gt; (a decimal value). If 'w' or 'h' is in front of scale-value the value is used to set width or height to the value in pixel. If &lt;srctype&gt; is <code>file</code>, the picture
     is loaded from the filename &lt;arg&gt;, if &lt;srctype&gt; is <code>url</code> or <code>urlq</code>, the picture
     is loaded from the URL &lt;arg&gt; (with or without logging the URL), if &lt;srctype&gt; is <code>data</code>, the picture
@@ -1422,7 +1441,7 @@ sub plotFromUrl(@) {
     moveby 0 -25<br>
     text x y "Another text"<br>
     img 20 530 0.5 png file { "/usr/share/fhem/www/images/weather/" . ReadingsVal("MyWeather","icon","") . ".png" }<br>
-    embed 0 0 2 absolute plot1 { plotFromUrl('mySVG') }
+    embed 0 0 2 absolute plot1 { plotFromUrl('mySVG') }<br>
     embed 10 200 2 absolute iframe1 "&lt;iframe width=\"420\" height=\"315\" src=\"//www.youtube.com/embed/9HShl_ufOFI\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;"
     </code>
     <p>
@@ -1436,6 +1455,11 @@ sub plotFromUrl(@) {
     </code>
     <p>
     This requires the perl module Image::LibRSVG and librsvg. Debian-based systems can install these with <code>apt-get install libimage-librsvg-perl</code>.<p>
+
+    You can display colorful icons with using the function <code>FW_makeImage</code> from the <a href="http://wiki.fhem.de/wiki/DevelopmentFHEMWEB-API#FW_makeImage">FHEMWEB API</a>:
+    <code>
+    img 40 200 h40 svg data {FW_makeImage('clock@blue')}
+    </code>
 
     For HTML output, you can use <code>plotFromURL(&lt;name&gt;[,&lt;zoom&gt;[,&lt;offset&gt;]])</code> instead.
   </ul>

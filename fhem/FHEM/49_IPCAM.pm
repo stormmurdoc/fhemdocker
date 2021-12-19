@@ -1,8 +1,9 @@
-# $Id: 49_IPCAM.pm 18505 2019-02-05 21:50:23Z rudolfkoenig $
+#create $Id: 49_IPCAM.pm 24924 2021-09-06 08:47:51Z delmar $
 # vim: ts=2:et
 ################################################################
 #
 #  (c) 2012 Copyright: Martin Fischer (m_fischer at gmx dot de)
+#      2021            Martin Gutenbrunner
 #  All rights reserved
 #
 #  This script is free software; you can redistribute it and/or modify
@@ -26,12 +27,39 @@ package main;
 use strict;
 use warnings;
 
-sub IPCAM_getSnapshot($);
-sub IPCAM_guessFileFormat($);
-sub IPCAM_getScheme($);
+#####################################
+sub
+IPCAM_Initialize($$)
+{
+  my ($hash) = @_;
+
+  $hash->{DefFn}    = "IPCAM::Define";
+  $hash->{UndefFn}  = "IPCAM::Undef";
+  $hash->{GetFn}    = "IPCAM::Get";
+  $hash->{SetFn}    = "IPCAM::Set";
+#  $hash->{FW_detailFn} = "IPCAM::DetailFn";
+  $hash->{AttrList} = "basicauth delay credentials path pathCmd pathPanTilt query snapshots storage httpTimeout timestamp:0,1 ".
+                      "cmdPanLeft cmdPanRight cmdTiltUp cmdTiltDown cmdStep ".
+                      "cmdPos01 cmdPos02 cmdPos03 cmdPos04 cmdPos05 cmdPos06 cmdPos07 cmdPos08 ".
+                      "cmdPos09 cmdPos10 cmdPos11 cmdPos12 cmdPos13 cmdPos14 cmdPos15 cmdPosHome ".
+                      "cmd01 cmd02 cmd03 cmd04 cmd05 cmd06 cmd07 cmd08 ".
+                      "cmd09 cmd10 cmd11 cmd12 cmd13 cmd14 cmd15  ".
+                      "cmd01data cmd02data cmd03data cmd04data cmd05data cmd06data cmd07data ".
+                      "cmd08data cmd09data cmd10data cmd11data cmd12data cmd13data cmd14data cmd15data ".
+                      "model do_not_notify:1,0 showtime:1,0 scheme:http,https ".
+                      "disable:0,1 unknownFormatRetryDelay handleAnyXmlAsSvg:0,1 unknownFormatRetryCount blocking:0,1 ".
+                      $readingFnAttributes;
+}
+
+package IPCAM;
+use strict;
+use warnings;
+use SetExtensions;
+use GPUtils qw(:all);
 
 my %gets = (
   "image"     => "",
+  "imageWithCallback" => "",
   "last"      => "",
   "snapshots" => "",
 );
@@ -44,30 +72,36 @@ my %sets = (
   "raw"   => "",
 );
 
+## Import der FHEM Funktionen
+BEGIN {
+    GP_Import(qw(
+        readingsSingleUpdate
+        readingsBulkUpdate
+        readingsBulkUpdateIfChanged
+        readingsBeginUpdate
+        readingsEndUpdate
+        readingsDelete
+        Log3
+        RemoveInternalTimer
+        InternalTimer
+        makeReadingName
+        AttrVal
+        gettimeofday
+        attr
+        TimeNow
+        HttpUtils_NonblockingGet
+        GetFileFromURLQuiet
+        SetExtensions
+        AttrTemplate_Set
+        urlEncode
+        AnalyzeCommand
+        ReplaceSetMagic
+    ))
+};
+
 #####################################
 sub
-IPCAM_Initialize($$)
-{
-  my ($hash) = @_;
-
-  $hash->{DefFn}    = "IPCAM_Define";
-  $hash->{UndefFn}  = "IPCAM_Undef";
-  $hash->{GetFn}    = "IPCAM_Get";
-  $hash->{SetFn}    = "IPCAM_Set";
-  $hash->{AttrList} = "basicauth delay credentials path pathCmd pathPanTilt query snapshots storage timestamp:0,1 ".
-                      "cmdPanLeft cmdPanRight cmdTiltUp cmdTiltDown cmdStep ".
-                      "cmdPos01 cmdPos02 cmdPos03 cmdPos04 cmdPos05 cmdPos06 cmdPos07 cmdPos08 ".
-                      "cmdPos09 cmdPos10 cmdPos11 cmdPos12 cmdPos13 cmdPos14 cmdPos15 cmdPosHome ".
-                      "cmd01 cmd02 cmd03 cmd04 cmd05 cmd06 cmd07 cmd08 ".
-                      "cmd09 cmd10 cmd11 cmd12 cmd13 cmd14 cmd15 ".
-                      "do_not_notify:1,0 showtime:1,0 scheme:http,https ".
-                      "loglevel:0,1,2,3,4,5,6 disable:0,1 ".
-                      $readingFnAttributes;
-}
-
-#####################################
-sub
-IPCAM_Define($$) {
+Define($$) {
   my ($hash, $def) = @_;
 
   # define <name> IPCAM <camip:port>
@@ -90,10 +124,10 @@ IPCAM_Define($$) {
 
 #####################################
 sub
-IPCAM_Undef($$) {
+Undef($$) {
   my ($hash, $name) = @_;
 
-  delete($modules{IPCAM}{defptr}{$hash->{NAME}});
+  delete($main::modules{IPCAM}{defptr}{$hash->{NAME}});
   RemoveInternalTimer($hash);
 
   return undef;
@@ -101,20 +135,19 @@ IPCAM_Undef($$) {
 
 #####################################
 sub
-IPCAM_Set($@) {
-  my ($hash, @a) = @_;
-  my $name = $hash->{NAME};
+Set($$$@) {
+  my ($hash, $name, $cmd, @args) = @_;
   my @camCmd;
 
+  my $list = join(' ', sort keys %sets);
+
+  Log3 $name, 4, "IPCAM ($name) - set: name:$name cmd:$cmd list:$list";
+
   # check argument
-  return "Unknown argument $a[1], choose one of ".join(" ", sort keys %sets)
-    if(!defined($sets{$a[1]}));
+  return AttrTemplate_Set($hash, $list, $name, $cmd, @args)
+    if(!defined($sets{$cmd}));
 
-  shift @a;
-  my $cmd = $a[0];
-  shift @a;
-  my @args = @a;
-
+  my $arg;
   if($cmd eq "pan" || $cmd eq "tilt") {
 
     # check syntax
@@ -135,8 +168,8 @@ IPCAM_Set($@) {
            "'attr $name cmdStep <your_camera_command>'"
       if(defined($args[1]) && !defined(AttrVal($name,"cmdStep",undef)));
 
-    push(@camCmd,$attr{$name}{"cmd".ucfirst($cmd).ucfirst($args[0])});
-    push(@camCmd,$attr{$name}{"cmdStep"}."=".$args[1])
+    push(@camCmd,AttrVal($name,"cmd".ucfirst($cmd).ucfirst($args[0]), undef));
+    push(@camCmd,AttrVal($name,"cmdStep", undef)."=".$args[1])
       if(defined($args[1]));
 
   } elsif($cmd eq "pos") {
@@ -148,12 +181,12 @@ IPCAM_Set($@) {
     return "Wrong argument $args[0], only digits from 1 to 15 or home are allowed"
       if(defined($args[0]) && $args[0] !~ /^([1-9]|1[0-5])$/ && $args[0] ne "home");
     
-    my $arg = ($args[0] =~ /\d+/) ? sprintf("cmdPos%02d",$args[0]) : "cmdPosHome";
+    $arg = ($args[0] =~ /\d+/) ? sprintf("cmdPos%02d",$args[0]) : "cmdPosHome";
     return "Command for '$cmd $args[0]' is not defined. Please add this attribute first: " .
            "'attr $name $arg <your_camera_command>'"
-      if(!defined($attr{$name}{$arg}));
+      if(!defined(AttrVal($name,$arg,undef)));
 
-    push(@camCmd,$attr{$name}{$arg});
+    push(@camCmd,AttrVal($name,$arg, undef));
 
   } elsif($cmd eq "cmd") {
 
@@ -164,12 +197,12 @@ IPCAM_Set($@) {
     return "Wrong argument $args[0], only digits from 1 to 15 are allowed"
       if(defined($args[0]) && $args[0] !~ /^([1-9]|1[0-5])$/);
     
-    my $arg = sprintf("cmd%02d",$args[0]);
+    $arg = sprintf("cmd%02d",$args[0]);
     return "Command for '$cmd $args[0]' is not defined. Please add this attribute first: " .
            "'attr $name $arg <your_camera_command>'"
-      if(!defined($attr{$name}{$arg}));
+      if(!defined(AttrVal($name,$arg,undef)));
 
-    push(@camCmd,$attr{$name}{$arg});
+    push(@camCmd,AttrVal($name,$arg, undef));
 
   } elsif($cmd eq "raw") {
 
@@ -177,16 +210,16 @@ IPCAM_Set($@) {
     return "argument is missing for $cmd"
       if(int(@args) < 1);
 
-    my $arg = "@args";
+    $arg = "@args";
     push(@camCmd,$arg);
 
   }
   
   if(@camCmd) {
     my $camAuth = $hash->{AUTHORITY};
-    my $basicauth = (defined($attr{$name}{basicauth}) ? $attr{$name}{basicauth} : undef);
+    my $basicauth = AttrVal($name,'basicauth', undef);
     my $camURI;
-    my $camPath = (defined($attr{$name}{path}) ? $attr{$name}{path} : undef);
+    my $camPath = AttrVal($name, 'path', undef);
     my $camQuery = join("&",@camCmd);
 
     if(($cmd eq "pan" || $cmd eq "tilt" || $cmd =~ /pos/) && 
@@ -203,7 +236,7 @@ IPCAM_Set($@) {
     return "Missing a path value for camURI. Please set attribute 'path', 'pathCmd' and/or 'pathPanTilt' first."
       if(!$camPath && $cmd ne "raw");
 
-    my $scheme = IPCAM_getScheme($hash);
+    my $scheme = getScheme($hash);
 
     if($basicauth) {
       $camURI  = "$scheme://$basicauth" . "@" . "$camAuth/$camPath";
@@ -221,7 +254,7 @@ IPCAM_Set($@) {
 
       if(defined($attr{$name}{credentials})) {
         if(!open(CFG, $attr{$name}{credentials})) {
-          Log 1, "IPCAM $name Cannot open credentials file: $attr{$name}{credentials}";
+          Log3 $name, 0, "IPCAM ($name) - Cannot open credentials file: $attr{$name}{credentials}";
           return undef; 
         }
         my @cfg = <CFG>;
@@ -232,29 +265,78 @@ IPCAM_Set($@) {
         $camURI =~ s/{PASSWORD}/$credentials{$name}{password}/g;
       }
     }
-      
-    my $camret = GetFileFromURLQuiet($camURI);
-    Log 5, "ipcam return:$camret";
 
+    Log3 $name, 4, "IPCAM ($name) - set $cmd requesting $camURI";
+    #my $camret = GetFileFromURLQuiet($camURI);
+    SendCommand( $hash, $camURI, $arg );
+    #Log3 $name, 5, "IPCAM ($name) - return:$camret";
   }
 
   return undef;
 }
 
+sub SendCommand {
+  my ($hash, $camUrl, $commandId) = @_;
+  my $name = $hash->{NAME};
+
+
+  my $apiParam = {
+    url => $camUrl,
+    method => "GET",
+    callback => \&IPCAM::SendCommand_Callback,
+    incrementalTimeout => 1,
+    timeout => AttrVal($name, 'httpTimeout', 4),
+    hash => $hash
+  };
+
+  Log3 $name, 3, "IPCAM ($name) - sending command $commandId: $camUrl";
+  my $postData = AttrVal($name, $commandId.'data', undef);
+  if (defined $postData) {
+    my %dummy;
+    my ($err, @a) = ReplaceSetMagic(\%dummy, 0, ( $postData ) );
+    if ( $err ) {
+      Log3 $name, 0, "IPCAM ($name) - parse post data failed on ReplaceSetMagic with :$err: on  :$postData:";
+    } else {
+      $postData = join(" ", @a);
+    }
+    $apiParam->{data} = $postData;
+    $apiParam->{method} = 'POST';
+    Log3 $name, 3, "IPCAM ($name) - post data for $commandId: $postData";
+  }
+
+  HttpUtils_NonblockingGet($apiParam);
+  
+  return undef;
+}
+
+sub SendCommand_Callback {
+  my ($param, $err, $data) = @_;
+  my $hash = $param->{hash};
+  my $name = $hash->{NAME};
+
+  if($err ne "") {
+    Log3 $name, 0, "IPCAM ($name) - error while sending command ".$param->{url}." - $err";
+
+  } elsif($data ne "") {
+    Log3 $name, 4, "IPCAM ($name) - command response: $data";
+  }
+
+}
+
 #####################################
 sub
-IPCAM_Get($@) {
+Get($@) {
   my ($hash, @a) = @_;
   my $modpath = $attr{global}{modpath};
   my $name = $hash->{NAME};
   my $seqImages;
   my $seqDelay;
   my $seqWait;
-  my $storage = (defined($attr{$name}{storage}) ? $attr{$name}{storage} : "$modpath/www/snapshots");
+  my $storage = AttrVal($name,'storage',"$modpath/www/snapshots");
 
   # check syntax
   return "argument is missing @a"
-    if(int(@a) != 2);
+    if(int(@a) < 2);
   # check argument
   return "Unknown argument $a[1], choose one of ".join(" ", sort keys %gets)
     if(!defined($gets{$a[1]}));
@@ -274,18 +356,19 @@ IPCAM_Get($@) {
   if(! -d $storage) {
     my $ret = mkdir "$storage";
     if($ret == 0) {
-      Log 1, "ipcam Error while creating: $storage: $!";
+      Log3 $name, 0, "IPCAM ($name) - Error while creating: $storage: $!";
       return "Error while creating storagepath $storage: $!";
     }
   }
  
   # get argument
-  my $arg = $a[1];
+  shift @a;
+  my $arg = shift @a;
 
   if($arg eq "image") {
 
-    $seqImages = int(defined($attr{$name}{snapshots}) ? $attr{$name}{snapshots} : 1);
-    $seqDelay  = int(defined($attr{$name}{delay}) ? $attr{$name}{delay} : 0);
+    $seqImages = int(AttrVal($name,'snapshots',1));
+    $seqDelay  = int(AttrVal($name,'delay',0));
     $seqWait   = 0;
 
     # housekeeping after number of sequence has changed
@@ -295,15 +378,27 @@ IPCAM_Get($@) {
         my $n = $r;
         $n =~ s/snapshot//;
         delete $readings->{$r} if( $r =~ m/snapshot/ && int($n) > $seqImages);
-        Log 5, "IPCAM $name remove old reading: $r";
+        Log3 $name, 5, "IPCAM ($name) - remove old reading: $r";
         
       }
     }
+
+    InternalTimer(gettimeofday(), "IPCAM::RequestSnapshot", $hash);
+
     $hash->{READINGS}{snapshots}{VAL} = 0;
-    for (my $i=0;$i<$seqImages;$i++) {
-      InternalTimer(gettimeofday()+$seqWait, "IPCAM_getSnapshot", $hash, 0);
+    for (my $i=1;$i<$seqImages;$i++) {
       $seqWait = $seqWait + $seqDelay;
+      InternalTimer(gettimeofday()+$seqWait, "IPCAM::RequestSnapshot", $hash);
     }
+    return undef;
+
+  } elsif($arg eq "imageWithCallback") {
+    
+    my $callbackCommand = join(" ", @a);
+    Log3 $name, 3, "IPCAM ($name) - imageWithCallback command: $callbackCommand";
+
+    RequestSnapshotWithCallback($hash,$callbackCommand);
+
     return undef;
 
   } elsif(defined($hash->{READINGS}{$arg})) {
@@ -315,12 +410,11 @@ IPCAM_Get($@) {
     }
 
   }
-
 }
 
 #####################################
 sub
-IPCAM_getSnapshot($) {
+createSnapshotUrl($) {
   my ($hash) = @_;
   my $name = $hash->{NAME};
   my $camAuth = $hash->{AUTHORITY};
@@ -328,19 +422,8 @@ IPCAM_getSnapshot($) {
   my $camPath;
   my $camQuery;
   my $camCredentials;
-  my $imageFile;
-  my $imageFormat;
-  my $lastSnapshot;
-  my $snapshot;
-  my $dateTime;
   my $modpath = $attr{global}{modpath};
-  my $seq = int(defined($hash->{SEQ}) ? $hash->{SEQ} : 0);
-  my $seqImages = int(defined($attr{$name}{snapshots}) ? $attr{$name}{snapshots} : 1);
-  my $seqF;
-  my $seqL = length($seqImages);
-  my $storage = (defined($attr{$name}{storage}) ? $attr{$name}{storage} : "$modpath/www/snapshots");
-  my $basicauth = (defined($attr{$name}{basicauth}) ? $attr{$name}{basicauth} : undef);
-  my $timestamp;
+  my $basicauth = AttrVal($name,'basicauth', undef);
 
   #if(!$storage) {
   #  RemoveInternalTimer($hash);
@@ -351,11 +434,11 @@ IPCAM_getSnapshot($) {
   $camQuery = $attr{$name}{query}
     if(defined($attr{$name}{query}) && $attr{$name}{query} ne "");
 
-  my $scheme = IPCAM_getScheme($hash);
+  my $uriScheme = getScheme($hash);
   if($basicauth) {
-    $camURI  = "$scheme://$basicauth" . "@" . "$camAuth/$camPath";
+    $camURI  = "$uriScheme://$basicauth" . "@" . "$camAuth/$camPath";
   } else {
-    $camURI  = "$scheme://$camAuth/$camPath";
+    $camURI  = "$uriScheme://$camAuth/$camPath";
   }
   $camURI .= "?$camQuery" if($camQuery);
 
@@ -363,7 +446,7 @@ IPCAM_getSnapshot($) {
 
     if(defined($attr{$name}{credentials})) {
       if(!open(CFG, $attr{$name}{credentials})) {
-        Log 1, "IPCAM $name Cannot open credentials file: $attr{$name}{credentials}";
+        Log3 $name, 0, "IPCAM ($name) - Cannot open credentials file: $attr{$name}{credentials}";
         RemoveInternalTimer($hash);
         return undef; 
       }
@@ -375,77 +458,191 @@ IPCAM_getSnapshot($) {
       $camURI =~ s/{PASSWORD}/$credentials{$name}{password}/;
     }
   }
+  $camURI = $camURI;
 
-  $dateTime = TimeNow();
-  $timestamp = $dateTime;
-  $timestamp =~ s/ /_/g;
-  $timestamp =~ s/(:|-)//g;
+  Log3 $name, 3, "IPCAM ($name) - getSnapshot URI: $camURI";
+#  while ($camURI =~ m/(\[.*:.*\])/) {
+#    Log3 $name, 3, "IPCAM ($name) - found reading: $1";
+#  }
 
-  $snapshot = GetFileFromURLQuiet($camURI);
+  return $camURI;
+}
 
-  $imageFormat = IPCAM_guessFileFormat(\$snapshot);
+sub RequestSnapshot {
+  my ($hash) = @_;
 
-  my @imageTypes = qw(JPEG PNG GIF TIFF BMP ICO PPM XPM XBM SVG);
+  return ExecuteSnapshotRequest($hash, undef);
+}
 
-  if( ! grep { $_ eq "$imageFormat"} @imageTypes) {
-    Log 1, "IPCAM $name Wrong or not supported image format: $imageFormat";
-    RemoveInternalTimer($hash);
-    return undef;
+sub RequestSnapshotWithCallback {
+  my ($hash, $callbackCommand) = @_;
+  
+  return ExecuteSnapshotRequest($hash, $callbackCommand);
+}
+
+sub ExecuteSnapshotRequest {
+  my ($hash, $callbackCommand) = @_;
+  my $name = $hash->{NAME};
+
+  my $blocking = AttrVal($name, 'blocking', 0);
+  my $camUrl = createSnapshotUrl($hash);
+  Log3 $name, 3, "IPCAM ($name) - ExecuteSnapshotRequest blocking: $blocking, camUrl: $camUrl";
+
+  my $apiParam = {
+    url => $camUrl,
+    method => "GET",
+    callback => \&IPCAM::RequestSnapshot_Callback,
+    hash => $hash,
+    incrementalTimeout => 1,
+    timeout => AttrVal($name, 'httpTimeout', 4),
+    callbackCommand => $callbackCommand
+  };
+
+  if ($blocking == 1) {
+    my $camret = GetFileFromURLQuiet($camUrl);
+    RequestSnapshot_Callback($apiParam, '', $camret);
+  } else {
+    HttpUtils_NonblockingGet($apiParam);
   }
-
-  Log GetLogLevel($name,5), "IPCAM $name Image Format: $imageFormat";
-
-  readingsBeginUpdate($hash);
-  if($seq < $seqImages) {
-    $seq++;
-    $seqF = sprintf("%0${seqL}d",$seq);
-    $imageFormat = "JPG" if($imageFormat eq "JPEG");
-    
-    $lastSnapshot = $name."_snapshot.".lc($imageFormat);
-    if(defined($attr{$name}{timestamp}) && $attr{$name}{timestamp} == 1) {
-      $imageFile = $name."_".$timestamp.".".lc($imageFormat);
-    } else {
-      $imageFile = $name."_snapshot_".$seqF.".".lc($imageFormat);
-    }
-    if(!open(FH, ">$storage/$lastSnapshot")) {
-      Log 1, "IPCAM $name Can't write $storage/$lastSnapshot: $!";
-      RemoveInternalTimer($hash);
-      readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
-      return undef;
-    }
-    print FH $snapshot;
-    close(FH);
-    Log 5, "IPCAM $name snapshot $storage/$lastSnapshot written.";
-    if(!open(FH, ">$storage/$imageFile")) {
-      Log 1, "IPCAM $name Can't write $storage/$imageFile: $!";
-      RemoveInternalTimer($hash);
-      readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
-      return undef;
-    }
-    print FH $snapshot;
-    close(FH);
-    Log 5, "IPCAM $name snapshot $storage/$imageFile written.";
-    readingsBulkUpdate($hash,"last",$lastSnapshot);
-    $hash->{STATE} = "last: $dateTime";
-    $hash->{READINGS}{"snapshot$seqF"}{TIME} = $dateTime;
-    $hash->{READINGS}{"snapshot$seqF"}{VAL}  = $imageFile;
-  }
-
-  Log GetLogLevel($name,4), "IPCAM $name image: $imageFile";
-
-  if($seq == $seqImages) {
-    readingsBulkUpdate($hash,"snapshots",$seq);
-    $seq = 0;
-  }
-  readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
-  $hash->{SEQ}  = $seq;
-
+  
   return undef;
 }
 
+sub RequestSnapshot_Callback {
+  my ($param, $err, $snapshot) = @_;
+  my $hash = $param->{hash};
+  my $name = $hash->{NAME};
+
+  if($err ne "") {
+    Log3 $name, 0, "IPCAM ($name) - error while getting snapshot ".$param->{url}." - $err";
+
+  } elsif($snapshot ne "") {
+#    Log3 $name, 3, "IPCAM ($name) - snapshot response: $data";
+
+    my $imageFormat = guessFileFormat($name, \$snapshot);
+
+    my @imageTypes = qw(jpg png gif tiff bmp ico ppm xpm xbm svg);
+
+    if( ! grep { $_ eq "$imageFormat"} @imageTypes) {
+      Log3 $name, 1, "IPCAM ($name) - Wrong or not supported image format: $imageFormat";
+      RemoveInternalTimer($hash);
+
+      my $retryCount = int(AttrVal($name, 'unknownFormatRetryCount', 0));
+      if ($retryCount > 0) {
+        my $nrRetries = $hash->{RETRIES_LEFT};
+        if (! defined ($nrRetries)) {
+          $nrRetries = $retryCount;
+        }
+         
+        if ($nrRetries > 0) {
+          my $retryInterval = AttrVal($name, 'unknownFormatRetryDelay', 2);
+
+          Log3 $name, 1, "IPCAM ($name) - Retrying for $nrRetries more time in $retryInterval seconds";
+          InternalTimer(gettimeofday()+$retryInterval, "main::HttpUtils_NonblockingGet", $param);
+
+          $hash->{RETRIES_LEFT} = $nrRetries -1;
+        } else {
+          $hash->{RETRIES_LEFT} = undef;
+
+          Log3 $name, 1, "IPCAM ($name) - No more retries";
+        }
+
+      }
+
+      return undef;
+    }
+
+    Log3 $name, 3, "IPCAM ($name) - Snapshot Image Format: $imageFormat";
+    readingsBeginUpdate($hash);
+    
+    my $lastSnapshot = $name."_snapshot.".$imageFormat;
+    my $modpath = $attr{global}{modpath};
+    my $storage = AttrVal($name,'storage',"$modpath/www/snapshots");
+    if(!open(FH, ">$storage/$lastSnapshot")) {
+      Log3 $name, 0, "IPCAM ($name) - Can't write $storage/$lastSnapshot: $!";
+      RemoveInternalTimer($hash);
+      readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
+      return undef;
+    }
+    print FH $snapshot;
+    close(FH);
+    
+    my $dateTime = TimeNow();
+    $hash->{STATE} = "last: $dateTime";
+    readingsBulkUpdate($hash, "last", $lastSnapshot, 1);
+    Log3 $name, 4, "IPCAM ($name) - snapshot $storage/$lastSnapshot written.";
+
+    my $seq = int(defined($hash->{SEQ}) ? $hash->{SEQ} : 0);
+    my $seqImages = int(AttrVal($name,'snapshots',1));
+
+    if($seq < $seqImages) {
+      $seq++;
+
+      my $seqL = length($seqImages);
+      my $seqF = sprintf("%0${seqL}d", $seq);
+      
+      my $timestamp = $dateTime;
+      $timestamp =~ s/ /_/g;
+      $timestamp =~ s/(:|-)//g;
+
+      my $imageFile;
+      my $useTimestamp = AttrVal($name, 'timestamp', 0);
+      if($useTimestamp == 1) {
+        $imageFile = $name."_".$timestamp.".".$imageFormat;
+      } else {
+        $imageFile = $name."_snapshot_".$seqF.".".$imageFormat;
+      }
+
+      if(!open(FH, ">$storage/$imageFile")) {
+        Log3 $name, 0, "IPCAM ($name) - Can't write $storage/$imageFile: $!";
+        RemoveInternalTimer($hash);
+        readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
+        return undef;
+      }
+      print FH $snapshot;
+      close(FH);
+
+      Log3 $name, 4, "IPCAM ($name) - snapshot $storage/$imageFile written.";
+
+      readingsBulkUpdate($hash, "snapshot$seqF", $imageFile, 1);
+
+      Log3 $name, 4, "IPCAM ($name) - image: $imageFile";
+    }
+
+    if($seq == $seqImages) {
+      readingsBulkUpdate($hash, "snapshots", $seq, 1);
+      $seq = 0;
+    }
+    readingsEndUpdate($hash, defined($hash->{LOCAL} ? 0 : 1));
+    $hash->{SEQ}  = $seq;
+  }
+  
+  my $callbackCommand = $param->{callbackCommand};
+  if (defined $callbackCommand) {
+    my %dummy; 
+    my ($err, @a) = ReplaceSetMagic(\%dummy, 0, ( $callbackCommand ) );
+    if ( $err ) {
+      Log3 $name, 0, "IPCAM ($name) - parse cmd failed on ReplaceSetmagic with :$err: on  :$callbackCommand:";
+    } else {
+      $callbackCommand = join(" ", @a);
+    } 
+
+    Log3 $name, 3, "IPCAM ($name) - RequestSnapshotWithCallback executing $callbackCommand";
+
+    my $error = AnalyzeCommand(undef, $callbackCommand);
+    if (defined $error) {
+      Log3 $name, 0, "IPCAM ($name) - imageWithCallback command invalid: $error";
+      return undef;
+    }
+
+  }
+}
+
+
+
 #####################################
 sub
-IPCAM_getScheme($) {
+getScheme($) {
   my ($hash) = @_;
   my $name = $hash->{NAME};
 
@@ -454,8 +651,8 @@ IPCAM_getScheme($) {
 
 #####################################
 sub
-IPCAM_guessFileFormat($) {
-  my ($src) = shift;
+guessFileFormat($$) {
+  my ($name,$src) = @_;
   my $header;
   my $srcHeader;
 
@@ -466,18 +663,37 @@ IPCAM_guessFileFormat($) {
   return "error while reading source image: $!" if(!$reading);
 
   local($_) = $srcHeader;
-  return "JPEG" if /^\xFF\xD8/;
-  return "PNG"  if /^\x89PNG\x0d\x0a\x1a\x0a/;
-  return "GIF"  if /^GIF8[79]a/;
-  return "TIFF" if /^MM\x00\x2a/;
-  return "TIFF" if /^II\x2a\x00/;
-  return "BMP"  if /^BM/;
-  return "ICO"  if /^\000\000\001\000/;
-  return "PPM"  if /^P[1-6]/;
-  return "XPM"  if /(^\/\* XPM \*\/)|(static\s+char\s+\*\w+\[\]\s*=\s*{\s*"\d+)/;
-  return "XBM"  if /^(?:\/\*.*\*\/\n)?#define\s/;
-  return "SVG"  if /^(<\?xml|[\012\015\t ]*<svg\b)/;
+  return "jpg" if /^\xFF\xD8/;
+  return "png"  if /^\x89PNG\x0d\x0a\x1a\x0a/;
+  return "gif"  if /^GIF8[79]a/;
+  return "tiff" if /^MM\x00\x2a/;
+  return "tiff" if /^II\x2a\x00/;
+  return "bmp"  if /^BM/;
+  return "ico"  if /^\000\000\001\000/;
+  return "ppm"  if /^P[1-6]/;
+  return "xpm"  if /(^\/\* XPM \*\/)|(static\s+char\s+\*\w+\[\]\s*=\s*{\s*"\d+)/;
+  return "xbm"  if /^(?:\/\*.*\*\/\n)?#define\s/;
+  if (int(AttrVal($name, 'handleAnyXmlAsSvg', 0)) == 1) {
+    return "svg"  if /^(<\?xml|[\012\015\t ]*<svg\b)/;
+  } else {
+    return "svg" if /^(<\?xml version="1.0" encoding="UTF-8"\?>)?\r?\n?<svg/;
+  }
+
   return "unknown";
+}
+
+sub
+DetailFn {
+  my ( $FW_wname, $deviceName, $FW_room ) = @_;
+
+  my $hash = $main::defs{$deviceName};
+  my $name = $hash->{NAME};
+
+  my $scheme = getScheme($hash);
+  my $ip = $hash->{AUTHORITY};
+  my $cameraUri = "$scheme://$ip";
+
+  return "<div><a href='$cameraUri' target='_blank'>Go to Camera Web UI</a></div>";  
 }
 
 # vim: ts=2:et
@@ -632,6 +848,17 @@ IPCAM_guessFileFormat($) {
         and the time interval between images can be specified using the<br>
         attributes <code>snapshots</code> and <code>delay</code>.
       </li>
+      <li><code>imageWithCallback</code><br>
+        Like <code>get image</code>, but allows you to provide a command<br>
+        that's executed as soon as the picture is taken.<br>
+        This is one-time trigger only, not for intervals and more images.<br>
+        Allows you to eg send pictures immediately and <br>
+        without creating a dedicated notify.<br>
+        Example:<br>
+        <code>get ipcam3 imageWithCallback set pushmsg msg Frontdoor Ding Dong! expire=3600 attachment='www/snapshot/ipcam3_snapshot.jpg'</code><br>
+        The callback command can also hold references to other readings, internals, etc. The following example will lead to the same command as the first one:<br>
+        <code>get ipcam3 imageWithCallback set pushmsg msg Frontdoor Ding Dong! expire=3600 attachment='www/snapshot/[ipcam3:latest]'</code>
+      </li>
       <li><code>last</code><br>
         Show the name of the last snapshot.
       </li>
@@ -655,11 +882,26 @@ IPCAM_guessFileFormat($) {
       Example:<br> <code>attr ipcam3 basicauth {USERNAME}:{PASSWORD}</code>
     </li>
     <li>
+      blocking<br>
+      If set to 1, FHEM will make a blocking call to the camera. Try this if getting snapshot runs into timeouts regularly.<br>
+      Per default, this is set to 0.
+    </li>
+    <li>
       cmd01, cmd02, cmd03, .. cmd13, cdm14, cdm15<br>
       It is possible to define up to 15 custom commands.<br>
       Examples:<br>
       <code>attr ipcam cmd01 led_mode=0</code><br>
       <code>attr ipcam cmd02 resolution=8</code><br>
+    </li>
+    <li>
+      cmd01data, cmd02data, ...<br>
+      You can define the POST data that is to be sent with the according cmd.<br>
+      If this is defined, the request will be POST instead of GET.<br>
+      Example:<br>
+      <code>attr ipcam cmd01data [{"cmd":"Login"},{"cmd":"SetOSD"}]</code><br>
+      You can provide references to readings and internals easliy like this:<br>
+      <code>attr ipcam cmd01data [{"cmd":"Login"},{"cmd":"SetOSD"},{"key":"[devicename:reading]"}]</code><br>
+      will be resolved into <code>[{"cmd":"Login"},{"key":"value-from-reading"}]</code>
     </li>
     <li>
       cmdPanLeft, cmdPanRight, cmdTiltUp, cmdTiltDown, cmdStep<br>
@@ -714,8 +956,29 @@ IPCAM_guessFileFormat($) {
     </li>
     <li><a href="#disable">disable</a></li>
     <li><a href="#do_not_notify">do_not_notify</a></li>
-    <li><a href="#loglevel">loglevel</a></li>
     <li><a href="#readingFnAttributes">readingFnAttributes</a></li>
+    <li>
+      handleAnyXmlAsSvg<br>
+      Previous versions of this module, any XML file was (maybe incorrectly) identified as SVG file.<br>
+      Now, only valid SVG files or SVG documents are identified as SVG, leading to a 'unknown format' response for any other XML file.<br>
+      If you rely on the previous behavior for any reason, setting this to 1 will handle any XML as valid SVG, writing it as .svg file to the storage.<br>
+      The default value is 0.
+    </li>
+    <li>
+      unknownFormatRetryCount<br>
+      If this module is unable to guess the correct file format, your camera might have been under heavy load and unable to respond with a proper image file.<br>
+      The file format will be 'unknown' in that case. Setting this to a positive integer allows you to define how often<br>
+      this module should re-try to grab an image.<br>
+      Default value is 0.<br>
+      Example: <code>attr ipcam3 unknownFormatRetryCount 3</code>
+    </li>
+    <li>
+      unknownFormatRetryDelay<br>
+      This defines the interval in seconds between retries, if [code]unknownFormatRetryCount[/code] is set to a positive integer.<br>
+      The following example sets a 5 seconds delay.<br>
+      Default is 2 seconds.<br>
+      Example: <code>attr ipcam3 unknownFormatRetryDelay 5</code>
+    </li>
     <li>
       path<br>
       Defines the path and query component of the complete <a href="http://de.wikipedia.org/wiki/Uniform_Resource_Identifier" target="_blank">URI</a> to get a snapshot of the
@@ -742,6 +1005,12 @@ IPCAM_guessFileFormat($) {
       if it is necessary.<br>
       Example:<br>
       <code>attr ipcam3 pathPanTilt decoder_control.cgi?user={USERNAME}&amp;pwd={PASSWORD}</code>
+    </li>
+    <li>
+      query<br>
+      query string parameters that will be attached to all commands. Without leading ? or &amp;<br>
+      Example:<br>
+      <code>attr ipcam3 query user={USERNAME}&amp;pwd={PASSWORD}</code>
     </li>
     <li><a href="#showtime">showtime</a></li>
     <li>

@@ -25,7 +25,7 @@
 #
 # Discussed in FHEM Forum: https://forum.fhem.de/index.php/topic,58452.300.html
 #
-# $Id: 71_DENON_AVR_ZONE.pm 21096 2020-02-02 20:56:54Z delmar $
+# $Id: 71_DENON_AVR_ZONE.pm 23027 2020-10-26 08:52:21Z delmar $
 package main;
 
 use strict;
@@ -318,10 +318,10 @@ DENON_AVR_ZONE_Define($$$)
 {
 	my ($hash, $a, $h) = @_;
 	my $name = $hash->{NAME};
-	return "Usage: define <name> DENON_AVR_ZONE <zone>  ... wrong paramter count: ".int(@$a)    if(int(@$a) != 3);
+	return "Usage: define <name> DENON_AVR_ZONE <zone> <iodev> ... wrong paramter count: ".int(@$a)    if(int(@$a) != 4);
 
-	AssignIoPort($hash);
-	
+	AssignIoPort($hash, @$a[3]);
+
 	my $IOhash = $hash->{IODev};
     my $IOname = $IOhash->{NAME};
     my $zone;

@@ -1,10 +1,11 @@
 ##############################################
-# $Id: 00_ZWDongle.pm 20092 2019-09-02 07:10:12Z rudolfkoenig $
+# $Id: 00_ZWDongle.pm 24597 2021-06-07 16:05:33Z rudolfkoenig $
 package main;
 
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday);
+use DevIo;
 use ZWLib;
 use vars qw($FW_ME);
 
@@ -81,8 +82,6 @@ ZWDongle_Initialize($)
 {
   my ($hash) = @_;
 
-  require "$attr{global}{modpath}/FHEM/DevIo.pm";
-
 # Provider
   $hash->{ReadFn}  = "ZWDongle_Read";
   $hash->{WriteFn} = "ZWDongle_Write";
@@ -107,6 +106,7 @@ ZWDongle_Initialize($)
     neighborListPos
     neighborListFmt
     showSetInState:1,0
+    setReadingOnAck:1,0
   );
   use warnings 'qw';
   $hash->{AttrList} = join(" ", @attrList);
@@ -154,6 +154,7 @@ ZWDongle_Define($$)
   $hash->{DeviceName} = $dev;
   $hash->{CallbackNr} = 0;
   $hash->{nrNAck} = 0;
+  $hash->{devioNoSTATE} = 1;
   my @empty;
   $hash->{SendStack} = \@empty;
   ZWDongle_shiftSendStack($hash, 0, 5, undef); # Init variables
@@ -390,7 +391,7 @@ ZWDongle_Set($@)
       $_ =~ s/^UNKNOWN_//;
       $_ = hex($defs{$_}{nodeIdHex})
         if($defs{$_} && $defs{$_}{nodeIdHex});
-      return "$_ is neither a device nor a decimal id" if($_ !~ m/\d+/);
+      return "$_ is neither a device nor a decimal id" if($_ !~ m/^\d+$/);
     }
   }
 
@@ -472,6 +473,7 @@ ZWDongle_Get($@)
 
     $a[0] = hex($defs{$a[0]}{nodeIdHex})
      if($defs{$a[0]} && $defs{$a[0]}{nodeIdHex});
+    return "$a[0] is neither a device nor a decimal id" if($a[0] !~ m/^\d+$/);
   }
 
   my $out = sprintf($gets{$cmd}, @a);
@@ -483,7 +485,8 @@ ZWDongle_Get($@)
   my $msg="";
   $a[0] = $a0 if(defined($a0));
   $msg = $ret if($ret);
-  my @r = map { ord($_) } split("", pack('H*', $ret)) if(defined($ret));
+  my @r;
+  @r = map { ord($_) } split("", pack('H*', $ret)) if(defined($ret));
 
   if($cmd eq "nodeList") {                     ############################
     $msg =~ s/^.{10}(.{58}).*/$1/;
@@ -652,7 +655,7 @@ ZWDongle_NUCheck($$$$)
     return 0 if($msg !~ m/^0048/ || $hash->{calledFromNuCheck});
     push @nuStack, "$fn/$msg";
     if(@nuStack == 1) {
-      InternalTimer(gettimeofday+20, sub { # ZME timeout is 9-11s
+      InternalTimer(gettimeofday+80, sub { # ZME timeout is 9-11s, #111794
         ZWDongle_NUCheck($hash, undef, "0048xx23", 0); # simulate fail
       }, \@nuStack, 0);
     }
@@ -668,7 +671,7 @@ ZWDongle_NUCheck($$$$)
     $hash->{calledFromNuCheck} = 1;
     ZWDongle_Write($hash, $a[0], $a[1]);
     delete($hash->{calledFromNuCheck});
-    InternalTimer(gettimeofday+20, sub {
+    InternalTimer(gettimeofday+80, sub {
       ZWDongle_NUCheck($hash, undef, "0048xx23", 0); # simulate fail
     }, \@nuStack, 0);
   }
@@ -1014,6 +1017,8 @@ ZWDongle_Attr($$$$)
   } elsif($attr eq "showSetInState") {
     $hash->{showSetInState} = ($cmd eq "set" ? (defined($value) ? $value:1) :0);
 
+  } elsif($attr eq "setReadingOnAck") {
+    $hash->{setReadingOnAck}= ($cmd eq "set" ? (defined($value) ? $value:1) :0);
   }
 
   return undef;
@@ -1029,7 +1034,7 @@ ZWDongle_Ready($)
   return undef if (IsDisabled($hash->{NAME}));
 
   return DevIo_OpenDev($hash, 1, "ZWDongle_DoInit")
-            if(ReadingsVal($hash->{NAME}, "state","") eq "disconnected");
+            if(DevIo_getState($hash) eq "disconnected");
 
   # This is relevant for windows/USB only
   my $po = $hash->{USBDev};
@@ -1313,6 +1318,12 @@ ZWDongle_Ready($)
       &lt;cmd&gt;. E.g.: Issuing the command on changes the state first to
       set_on, and after the device ack is received, to on.  This is analoguos
       to the CUL_HM module.  Default for this attribute is 0.
+      </li>
+
+    <li><a name="ZWDonglesetReadingOnAck">setReadingOnAck</a><br>
+      If the attribute is set to 1, and a set command with an argument is
+      issued to a ZWave device, then a reading with the same name will be
+      updated upon reception of the corresponding ZWave ACK radio telegram.
       </li>
       
   </ul>

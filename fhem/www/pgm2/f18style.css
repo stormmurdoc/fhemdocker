@@ -12,7 +12,7 @@ input.maininput { margin-left:10px; }
 }
 #menuBtn { position: absolute; top:6.5px; left:10px; width:32px; height:32px;
            display:none; }
-#textInput { position: absolute; top:6.5px; left:40px; width:32px; height:32px; }
+#textInput { position:absolute; top:6.5px; left:40px; width:32px; height:32px; }
 #hdr     { position: absolute; top:10px; left:72px; }
 #content { 
   position: absolute; top:50px; left:130px; bottom:0; right: 0; 
@@ -233,8 +233,8 @@ body.fixedInput #hdr {
 @media screen and (max-width: 480px) and (orientation: portrait) {
   #content > table { width: 100%; table-layout: fixed; }
   #content > table, table.block.wide { width: 100%; }
-  table.block tr td:nth-child(2) { width: 0; }
-  table.block tr td:nth-child(n+3) { width: 0px; display: none; }
+  #content.slim table.block tr td:nth-child(2) { width: 0; }
+  #content.slim table.block tr td:nth-child(n+3) { width: 0px; display: none; }
  
   .SVGplot { overflow-x: auto;} 
   
@@ -290,3 +290,6 @@ body.commandref div#menu { top:15px; left:40px; }
 body.commandref div#menu a { margin-left:20px; }
 body.commandref div#menu br { display:none; }
 body.commandref div#menu h3 { display:none; }
+
+.SVGplot { position:relative;} 
+div.stylef18.changed a { color:red!important }

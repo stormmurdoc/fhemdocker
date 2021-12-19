@@ -177,69 +177,66 @@ gesetzte Werte &uuml;berschreiben die Werte aus der Konfigurationsdatei.
 <a name="command"></a>
 <h3>FHEM Befehlstypen</h3>
 <ul>
-Es gibt drei Arten von Befehlen: "fhem" Befehle (werden in diesem Dokument
-beschrieben), SHELL-Befehle (diese m&uuml;ssen von doppelten
-Anf&uuml;hrungszeichen "" eingeschlossen werden) und PERL-Ausdr&uuml;cken (von
-geschwungenen Klammern {} eingeschlossen). SHELL-Befehle oder
-PERL-Ausdr&uuml;cke werden f&uuml;r komplexe <a href="#at">at</a> oder <a
+<p>Es gibt drei Arten von Befehlen: "FHEM" Befehle (werden in diesem Dokument
+beschrieben), Shell-Befehle (diese m&uuml;ssen von doppelten
+Anf&uuml;hrungszeichen "" eingeschlossen werden) und perl-Ausdr&uuml;cken (von
+geschwungenen Klammern {} eingeschlossen). Shell-Befehle oder
+perl-Ausdr&uuml;cke werden f&uuml;r komplexe <a href="#at">at</a> oder <a
 href="#notify">notify</a> Ausdr&uuml;cke ben&ouml;tigt, k&ouml;nnen aber auch
-als "normale" Befehle angewendet werden.
-<br>
-<br>
+als "normale" Befehle angewendet werden.</p>
 
-Die folgenden drei Befehle bewirken z.B. dasselbe Ergebnis, wenn sie am
-telnet-Prompt eingegeben werden:
+<p>Die folgenden drei Befehle bewirken z.B. dasselbe Ergebnis, wenn sie am
+telnet-Prompt eingegeben werden:</p>
   <ul>
   set lamp off<br>
   "fhem.pl 7072 "set lamp off""<br>
   {fhem("set lamp off")}<br>
   </ul>
-SHELL-Kommandos werden im Hintergrund ausgef&uuml;hrt, 
-PERL-Ausdr&uuml;cke und FHEM-Kommandos werden im Haupt-"thread" ausgef&uuml;hrt. Um 
-PERL-Ausdr&uuml;cke leichter eingeben zu k&ouml;nnen, sind einige Spezialfunktionen und 
+<p>Shell-Kommandos werden im Hintergrund ausgef&uuml;hrt,
+perl-Ausdr&uuml;cke und FHEM-Kommandos werden im Haupt-"thread" ausgef&uuml;hrt. Um
+perl-Ausdr&uuml;cke leichter eingeben zu k&ouml;nnen, sind einige Spezialfunktionen und
 Variablen verf&uuml;gbar. Lesen Sie sich bitte die Abschnitte <a href="#perl">
 Perl special</a> zum besseren Verst&auml;ndnis durch.</p>
-<p>Um FHEM-Befehle in einen SHELL-Script zu triggern (dies ist 
-eine "andere" M&ouml;glichkeit), benutzen Sie bitte die oben beschriebene Client-Form 
-der fhem.pl.
-<br>
+<p>Um FHEM-Befehle in einen Shell-Script zu triggern (dies ist
+eine "andere" M&ouml;glichkeit), benutzen Sie bitte die oben beschriebene Client-Form
+der fhem.pl.</p>
 
-Mehrere FHEM-Kommandos hintereinander werden mittels 
-Semikolon (;) getrennt. Weil Semikola auch in PERL-Code oder SHELL-Programmen 
-benutzt werden, m&uuml;ssen sie mittels doppelten Semikola gesch&uuml;tzt werden. Lesen 
-Sie sich bitte die <b>Bermerkungen </b>des <a href="#notify">notify</a>-Abschnittes zu Kommandoparametern und Regeln durch.
-<br>
+<p>Mehrere FHEM-Kommandos hintereinander werden mittels
+Semikolon (;) getrennt. Weil Semikola auch in perl-Code oder Shell-Programmen
+benutzt werden, m&uuml;ssen sie mittels doppelten Semikola gesch&uuml;tzt werden. Lesen
+Sie sich bitte die <b>Bemerkungen </b>des <a href="#notify">notify</a>-Abschnittes zu Kommandoparametern und Regeln durch.</p>
 
-Z.B. schaltet die erste der folgenden Befehlszeilen die Lampe 1 nur/erst zur
+<p>Z.B. schaltet die erste der folgenden Befehlszeilen die Lampe 1 nur/erst zur
 Uhrzeit 07:00 Uhr aus, die Lampe 2 aber sofort und die zweite Befehlszeile
-schaltet Lampe 1 und 2 um 7:00 Uhr gleichzeitig aus.
+schaltet Lampe 1 und 2 um 7:00 Uhr gleichzeitig aus.</p>
   <ul>
   define lampoff at 07:00 set Lamp1 off; set Lamp2 off<br>
   define lampoff at 07:00 set Lamp1 off;; set Lamp2 off<br>
   </ul>
-  <br>
-F&uuml;r jede weitere Indirektion muss man die Strichpunkte verdoppeln. Um also die beiden Lampen um 7:00 f&uuml;r 10 Minuten einzuschalten schreibt man:
+<p>F&uuml;r jede weitere Indirektion muss man die Strichpunkte verdoppeln. 
+Um also die beiden Lampen um 7:00 f&uuml;r 10 Minuten einzuschalten schreibt man:</p>
   <ul>
   define onAt at 07:00 set Lamp1 on;;set Lamp2 on;; define offAt at +00:10 set Lamp1 off;;;;set Lamp2 off
   </ul>
-Keine Angst, das Vorherige kann in FHEM auch deutlich einfacher formuliert werden als:
+<p>Keine Angst, das Vorherige kann in FHEM auch deutlich einfacher formuliert werden als:</p>
   <ul>
   define onAt at 07:00 set Lamp1,Lamp2 on-for-timer 600
   </ul>
-  <br>
 
-Befehle k&ouml;nnen entweder direkt eingegeben oder aus einer Datei (z.B. am
+<p>Befehle k&ouml;nnen entweder direkt eingegeben oder aus einer Datei (z.B. am
 Start von FHEM aus der Konfugurationsdatei) eingelesen werden. Die Befehle
 werden entweder direkt ausgef&uuml;hrt oder sp&auml;ter wenn sie als Argumente
 eines <a href="#at">at</a> oder <a href="#notify">notify</a>-Befehles verwendet
-werden.
+werden.</p>
 
-<p>Eine mit einem \ abgeschlossene Zeile wird mit der 
-nachfolgenden Zeile verbunden. Somit k&ouml;nnen lange Befehlszeilen (die z.B. aus 
-mehreren PERL-Befehlen bestehen) auf mehrere Zeilen aufgteilt werden. Einige 
-Web-Frontends (z.B. webpgm2) erleichtern die Eingabe von sich &uuml;ber mehrere 
+<p>Eine mit einem \ abgeschlossene Zeile wird mit der
+nachfolgenden Zeile verbunden. Somit k&ouml;nnen lange Befehlszeilen (die z.B. aus
+mehreren perl-Befehlen bestehen) auf mehrere Zeilen aufgteilt werden. Einige
+Web-Frontends (z.B. webpgm2) erleichtern die Eingabe von sich &uuml;ber mehrere
 Zeilen erstreckende Befehle, indem man keine \ am Zeilenende eingeben muss.</p>
-<p>&nbsp;</p>
+<p>Achtung: unterschiedlicher Befehlsarten (FHEM/Shell/perl) in einer Kommandozeile sind
+nicht unterst&uuml;tzt, auch wenn es in manchen F&auml;llen funktioniert.</p>
+
 </ul>
 <!-- command end - diese Zeile nicht entfernen! -->
 
@@ -529,7 +526,7 @@ Ger&auml;t dokumentiert.
     <p>
 
     <a name="event-aggregator"></a>
-    <li>event-aggregator</li>
+    <li>event-aggregator
     The primary uses of this attribute are to calculate (time-weighted) averages of 
     readings over time periods and to throttle the update rate of readings and thus 
     the amount of data written to the logs.<p>
@@ -691,12 +688,36 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
       Device f&auml;hig ist, Signale von diesem logischen Device zu empfangen.
       </li><br>
 
-    <li>Attribut "disable" umschalten<br/>
-      Das Attribut "disable" kann, sofern vom Ger&auml;temodul bereitgestellt,<br/>
-      mit folgendem Befehl einfach umgeschaltet werden:</br>
-      <br/>
-      <code>attr &lt;device&gt; disable toggle</code><br/>
-    </li>
+    <a name="disable"></a>
+    <li>disable<br>
+      Deaktiviert das entsprechende Ger&auml;t.<br>
+      Sie mit folgendem Befehl einfach umgeschaltet werden:</br>
+      <code>attr &lt;device&gt; disable toggle</code>
+      </li><br>
+
+    <a name="disabledForIntervals"></a>
+    <li>disabledForIntervals HH:MM-HH:MM HH:MM-HH:MM ...<br>
+      Das Argument ist eine Leerzeichengetrennte Liste von Minuszeichen-
+      getrennten HH:MM oder D@HH:MM Paaren. Falls die aktuelle Uhrzeit
+      zwischen diesen Werten f&auml;llt, dann wird die Ausf&uuml;hrung, wie
+      beim disable, ausgesetzt. Statt HH:MM kann man auch HH oder HH:MM:SS
+      angeben.  D ist der Tag der Woche, mit 0 als Sonntag and 3 als
+      Mittwoch. Die Angabe des Wochentags f&uuml;r den "von" Wert impliziert
+      _nicht_ den gleichen Tag f&uuml;r den "bis" Wert, z.Bsp.  deaktiviert
+      1@00-24 die Asf&uuml;hrung von Montag bis Ende der Woche, aber nicht
+      Sonntag (da alle Zeitangaben am Montag vor 1@00 liegen).
+      Um einen Intervall um Mitternacht zu spezifizieren, muss man
+      zwei einzelne angeben, z.Bsp.:
+      <ul>
+        23:00-24:00 00:00-01:00
+      </ul>
+      Falls Teile des Wertes in {} eingeschlossen sind, dann werden sie als
+      ein Perl Ausdruck ausgewertet:
+      <ul>
+        {sunset_abs()}-24 {sunrise_abs()}-08
+      </ul>
+      </li><br>
+
 </ul>
 <!-- attributes end - diese Zeile nicht entfernen! -->
 <br><br>
@@ -704,7 +725,7 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="attr"></a>
 <h3>attr</h3>
 <ul>
-  <code>attr [-a] [-r] &lt;devspec&gt; &lt;attrname&gt; [&lt;value&gt;]</code>
+  <code>attr [-a|-r|-silent] &lt;devspec&gt; &lt;attrname&gt; [&lt;value&gt;]</code>
   <br>
 
   <br>
@@ -728,6 +749,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
   anf&auml;ngt, dann wird es mit einem Leerzeichen angeh&auml;ngt.
   <br>
   Mit der -r Option kann man Teile eines Attributes wieder entfernen.<br>
+  Mit der silent Option wird der Befehl nicht in die "save -?" Liste
+  eingetragen.<br>
   <br>
 
   Beispiele:
@@ -792,6 +815,9 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
       geladen werden kann. Wird in fhem.cfg.demo verwendet, da das RSS Beispiel
       etliche, normalerweise nicht installierte perl-Module ben&ouml;tigt.
       </li><br>
+    <li>-silent<br>
+      Der Befehl wird nicht in die "save -?" Liste eingetragen.
+      </li><br>
   </ul>
 </ul>
 <!-- define end -->
@@ -799,8 +825,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="defmod"></a>
 <h3>defmod</h3>
 <ul>
-  <code>defmod [-temporary] &lt;name&gt; &lt;type&gt; &lt;type-specific&gt;</code><br>
-  <br>
+  <code>defmod [option] &lt;name&gt; &lt;type&gt; &lt;type-specific&gt;</code>
+  <br><br>
   Definiert ein Ger&auml;t, oder &auml;ndert es, falls es exisitiert. Um
   z.Bsp. eine Lampe 10 Minuten nach der letzten Meldung eines Bewegungsmelders
   abzuschalten, k&ouml;nnte man folgendes definieren:
@@ -809,7 +835,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
   </code></ul>
   Falls man statt defmod ein define verwenden w&uuml;rde, dann w&uuml;rde eine
   Meldung innerhalb von 10 Minuten nach der letzten Meldung zu einem Fehler
-  f&uuml;hren, da mdOff noch existiert.
+  f&uuml;hren, da mdOff noch existiert.<br>
+  F&uuml;r die Optionen siehe die define Dokumentation.
   <br>
 </ul>
 <!-- defmod end -->
@@ -839,13 +866,15 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="deleteattr"></a>
 <h3>deleteattr</h3>
 <ul>
-  <code>deleteattr &lt;devspec&gt; [&lt;attrname&gt;]</code> <br>
+  <code>deleteattr [-silent] &lt;devspec&gt; [&lt;attrname&gt;]</code> <br>
   <br>
   L&ouml;scht entweder ein einzelnes Attribut (siehe Abschnitt <a
   href="#attr">attr</a> ) oder alle Attribute eines Ger&auml;tes (falls
   kein &lt;attrname&gt; angegeben wird).<br>
   Siehe den Abschnitt &uuml;ber <a href="#devspec">Ger&auml;te-Spezifikation</a>
   f&uuml;r Details der &lt;devspec&gt;.<br>
+  &lt;attrname&gt; ist ein Regexp, erg&auml;nzt mit ^ und $, damit eine Menge
+  von Attributen mit einem Befehl gel&ouml;scht werden kann.<br>
   Nach der Durchf&uuml;hrung das globale Ereignis "DELETEATTR" wird generiert.
   <br>
 
@@ -861,11 +890,14 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="deletereading"></a>
 <h3>deletereading</h3>
 <ul>
-  <code>deletereading &lt;devspec&gt; &lt;readingname&gt;</code> <br>
+  <code>deletereading &lt;devspec&gt; &lt;readingname&gt;
+        [&lt;older-than-seconds&gt;]</code> <br>
   <br>
   Entfernt das Reading &lt;readingname&gt; f&uuml;r das spezifizierte
   Ger&auml;t.  &lt;readingname&gt; ist ein perl Regular-Expression, was den
   vollst&auml;ndigen Namen des Readings erfassen muss.
+  Falls &lt;older-than-seconds&gt; spezifiziert ist, werden nur readings
+  entfernt, die aelter als dieser Zahl (in Sekunden) sind.<br>
 
   Mit gr&ouml;&szlig;ter Sorgfalt verwenden! FHEM kann abst&uuml;rzen, falls
   man lebenswichtige Readings entfernt.<br>
@@ -1075,7 +1107,7 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="modify"></a>
 <h3>modify</h3>
 <ul>
-  <code>modify &lt;name&gt; &lt;type-dependent-options&gt;</code>
+  <code>modify [-silent] &lt;name&gt; &lt;type-dependent-options&gt;</code>
   <br><br>
 
   Dieser Befehl wird benutzt, um Definitionen zu ver&auml;ndern. Er ist
@@ -1084,10 +1116,12 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
   ver&auml;ndern, dann wird nur der f&uuml;r die Zeit zust&auml;ndige Teil
   ge&auml;ndert. Im Falle der Ver&auml;nderung einer Definition vom Typ
   &quot;notify&quot; wird nur der&nbsp; regex Teil ge&auml;ndert. Alle anderen
-  Werte (Stati, Attribute,&nbsp; etc) bleiben erhalten.
-  After modify, the global event "MODIFIED" will be generated.
-  Nach der Durchf&uuml;hrung das globale Ereignis "MODIFIED" wird generiert.
-  <br><br>
+  Werte (Stati, Attribute,&nbsp; etc) bleiben erhalten.<br>
+  Nach modify wird das global MODIFIED Event erzeugt.<br>
+  Nach der Durchf&uuml;hrung das globale Ereignis "MODIFIED" wird generiert.<br>
+  Mit der silent Option wird der Befehl nicht in die "save -?" Liste
+  eingetragen.<br>
+  <br>
 
   Beispiel:
   <ul>
@@ -1357,12 +1391,14 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 <a name="setreading"></a>
 <h3>setreading</h3>
 <ul>
-  <code>setreading &lt;devspec&gt; &lt;reading&gt; &lt;value&gt;</code>
+  <code>setreading &lt;devspec&gt; [YYYY-MM-DD HH:MM:SS] &lt;reading&gt;
+        &lt;value&gt;</code>
   <br><br>
   Der Befehl setzt das Reading &lt;reading&gt; auf den Wert &lt;value&gt; ohne
   Signale an das betroffene Ger&auml;t zu senden, generiert aber Ereignisse und
   die &uuml;bliche eventMap und stateFormat Umwandlung wird auch
-  durchgef&uuml;hrt.
+  durchgef&uuml;hrt.<br>
+  Falls keine Zeit spezifiziert wurde, wird die aktuelle Uhrzeit verwendet.
   <br>
   Siehe den Abschnitt &uuml;ber <a href="#devspec">Ger&auml;te-Spezifikation</a>
   f&uuml;r Details der &lt;devspec&gt; und die Beschreibung des set Befehls
@@ -1462,7 +1498,7 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
   aufgetreten ist. Die verz&ouml;gerung kann<ul>
   <li>in Sekunden (Millisekunden genau, da man Nachkommastellen spezifizieren
       kann)</li>
-  <li> als timespec (HH:MM or HH::MM::SS oder {perlfunc})</li>
+  <li> als timespec (HH:MM or HH:MM:SS oder {perlfunc})</li>
   <li>oder als suchmuster (Ger&auml;tename oder Ger&auml;tename:Event)</li>
   </ul> angegeben werden.<br>
 
@@ -1525,6 +1561,15 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
 
   <b>Get</b><ul>N/A</ul><br>
 
+  <b>Internals</b>
+  <ul>
+    <a name="init_errors"></a>
+    <li>init_errors<br>
+        Konfigurations Fehlermeldungen beim FHEM Start und Security Meldungen werden
+        hier gesammelt.
+    </li><br>
+  </ul><br>
+
   <b>Attributes</b>
   <ul>
     <a name="altitude"></a>
@@ -1550,6 +1595,14 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
         erfolgt vom <a href="#autocreate"> autocreate</a> Ger&auml;t, um so
         automatisch ein FHEM-Ger&auml;t bei erreichen einer entsprechenden
         Nachricht zu erstellen.
+    </li><br>
+
+    <a name="autosave"></a>
+    <li>autosave<br>
+        Der Standardwert 1 aktiviert einige Module nach einer 
+        Konfigurationsänderung automatisch zu speichern z.B. wenn ein neues 
+        Ger&auml;t erstellt wurde. Treten beim FHEM Start Konfigurationsfehler 
+        auf wird diese Funktion automatisch deaktiviert (0).
     </li><br>
 
     <a name="backupcmd"></a>
@@ -1604,7 +1657,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
     <li>blockingCallMax<br>
         Begrenzt die Anzahl der parallel laufenden Prozesse, die von der
         BlockingCall FHEM Hilfsroutine gestartet wurden. Sinnvoll auf weniger
-        leistungsfaehigen Hardware.
+        leistungsfaehigen Hardware, die Voreinstellung ist 32. Nach erreichen
+        dieser Grenze werden weitere Aufrufe verz&ouml;gert.
     </li><br>
 
     <a name="configfile"></a>
@@ -1630,6 +1684,18 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
         C:\windows\system32\drivers\etc\hosts zu setzen. Achtung: es wird nur
         IPv4 unterst&uuml;tzt.
     </li><br>
+
+    <a name="globaldisableFeatures"></a>
+    <li>disableFeatures <values><br>
+        Komma separierte Liste von Werten. Z.Zt. werden Folgende erkannt:
+        <ul>
+          <li>attrTemplate: um das Laden der AttrTemplates zu vermeiden.
+            </li>
+          <li>securityCheck: um bei fehlenden Benutzer/Passwort bei den
+            aktivierten Netzwerk-Server keine Warnmeldung zu generieren.
+            </li><br>
+        </ul>
+        </li>
 
     <a name="dnsServer"></a>
     <li>dnsServer<br>
@@ -1759,11 +1825,9 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
     <li>motd<br>
         Nachricht des Tages. Wird im Begr&uuml;&szligungsbildschirm von FHEM
         angezeigt, oder direkt beim Start einer &quot;telnet&quot; Sitzung,
-        bevor der fhem&gt; Prompt erscheint. Der SecurityCheck setzt motd wenn
-        es bisher nicht gesetzt ist. Um das zu verhindern, k&ouml;nnen sie den
-        Wert von motd auf &quot;none&quot; setzen.
-        motd wird auch verwendet, um Fehlermeldungen w&auml;hrend des
-        FHEM-Starts zu sammeln und anzuzeigen.
+        bevor der fhem&gt; Prompt erscheint. Zus&auml;tzlich wird der Inhalt 
+        des Internals init_errors angezeigt. Die Anzeige der gesamten Meldung 
+        wird durch attr global motd none abgeschaltet.
     </li><br>
 
     <a name="mseclog"></a>
@@ -1779,6 +1843,13 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
         Dieses Attribut ist bei einigen FHEM Installationen auf FRITZ!-Boxen
         notwendig, und wid fuer Windows automatisch gesetzt.
     </li><br>
+
+    <a id="perlSyntaxCheck"></a>
+    <li>perlSyntaxCheck<br>
+        nach setzen des <b>global</b> Attributes perlSyntaxCheck wird eine 
+        Syntax-Pr&uuml;fung der Anweisung durchgef&uuml;hrt bei jeder
+        &Auml;nderung (define oder modify), falls die Anweisung Perl ist, und
+        FHEM bereits gestartet ist.</li><br>
 
     <a name="pidfilename="></a>
     <li>pidfilename<br>
@@ -1882,14 +1953,6 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
         Setzt die Verz&ouml;gerung beim Neustart mit shutdown restart, die
         Voreinstellung ist 2 (Sekunden).
     </li><br>
-
-    <a name="autosave"></a>
-    <li>autosave<br>
-        Erlaubt manchen Modulen save auszuf&uuml;hren, nach einer automatischen
-        &Auml;nderung der Konfiguration, z.Bsp. nachdem ein Ger&auml;t angelegt
-        wurde. Die Voreinstellung ist 1 (wahr), man kann es ausschalten, indem
-        man den Wert auf 0 setzt.
-    </li>
   </ul>
 
   <br><br>
@@ -1910,6 +1973,7 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
     <li>MODIFIED &lt;defspec&gt;<br>nach &Auml;nderung einer
     Ger&auml;tedefinition.</li>
     <li>UPDATE<br>nach Abschluss eines Updates.</li>
+    <li>CANNOT_FORK<br>falls in BlockingCall dieses Problem auftritt.</li>
   </ul>
 
 
@@ -1998,9 +2062,9 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
       define roll_en *08:30:00 { fhem "trigger SwitchAllRoll on" if($we) }<br>
     </ul>
     $we wird mit IsWe() gesetzt, diese Funktion nimmt optional die Argumente
-    "today", "yesterday", "tomorrow", MM-DD oder YYYY-MM-DD. Achtung: alles
-    andere wird als "today" interpretiert, ohne eine Fehlermeldung zu
-    generieren.<br>
+    "today", "yesterday", "tomorrow", MM-DD oder YYYY-MM-DD. Achtung: bei
+    anderen Werten wird das state Reading ausgewertet, ohne eine Fehlermeldung
+    zu generieren.<br>
     </li><br>
 
   <li>
@@ -2013,8 +2077,7 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
     <br>
     <ul>
       <li>Value(&lt;devicename&gt;)<br>
-        gibt den Status eines Ger&auml;tes zur&uuml;ck (entsprechend dem
-        Ausdruck in Klammern, den Sie beim List-Befehl sehen).
+        liefert das Internal STATE zur&uuml;ck.
         </li><br>
 
       <li>OldValue(&lt;devicename&gt;)</li>
@@ -2032,7 +2095,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
                    &lt;defaultvalue&gt;,&lt;round&gt;)<br>
         Gibt die erste Zahl aus dem Readingswert zur&uuml;ck.
         Falls &lt;round&gt; spezifiziert ist, wird sie auf diese Anzahl von
-        Dezimalstellen gerundet.
+        Dezimalstellen gerundet und ggf. mit 0 aufgefüllt, wenn &lt;round&gt;
+        gr&ouml;&szlig;er ist als die Anzahl der Dezimalstellen.
         </li><br>
       <li>ReadingsTimestamp(&lt;devicename&gt;,
                             &lt;reading&gt;,&lt;defaultvalue&gt;)<br>
@@ -2072,7 +2136,8 @@ Die folgenden lokalen Attribute werden von mehreren Ger&auml;ten verwendet:
                    &lt;defaultvalue&gt;,&lt;round&gt;)<br>
         Gibt die erste Zahl aus dem Attributwert zur&uuml;ck.
         Falls &lt;round&gt; spezifiziert ist, wird sie auf diese Anzahl von
-        Dezimalstellen gerundet.
+        Dezimalstellen gerundet und ggf. mit 0 aufgefüllt, wenn &lt;round&gt;
+        gr&ouml;&szlig;er ist als die Anzahl der Dezimalstellen.
         </li><br>
       <li>
         InternalVal(&lt;devicename&gt;,&lt;internal&gt;,

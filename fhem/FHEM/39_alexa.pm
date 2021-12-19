@@ -1,5 +1,5 @@
 
-# $Id: 39_alexa.pm 20856 2019-12-30 22:05:43Z justme1968 $
+# $Id: 39_alexa.pm 23820 2021-02-24 19:29:15Z justme1968 $
 
 package main;
 
@@ -33,6 +33,7 @@ alexa_Initialize($)
 
   $hash->{DefFn}    = "alexa_Define";
   $hash->{NotifyFn} = "alexa_Notify";
+  $hash->{RenameFn} = "alexa_Rename";
   $hash->{UndefFn}  = "alexa_Undefine";
   $hash->{DelayedShutdownFn} = "alexa_DelayedShutdownFn";
   $hash->{ShutdownFn} = "alexa_Shutdown";
@@ -54,7 +55,7 @@ alexa_Initialize($)
                       #"alexaFHEM-filter ".
                       "alexaFHEM-host alexaFHEM-sshUser ".
                       "nrarchive ".
-                      "disable:1 disabledForIntervals ".
+                      "disable:1,0 disabledForIntervals ".
                       $readingFnAttributes;
 
   $hash->{FW_detailFn} = "alexa_detailFn";
@@ -117,6 +118,16 @@ alexa_AttrDefaults($)
 }
 
 sub
+alexa_InitLog($) {
+  my $name = shift;
+  if( $attr{global}{logdir} ) {
+    CommandAttr(undef, "$name alexaFHEM-log %L/alexa-%Y-%m-%d.log") if( !AttrVal($name, 'alexaFHEM-log', undef ) );
+  } else {
+    CommandAttr(undef, "$name alexaFHEM-log ./log/alexa-%Y-%m-%d.log") if( !AttrVal($name, 'alexaFHEM-log', undef ) );
+  }
+}
+
+sub
 alexa_Define($$)
 {
   my ($hash, $def) = @_;
@@ -138,16 +149,11 @@ alexa_Define($$)
 
   addToAttrList("$hash->{TYPE}Name");
   addToAttrList("$hash->{TYPE}Room");
+  addToAttrList("$hash->{TYPE}ProactiveEvents:1,0");
 
   alexa_AttrDefaults($hash);
 
   $hash->{NOTIFYDEV} = "global,global:npmjs.*alexa-fhem.*";
-
-  if( $attr{global}{logdir} ) {
-    CommandAttr(undef, "$name alexaFHEM-log %L/alexa-%Y-%m-%d.log") if( !AttrVal($name, 'alexaFHEM-log', undef ) );
-  } else {
-    CommandAttr(undef, "$name alexaFHEM-log ./log/alexa-%Y-%m-%d.log") if( !AttrVal($name, 'alexaFHEM-log', undef ) );
-  }
 
   #CommandAttr(undef, "$name alexaFHEM-filter alexaName=..*") if( !AttrVal($name, 'alexaFHEM-filter', undef ) );
 
@@ -161,6 +167,7 @@ alexa_Define($$)
                        };
 
   if( $init_done ) {
+    alexa_InitLog($name);
     CoProcess::start($hash);
   } else {
     $hash->{STATE} = 'active';
@@ -185,11 +192,21 @@ alexa_Notify($$)
     return undef;
 
   } elsif( grep(m/^INITIALIZED|REREADCFG$/, @{$dev->{CHANGED}}) ) {
+    alexa_InitLog($hash->{NAME});
     CoProcess::start($hash);
     return undef;
   }
 
   return undef;
+}
+
+sub
+alexa_Rename($$)
+{
+  my ($new_name, $old_name) = @_;
+  my $hash = $defs{$new_name};
+
+  alexa_Set($hash, $new_name, 'restart' );
 }
 
 sub
@@ -395,6 +412,7 @@ alexa_configDefault($;$)
     $conf->{connections} = [{}] if( !$conf->{connections} );
     $conf->{connections}[0]->{name} = 'FHEM' if( !$conf->{connections}[0]->{name} );
     $conf->{connections}[0]->{server} = $ip if( !$conf->{connections}[0]->{server} );
+    #$conf->{connections}[0]->{proactiveEvents} = JSON::false if( !$conf->{connections}[0]->{proactiveEvents} );
     $conf->{connections}[0]->{filter} = 'alexaName=..*' if( !$conf->{connections}[0]->{filter} );
     $conf->{connections}[0]->{uid} = $< if( $conf->{sshproxy} );
 
@@ -1303,6 +1321,12 @@ alexa_Attr($$$)
 
     <li>alexaRoom<br>
       The room name to use for a device with alexa.</li>
+
+    <li>alexaProactiveEvents<br>
+      0 -> don't send proactiveEvents to amazon (default)<br>
+      1 -> send proactiveEvents to amazon<br>
+      devices that send proactiveEvents to amazon can be used to trigger alexa routines.<br>
+      setting alexaProactiveEvents to 0 in the alexa device itself will disable all event reporting for this fhem instance</li>
     <li>articles<br>
       defaults to: der,die,das,den</li>
     <li>prepositions<br>
@@ -1359,7 +1383,7 @@ alexa_Attr($$$)
     "runtime": {
       "requires": {
         "FHEM": 5.00918799,
-        "perl": 5.014, 
+        "perl": 5.014,
         "Meta": 0,
         "CoProcess": 0,
         "JSON": 0,

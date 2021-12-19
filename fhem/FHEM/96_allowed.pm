@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 96_allowed.pm 21197 2020-02-14 14:32:04Z rudolfkoenig $
+# $Id: 96_allowed.pm 25210 2021-11-10 10:39:53Z rudolfkoenig $
 package main;
 
 use strict;
@@ -21,6 +21,7 @@ allowed_Initialize($)
   $hash->{AuthenticateFn} = "allowed_Authenticate";
   $hash->{SetFn}    = "allowed_Set";
   $hash->{AttrFn}   = "allowed_Attr";
+  $hash->{RenameFn} = "allowed_Rename";
   no warnings 'qw';
   my @attrList = qw(
     allowedCommands
@@ -31,6 +32,7 @@ allowed_Initialize($)
     basicAuthExpiry
     basicAuthMsg
     disable:1,0
+    disabledForIntervals
     globalpassword
     password
     reportAuthAttempts
@@ -67,6 +69,7 @@ allowed_Define($$)
     $hash->{devices} = \%list;
   }
   $auth_refresh = 1;
+  $hash->{".validFor"} = () if(!$hash->{OLDDEF});
   readingsSingleUpdate($hash, "state", "validFor:", 0);
   SecurityCheck() if($init_done);
   return undef;
@@ -79,6 +82,13 @@ allowed_Undef($$)
   return undef;
 }
 
+sub
+allowed_Rename($$)
+{
+  $auth_refresh = 1;
+  return undef;
+}
+
 #####################################
 # Return 0 for don't care, 1 for Allowed, 2 for forbidden.
 sub
@@ -86,35 +96,33 @@ allowed_Authorize($$$$;$)
 {
   my ($me, $cl, $type, $arg, $silent) = @_;
 
-  return 0 if($me->{disabled});
-  if( $cl->{SNAME} ) {
-    return 0 if(!$me->{validFor} || $me->{validFor} !~ m/\b$cl->{SNAME}\b/);
-  } else {
-    return 0 if(!$me->{validFor} || $me->{validFor} !~ m/\b$cl->{NAME}\b/);
-  }
-  return 0 if(AttrVal($me->{NAME}, "allowedIfAuthenticatedByMe", 0) &&
+  return 0 if($me->{disabled} && IsDisabled($me->{NAME}));
+  my $vName = $cl->{SNAME} ? $cl->{SNAME} : $cl->{NAME};
+  return 0 if(!$me->{".validFor"}{$vName});
+  my $mName = $me->{NAME};
+  return 0 if(AttrVal($mName, "allowedIfAuthenticatedByMe",$featurelevel>6.0) &&
               (!$cl->{AuthenticatedBy} ||
-                $cl->{AuthenticatedBy} ne $me->{NAME}));
+                $cl->{AuthenticatedBy} ne $mName));
 
   if($type eq "cmd") {
-    return 0 if(!$me->{allowedCommands});
+    return 0 if(!$me->{".allowedCommands"});
     # Return 0: allow stacking with other instances, see Forum#46380
-    return 0 if($me->{allowedCommands} =~ m/\b\Q$arg\E\b/);
+    return 0 if($me->{".allowedCommands"} =~ m/\b\Q$arg\E\b/);
     Log3 $me, 3, "Forbidden command $arg for $cl->{NAME}";
-    stacktrace() if(AttrVal($me, "verbose", 5));
+    stacktrace() if(AttrVal($me->{NAME}, "verbose", 0) == 5);
     return 2;
   }
 
   if($type eq "devicename") {
-    return 0 if(!$me->{allowedDevices} &&
-                !$me->{allowedDevicesRegexp});
-    return 1 if($me->{allowedDevices} &&
-                $me->{allowedDevices} =~ m/\b\Q$arg\E\b/);
-    return 1 if($me->{allowedDevicesRegexp} &&
-                $arg =~ m/^$me->{allowedDevicesRegexp}$/);
+    return 0 if(!$me->{".allowedDevices"} &&
+                !$me->{".allowedDevicesRegexp"});
+    return 1 if($me->{".allowedDevices"} &&
+                $me->{".allowedDevices"} =~ m/\b\Q$arg\E\b/);
+    return 1 if($me->{".allowedDevicesRegexp"} &&
+                $arg =~ m/^$me->{".allowedDevicesRegexp"}$/);
     if(!$silent) {
       Log3 $me, 3, "Forbidden device $arg for $cl->{NAME}";
-      stacktrace() if(AttrVal($me, "verbose", 5));
+      stacktrace() if(AttrVal($me->{NAME}, "verbose", 0) == 5);
     }
     return 2;
   }
@@ -143,8 +151,9 @@ allowed_Authenticate($$$$)
     return $r;
   };
 
-  return 0 if($me->{disabled});
-  return 0 if(!$me->{validFor} || $me->{validFor} !~ m/\b$cl->{SNAME}\b/);
+  return 0 if($me->{disabled} && IsDisabled($aName));
+  my $vName = $cl->{SNAME} ? $cl->{SNAME} : $cl->{NAME};
+  return 0 if(!$me->{".validFor"}{$vName});
 
   if($cl->{TYPE} eq "FHEMWEB") {
     my $basicAuth = AttrVal($aName, "basicAuth", undef);
@@ -172,7 +181,8 @@ allowed_Authenticate($$$$)
     if($pwok && (!defined($authcookie) || $secret ne $authcookie)) {
       my $time = AttrVal($aName, "basicAuthExpiry", 0);
       if ( $time ) {
-        my ($user, $password) = split(":", decode_base64($secret)) if($secret);
+        my ($user, $password);
+        ($user, $password) = split(":", decode_base64($secret)) if($secret);
         $time = int($time*86400+time());
         # generate timestamp according to RFC-1130 in Expires
         my $expires = FmtDateTimeRFC1123($time);
@@ -191,7 +201,7 @@ allowed_Authenticate($$$$)
 
     return &$doReturn(1, 1) if($pwok);
 
-    my $msg = AttrVal($aName, "basicAuthMsg", "FHEM: login required");
+    my $msg = AttrVal($aName, "basicAuthMsg", "Login required");
     $cl->{".httpAuthHeader"} = "HTTP/1.1 401 Authorization Required\r\n".
                                "WWW-Authenticate: Basic realm=\"$msg\"\r\n";
     return &$doReturn(2, $secret);
@@ -240,7 +250,8 @@ allowed_CheckBasicAuth($$$$)
   my $aName = $me->{NAME};
 
   my $pwok = ($secret && $secret eq $basicAuth) ? 1 : 2;      # Base64
-  my ($user, $password) = split(":", decode_base64($secret)) if($secret);
+  my ($user, $password);
+  ($user, $password) = split(":", decode_base64($secret)) if($secret);
   ($user,$password) = ("","") if(!defined($user) || !defined($password));
 
   if($secret && $basicAuth =~ m/^{.*}$/) {
@@ -296,8 +307,10 @@ allowed_Attr(@)
 
   my $set = ($type eq "del" ? 0 : (!defined($param[0]) || $param[0]) ? 1 : 0);
 
-  if($attrName eq "disable") {
-    readingsSingleUpdate($hash, "state", $set ? "disabled" : "active", 1);
+  if($attrName eq "disable" ||
+     $attrName eq "disabledForIntervals") {
+    readingsSingleUpdate($hash, "state", $set ? "disabled" : "active", 1)
+      if($attrName eq "disable");
     if($set) {
       $hash->{disabled} = 1;
     } else {
@@ -309,10 +322,16 @@ allowed_Attr(@)
           $attrName eq "allowedDevicesRegexp"  ||
           $attrName eq "validFor") {
     if($set) {
-      $hash->{$attrName} = join(" ", @param);
+      if($attrName eq "validFor") {
+        my %vf = map {$_,1} split(",", join(",",@param));
+        $hash->{".$attrName"} = \%vf;
+      } else {
+        $hash->{".$attrName"} = join(" ", @param);
+      }
     } else {
-      delete($hash->{$attrName});
+      delete($hash->{".$attrName"});
     }
+
     if($attrName eq "validFor") {
       readingsSingleUpdate($hash, "state", "validFor:".join(",",@param), 1);
       InternalTimer(1, "SecurityCheck", 0) if($init_done);
@@ -346,14 +365,14 @@ allowed_fhemwebFn($$$$)
   my ($FW_wname, $d, $room, $pageHash) = @_; # pageHash is set for summaryFn.
   my $hash = $defs{$d};
 
-  my $vf = $defs{$d}{validFor} ? $defs{$d}{validFor} : "";
   my (@F_arr, @t_arr);
   my @arr = map {
               my $ca = $modules{$defs{$_}{TYPE}}{CanAuthenticate};
               push(@F_arr, $_) if($ca == 1);
               push(@t_arr, $_) if($ca == 2);
-              "<input type='checkbox' ".($vf =~ m/\b$_\b/ ? "checked ":"").
-                   "name='$_' class='vfAttr'><label>$_</label>"
+              "<input type='checkbox' ".
+                ($hash->{".validFor"}{$_} ? "checked ":"").
+                "name='$_' class='vfAttr'><label>$_</label>"
             }
             grep { !$defs{$_}{SNAME} && 
                    $modules{$defs{$_}{TYPE}}{CanAuthenticate} } 
@@ -438,8 +457,6 @@ EOF
   <a name="allowedattr"></a>
   <b>Attributes</b>
   <ul>
-    <li><a href="#disable">disable</a></li><br>
-
     <a name="allowedCommands"></a>
     <li>allowedCommands<br>
         A comma separated list of commands allowed from the matching frontend
@@ -494,6 +511,9 @@ EOF
         after the given period.
         Only valid if basicAuth is set.
     </li><br>
+
+    <li><a href="#disable">disable</a></li></br>
+    <li><a href="#disabledForIntervals">disabledForIntervals</a></li></br>
 
     <a name="password"></a>
     <li>password<br>
@@ -589,9 +609,6 @@ EOF
   <a name="allowedattr"></a>
   <b>Attribute</b>
   <ul>
-    <li><a href="#disable">disable</a>
-      </li><br>
-
     <a name="allowedCommands"></a>
     <li>allowedCommands<br>
         Eine Komma getrennte Liste der erlaubten Befehle des passenden
@@ -639,6 +656,9 @@ EOF
         &Uuml;berschrift angezeigt.<br>
     </li><br>
 
+
+    <li><a href="#disable">disable</a><br>disable</li></br>
+    <li><a href="#disabledForIntervals">disabledForIntervals</a></li></br>
 
     <a name="password"></a>
     <li>password<br>

@@ -6,7 +6,7 @@
 #
 # Prof. Dr. Peter A. Henning
 #
-# $Id: 11_OWX_CCC.pm 16671 2018-04-29 05:06:35Z phenning $
+# $Id: 11_OWX_CCC.pm 23553 2021-01-19 13:51:06Z phenning $
 #
 ########################################################################################
 #
@@ -54,7 +54,7 @@ sub new($) {
 	return bless {
 		hash => $hash,
 	    #-- module version
-		version => "7.11"
+		version => "7.23"
 	}, $class;
 }
 

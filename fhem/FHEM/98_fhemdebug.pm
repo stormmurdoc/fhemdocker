@@ -1,17 +1,20 @@
 ##############################################
-# $Id: 98_fhemdebug.pm 20149 2019-09-11 13:05:10Z rudolfkoenig $
+# $Id: 98_fhemdebug.pm 25175 2021-11-03 18:25:50Z rudolfkoenig $
 package main;
 
 use strict;
 use warnings;
+use B qw(svref_2object);
 
 my $fhemdebug_enabled;
 my $main_callfn;
+my $main_readingsEndUpdate;
+my $main_setReadingsVal;
 
 sub
 fhemdebug_Initialize($){
   $cmds{"fhemdebug"}{Fn} = "fhemdebug_Fn";
-  $cmds{"fhemdebug"}{Hlp} = "{start|stop|status}";
+  $cmds{"fhemdebug"}{Hlp} = "{enable|disable|status|timerList}";
 }
 
 sub
@@ -45,10 +48,32 @@ fhemdebug_Fn($$)
     $addTimerStacktrace = $param;
     return;
 
+  } elsif($param =~ m/^forceEvents ([0|1])/) { #123655
+    local $SIG{__WARN__} = sub { };
+    if($1) {
+      $main_readingsEndUpdate = \&readingsEndUpdate;
+      $main_setReadingsVal = \&setReadingsVal;
+      *readingsEndUpdate = sub($$){ 
+        my $dt = $_[1];
+        $dt = 1 if(AttrVal($_[0]->{NAME}, "forceEvents", 0));
+        &{$main_readingsEndUpdate}($_[0], $dt);
+      };
+      *setReadingsVal = sub($$$$) {
+        DoTrigger($_[0]->{NAME}, "$_[1]: $_[2]")
+          if($_[1] && $_[1] eq "IODev" &&
+             AttrVal($_[0]->{NAME}, "forceEvents", 0));
+        &{$main_setReadingsVal}(@_);
+      };
+    } else {
+      *readingsEndUpdate = $main_readingsEndUpdate;
+      *setReadingsVal = $main_setReadingsVal;
+    }
+
   } else {
     return "Usage: fhemdebug {enable | disable | status | ".
-                        "timerList | addTimerStacktrace {0|1} }";
+              "timerList | addTimerStacktrace {0|1} | forceEvents {0|1} }";
   }
+  return;
 }
 
 sub
@@ -113,8 +138,16 @@ fhemdebug_timerList($)
 
   for my $h (@intAtA) {
     my $tt = $h->{TRIGGERTIME};
-    push(@res, sprintf("%s.%05d %s%s",
-      FmtDateTime($tt), int(($tt-int($tt))*100000), $h->{FN},
+    my $fnName = $h->{FN};
+    if(ref($fnName) ne "") {
+      my $cv = svref_2object($fnName);
+      $fnName = $cv->GV->NAME if($cv); # get function name
+    }
+    push(@res, sprintf("%s.%05d %s %s %s",
+      FmtDateTime($tt), int(($tt-int($tt))*100000), 
+      $fnName,
+      ($h->{ARG} && ref($h->{ARG}) eq "HASH" && $h->{ARG}{NAME} ? 
+       $h->{ARG}{NAME} : ""),
       $h->{STACKTRACE} ? $h->{STACKTRACE} : ""));
   }
   return join("\n", @res);

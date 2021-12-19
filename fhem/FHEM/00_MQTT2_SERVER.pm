@@ -1,8 +1,6 @@
 ##############################################
-# $Id: 00_MQTT2_SERVER.pm 20451 2019-11-04 10:37:40Z rudolfkoenig $
+# $Id: 00_MQTT2_SERVER.pm 25340 2021-12-13 17:59:32Z rudolfkoenig $
 package main;
-
-# TODO: test SSL
 
 use strict;
 use warnings;
@@ -23,11 +21,6 @@ MQTT2_SERVER_Initialize($)
 {
   my ($hash) = @_;
 
-  $hash->{Clients} = ":MQTT2_DEVICE:MQTT_GENERIC_BRIDGE:";
-  $hash->{MatchList}= {
-    "1:MQTT2_DEVICE"  => "^.*",
-    "2:MQTT_GENERIC_BRIDGE" => "^.*"
-  };
   $hash->{ReadFn}  = "MQTT2_SERVER_Read";
   $hash->{DefFn}   = "MQTT2_SERVER_Define";
   $hash->{AttrFn}  = "MQTT2_SERVER_Attr";
@@ -42,8 +35,10 @@ MQTT2_SERVER_Initialize($)
     SSL:0,1
     autocreate:no,simple,complex
     clientId
+    clientOrder
     disable:1,0
     disabledForIntervals
+    ignoreRegexp
     keepaliveFactor
     rePublish:1,0
     rawEvents
@@ -51,7 +46,21 @@ MQTT2_SERVER_Initialize($)
     sslCertPrefix
   );
   use warnings 'qw';
-  $hash->{AttrList} = join(" ", @attrList);
+  $hash->{AttrList} = join(" ", @attrList)." ".$readingFnAttributes;
+}
+
+sub
+MQTT2_SERVER_resetClients($)
+{
+  my ($hash) = @_;
+
+  $hash->{ClientsKeepOrder} = 1;
+  $hash->{Clients} = ":MQTT2_DEVICE:MQTT_GENERIC_BRIDGE:";
+  $hash->{MatchList}= {
+    "1:MQTT2_DEVICE"  => "^.",
+    "2:MQTT_GENERIC_BRIDGE" => "^."
+  };
+  delete($hash->{".clientArray"});
 }
 
 #####################################
@@ -63,6 +72,7 @@ MQTT2_SERVER_Define($$)
   return "Usage: define <name> MQTT2_SERVER [IPV6:]<tcp-portnr> [global]"
         if($port !~ m/^(IPV6:)?\d+$/);
 
+  MQTT2_SERVER_resetClients($hash);
   MQTT2_SERVER_Undef($hash, undef) if($hash->{OLDDEF}); # modify
   my $ret = TcpServer_Open($hash, $port, $global);
 
@@ -91,8 +101,9 @@ MQTT2_SERVER_keepaliveChecker($)
                $now < $cHash->{lastMsgTime}+$cHash->{keepalive}*$multiplier );
       my $msgName = $clName;
       $msgName .= "/".$cHash->{cid} if($cHash->{cid});
-      Log3 $hash, 3, "$hash->{NAME}: $msgName left us (keepalive check)";
       CommandDelete(undef, $clName);
+      Log3 $hash, 3, "$hash->{NAME}: $msgName left us (keepalive check)"
+        if(!$cHash->{isReplaced});
     }
   }
   InternalTimer($now+10, "MQTT2_SERVER_keepaliveChecker", $hash, 0);
@@ -122,6 +133,7 @@ MQTT2_SERVER_Undef($@)
               !$h->{PEER} || $h->{PEER} ne $hash->{PEER});
       Log3 $shash, 4,
         "Closing second connection for $h->{cid}/$h->{PEER} without lwt";
+      $hash->{isReplaced} = 1;
       return $ret;
     }
 
@@ -137,8 +149,29 @@ MQTT2_SERVER_Attr(@)
   my ($type, $devName, $attrName, @param) = @_;
   my $hash = $defs{$devName};
   if($type eq "set" && $attrName eq "SSL") {
-    TcpServer_SetSSL($hash);
+    InternalTimer(1, "TcpServer_SetSSL", $hash, 0); # Wait for sslCertPrefix
   }
+
+  if($type eq "set" && $attrName eq "ignoreRegexp") {
+    my $re = join(" ",@param);
+    return "bad $devName ignoreRegexp: $re" if($re eq "1" || $re =~ m/^\*/);
+    eval { "Hallo" =~ m/$re/ };
+    return "bad $devName ignoreRegexp: $re: $@" if($@);
+  }
+
+  if($attrName eq "clientOrder") {
+    if($type eq "set") {
+      my @p = split(" ", $param[0]);
+      $hash->{Clients} = ":".join(":",@p).":";
+      my $cnt = 1;
+      my %h = map { ($cnt++.":$_", "^.") } @p;
+      $hash->{MatchList} = \%h;
+      delete($hash->{".clientArray"}); # Force a recompute
+    } else {
+      MQTT2_SERVER_resetClients($hash);
+    }
+  }
+
   return undef;
 } 
 
@@ -162,6 +195,7 @@ MQTT2_SERVER_Set($@)
     return "Usage: publish -r topic [value]" if(@a < 1);
     my $tp = shift(@a);
     my $val = join(" ", @a);
+    readingsSingleUpdate($hash, "lastPublish", "$tp:$val", 1);
     MQTT2_SERVER_doPublish($hash->{CL}, $hash, $tp, $val, $retain);
   }
 }
@@ -206,11 +240,12 @@ sub
 MQTT2_SERVER_out($$$;$)
 {
   my ($hash, $msg, $dump, $callback) = @_;
-  addToWritebuffer($hash, $msg, $callback);
+  addToWritebuffer($hash, $msg, $callback) if(defined($hash->{FD}));
   if($dump) {
     my $cpt = $cptype{ord(substr($msg,0,1)) >> 4};
     $msg =~ s/([^ -~])/"(".ord($1).")"/ge;
-    Log3 $dump, 5, "out: $cpt: $msg";
+    my $fd = defined($hash->{FD}) ? $hash->{FD} : "NoFd";
+    Log3 $dump, 5, "out\@$fd $cpt: $msg";
   }
 }
 
@@ -277,7 +312,8 @@ MQTT2_SERVER_Read($@)
   if($dump) {
     my $msg = substr($hash->{BUF}, 0, $off+$tlen);
     $msg =~ s/([^ -~])/"(".ord($1).")"/ge;
-    Log3 $sname, 5, "in:  $cpt: $msg";
+    my $fd = defined($hash->{FD}) ? $hash->{FD} : "NoFd";
+    Log3 $sname, 5, "in\@$fd $cpt: $msg";
   }
 
   $hash->{BUF} = substr($hash->{BUF}, $tlen+$off);
@@ -290,11 +326,23 @@ MQTT2_SERVER_Read($@)
   ####################################
   if($cpt eq "CONNECT") {
     # V3:MQIsdb V4:MQTT
+    if(ord($fb) & 0xf) { # lower nibble must be zero
+      Log3 $sname, 3, "$cname with bogus CONNECT (".ord($fb)."), disconnecting";
+      Log3 $sname, 3, "TLS activated on the client but not on the server?"
+        if(!AttrVal($sname,"TLS",0) && ord($fb) == 22);
+      return CommandDelete(undef, $cname);
+    }
     ($hash->{protoTxt}, $off) = MQTT2_SERVER_getStr($hash, $pl, 0);
     $hash->{protoNum}  = unpack('C*', substr($pl,$off++,1)); # 3 or 4
     $hash->{cflags}    = unpack('C*', substr($pl,$off++,1));
     $hash->{keepalive} = unpack('n', substr($pl, $off, 2)); $off += 2;
-    ($hash->{cid}, $off) = MQTT2_SERVER_getStr($hash, $pl, $off);
+    my $cid;
+    ($cid, $off) = MQTT2_SERVER_getStr($hash, $pl, $off);
+
+    if($hash->{protoNum} > 4) {
+      return MQTT2_SERVER_out($hash, pack("C*", 0x20, 2, 0, 1), $dump,
+                                sub{ CommandDelete(undef, $hash->{NAME}); });
+    }
 
     my $desc = "keepAlive:$hash->{keepalive}";
     if($hash->{cflags} & 0x04) { # Last Will & Testament
@@ -318,14 +366,16 @@ MQTT2_SERVER_Read($@)
 
     my $ret = Authenticate($hash, "basicAuth:".encode_base64("$usr:$pwd"));
     if($ret == 2) { # CONNACK, Error
+      delete($hash->{lwt}); # Avoid autocreate, #121587
       return MQTT2_SERVER_out($hash, pack("C*", 0x20, 2, 0, 4), $dump, 
                                 sub{ CommandDelete(undef, $hash->{NAME}); });
     }
 
     $hash->{subscriptions} = {};
     $defs{$sname}{clients}{$cname} = 1;
+    $hash->{cid} = $cid; #124699
 
-    Log3 $sname, 4, "  $cname $hash->{cid} $cpt V:$hash->{protoNum} $desc";
+    Log3 $sname, 4, "  $cname cid:$hash->{cid} $cpt V:$hash->{protoNum} $desc";
     MQTT2_SERVER_out($hash, pack("C*", 0x20, 2, 0, 0), $dump); # CONNACK+OK
 
   ####################################
@@ -361,11 +411,12 @@ MQTT2_SERVER_Read($@)
       push @ret, ($qos > 1 ? 1 : 0);    # max qos supported is 1
     }
     # SUBACK
-    MQTT2_SERVER_out($hash, pack("CCnC*", 0x90, 3, $pid, maxNum(@ret)), $dump);
+    MQTT2_SERVER_out($hash, pack("CCnC*", 0x90, 2+@ret, $pid, @ret), $dump);
 
     if(!$hash->{answerScheduled}) {
       $hash->{answerScheduled} = 1;
       InternalTimer($hash->{lastMsgTime}+1, sub(){
+        return if(!$hash->{FD}); # Closed in the meantime, #114425
         delete($hash->{answerScheduled});
         my $r = $defs{$sname}{retain};
         foreach my $tp (sort { $r->{$a}{ts} <=> $r->{$b}{ts} } keys %{$r}) {
@@ -400,7 +451,7 @@ MQTT2_SERVER_Read($@)
 
   ####################################
   } else {
-    Log 1, "ERROR: Unhandled packet $cpt, disconneting $cname";
+    Log 1, "ERROR: Unhandled packet $cpt, disconnecting $cname";
     return CommandDelete(undef, $cname);
 
   }
@@ -410,7 +461,9 @@ MQTT2_SERVER_Read($@)
     return CommandDelete(undef, $cname);
   }
 
-  return MQTT2_SERVER_Read($hash, 1);
+  # Allow some IO inbetween, for overloaded systems
+  InternalTimer(0, sub{ MQTT2_SERVER_Read($hash,1)}, $hash, 0)
+        if(length($hash->{BUF}) > 0);
 }
 
 ######################################
@@ -440,11 +493,13 @@ MQTT2_SERVER_doPublish($$$$;$)
   }
 
   foreach my $clName (keys %{$server->{clients}}) {
-    MQTT2_SERVER_sendto($server, $defs{$clName}, $tp, $val)
-        if($src->{NAME} ne $clName);
+    MQTT2_SERVER_sendto($server, $defs{$clName}, $tp, $val);
   }
 
   my $serverName = $server->{NAME};
+  my $ir = AttrVal($serverName, "ignoreRegexp", undef);
+  return if(defined($ir) && "$tp:$val" =~ m/$ir/);
+
   my $cid = $src->{cid};
   $tp =~ s/:/_/g; # 96608
   if(defined($cid) ||                    # "real" MQTT client
@@ -455,7 +510,8 @@ MQTT2_SERVER_doPublish($$$$;$)
     $ac = $ac eq "1" ? "simple" : ($ac eq "0" ? "no" : $ac); # backward comp.
 
     $cid = AttrVal($serverName, "clientId", $cid);
-    Dispatch($server, "autocreate=$ac\0$cid\0$tp\0$val", undef, $ac eq "no"); 
+    my %addvals = (CONN => $src->{NAME});
+    Dispatch($server, "autocreate=$ac\0$cid\0$tp\0$val",\%addvals, $ac eq "no"); 
     my $re = AttrVal($serverName, "rawEvents", undef);
     DoTrigger($server->{NAME}, "$tp:$val") if($re && $tp =~ m/$re/);
   }
@@ -469,7 +525,7 @@ MQTT2_SERVER_sendto($$$$)
   my ($shash, $hash, $topic, $val) = @_;
   return if(IsDisabled($hash->{NAME}));
   $val = "" if(!defined($val));
-  my $dump = (AttrVal($shash->{NAME},"verbose",1) >= 5) ? $shash->{NAME} :undef;
+  my $dump = (AttrVal($shash->{NAME},"verbose",1)>=5) ? $shash->{NAME} :undef;
   foreach my $s (keys %{$hash->{subscriptions}}) {
     my $re = $s;
     $re =~ s,^#$,.*,g;
@@ -565,12 +621,11 @@ MQTT2_SERVER_ReadDebug($$)
 1;
 
 =pod
-=item helper
 =item summary    Standalone MQTT message broker
 =item summary_DE Standalone MQTT message broker
 =begin html
 
-<a name="MQTT2_SERVER"></a>
+<a id="MQTT2_SERVER"></a>
 <h3>MQTT2_SERVER</h3>
 <ul>
   MQTT2_SERVER is a builtin/cleanroom implementation of an MQTT server using no
@@ -579,7 +634,7 @@ MQTT2_SERVER_ReadDebug($$)
   and performance). It is intended to simplify connecting MQTT devices to FHEM.
   <br> <br>
 
-  <a name="MQTT2_SERVERdefine"></a>
+  <a id="MQTT2_SERVER-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; MQTT2_SERVER &lt;tcp-portnr&gt; [global|IP]</code>
@@ -600,7 +655,7 @@ MQTT2_SERVER_ReadDebug($$)
   </ul>
   <br>
 
-  <a name="MQTT2_SERVERset"></a>
+  <a id="MQTT2_SERVER-set"></a>
   <b>Set</b>
   <ul>
     <li>publish -r topic value<br>
@@ -609,15 +664,15 @@ MQTT2_SERVER_ReadDebug($$)
   </ul>
   <br>
 
-  <a name="MQTT2_SERVERget"></a>
+  <a id="MQTT2_SERVER-get"></a>
   <b>Get</b>
   <ul>N/A</ul><br>
 
-  <a name="MQTT2_SERVERattr"></a>
+  <a id="MQTT2_SERVER-attr"></a>
   <b>Attributes</b>
   <ul>
 
-    <a name="clientId"></a>
+    <a id="MQTT2_SERVER-attr-clientId"></a>
     <li>clientId &lt;name&gt;<br>
       set the MQTT clientId for all connections, for setups with clients
       creating a different MQTT-ID for each connection. The autocreate
@@ -626,13 +681,26 @@ MQTT2_SERVER_ReadDebug($$)
       attributes.
       </li></br>
 
+    <a id="MQTT2_SERVER-attr-clientOrder"></a>
+    <li>clientOrder [MQTT2_DEVICE] [MQTT_GENERIC_BRIDGE]<br>
+      set the notification order for client modules. This is 
+      relevant when autocreate is active, and the default order
+      (MQTT2_DEVICE MQTT_GENERIC_BRIDGE) is not adequate.
+      Note: Changing the attribute affects _all_ MQTT2_SERVER instances.
+      </li></br>
+
     <li><a href="#disable">disable</a><br>
         <a href="#disabledForIntervals">disabledForIntervals</a><br>
       disable distribution of messages. The server itself will accept and store
       messages, but not forward them.
       </li><br>
 
-    <a name="keepaliveFactor"></a>
+    <a id="MQTT2_SERVER-attr-ignoreRegexp"></a>
+    <li>ignoreRegexp<br>
+      if $topic:$message matches ignoreRegexp, then it will be silently ignored.
+      </li>
+
+    <a id="MQTT2_SERVER-attr-keepaliveFactor"></a>
     <li>keepaliveFactor<br>
       the oasis spec requires a disconnect, if after 1.5 times the client
       supplied keepalive no data or PINGREQ is sent. With this attribute you
@@ -644,13 +712,13 @@ MQTT2_SERVER_ReadDebug($$)
       </ul>
       </li>
     
-    <a name="rawEvents"></a>
+    <a id="MQTT2_SERVER-attr-rawEvents"></a>
     <li>rawEvents &lt;topic-regexp&gt;<br>
       Send all messages as events attributed to this MQTT2_SERVER instance.
       Should only be used, if there is no MQTT2_DEVICE to process the topic.
       </li><br>
 
-    <a name="rePublish"></a>
+    <a id="MQTT2_SERVER-attr-rePublish"></a>
     <li>rePublish<br>
       if a topic is published from a source inside of FHEM (e.g. MQTT2_DEVICE),
       it is only sent to real MQTT clients, and it will not internally
@@ -658,9 +726,10 @@ MQTT2_SERVER_ReadDebug($$)
       to the FHEM internal clients.
       </li><br>
 
-    <a name="SSL"></a>
+    <a id="MQTT2_SERVER-attr-SSL"></a>
     <li>SSL<br>
-      Enable SSL (i.e. TLS)
+      Enable SSL (i.e. TLS). Note: after deleting this attribute FHEM must be
+      restarted.
       </li><br>
 
     <li>sslVersion<br>
@@ -672,7 +741,7 @@ MQTT2_SERVER_ReadDebug($$)
        also the SSL attribute.
        </li><br>
 
-    <a name="autocreate"></a>
+    <a id="MQTT2_SERVER-attr-autocreate"></a>
     <li>autocreate [no|simple|complex]<br>
       MQTT2_DEVICES will be automatically created upon receiving an
       unknown message. Set this value to no to disable autocreating, the

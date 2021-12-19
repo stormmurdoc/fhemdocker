@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 99_SUNRISE_EL.pm 18732 2019-02-25 13:15:34Z rudolfkoenig $
+# $Id: 99_SUNRISE_EL.pm 24249 2021-04-14 05:45:49Z rudolfkoenig $
 # This code is derived from DateTime::Event::Sunrise, version 0.0501.
 # Simplified and removed further package # dependency (DateTime,
 # Params::Validate, etc). For comments see the original code.
@@ -28,13 +28,22 @@ my $defaultaltit  = "-6";        # Civil twilight
 my $RADEG  = ( 180 / 3.1415926 );
 my $DEGRAD = ( 3.1415926 / 180 );
 my $INV360 = ( 1.0 / 360.0 );
-my %alti = (REAL => 0, CIVIL => -6, NAUTIC => -12, ASTRONOMIC => -16); # or HORIZON <number>
+my %alti = (REAL=>0, CIVIL=>-6, NAUTIC=>-12, ASTRONOMIC=>-16); # or HORIZON=<nr>
 
 
 sub
 SUNRISE_EL_Initialize($)
 {
   my ($hash) = @_;
+
+  InternalTimer(1, sub() {
+    my $long = AttrVal("global", "longitude", undef);
+    my $lat  = AttrVal("global", "latitude",  undef);
+    if(( defined($long) && !defined($lat)) ||
+       (!defined($long) &&  defined($lat))) {
+      Log 1, "SUNRISE: set both longitude and latitude or none of them";
+    }
+  }, undef);
 }
 
 
@@ -52,24 +61,31 @@ sr($$$$$$)
 }
 
 sub
-sr_alt($$$$$$$$$)
+sr_alt($$$$$$$$$;$$)
 {
-  my $nt=shift;
-  my $rise=shift;
-  my $isrel=shift;
-  my $daycheck=shift;
-  my $nextDay=shift;
-  my $altit = defined($_[0]) ? $_[0] : "";
-  if(exists $alti{uc($altit)}) {
-      $altit=$alti{uc($altit)};
-      shift;
+  my $nt      = shift;
+  my $rise    = shift;
+  my $isrel   = shift;
+  my $daycheck= shift;
+  my $nextDay = shift;
+  my $altit   = shift;
+
+  $altit = defined($altit) ? uc($altit) : "";
+  if(exists $alti{$altit}) {
+    $altit = $alti{$altit};
   } elsif($altit =~ /HORIZON=([\-\+]*[0-9\.]+)/i) {
-      $altit=$1;
-      shift;
+    $altit=$1;
   } else {
-      $altit=-6; #default
+    unshift @_, $altit; # make altit optional.
+    $altit=-6;          # default
   }
-  my($seconds, $min, $max)=@_;
+
+  my $seconds = shift;
+  my $min     = shift;
+  my $max     = shift;
+  $lat        = shift;
+  $long       = shift;
+
   my $needrise = ($rise || $daycheck) ? 1 : 0;
   my $needset = (!$rise || $daycheck) ? 1 : 0;
   $seconds = 0 if(!$seconds);
@@ -78,8 +94,8 @@ sr_alt($$$$$$$$$)
    # If set in global, use longitude/latitude
    # from global, otherwise set Frankfurt/Germany as
    # default
-   $long = AttrVal("global", "longitude", "8.686");
-   $lat  = AttrVal("global", "latitude", "50.112");
+   $long = AttrVal("global", "longitude", "8.686") if(!defined($long));
+   $lat  = AttrVal("global", "latitude", "50.112") if(!defined($lat));
    Log3 undef, 5, "Compute sunrise/sunset for latitude $lat , longitude $long";
  
 
@@ -427,35 +443,38 @@ isday</pre>
   alternatives.  <br><br>
 
   sunrise() and sunset() return the absolute time of the next sunrise/sunset,
-  adding 24 hours if the next event is tomorrow, to use it in the timespec of
-  an at device or for the on-till command for FS20 devices.<br>
-
+  adding 24 hours if the next event is tomorrow<br>
   sunrise_rel() and sunset_rel() return the relative time to the next
   sunrise/sunset. <br>
   sunrise_abs() and sunset_abs() return the absolute time of the corresponding
   event today (no 24 hours added).<br>
   sunrise_abs_dat() and sunset_abs_dat() return the absolute time of the
-  corresponding event to a given date(no 24 hours added).<br>
+  corresponding event to a given date.<br>
 
-  All functions take up to three arguments:<br>
+  <b>Note:</b> use sunrise/sunset in the timespec of an at device or on-till
+  command as the _rel and _abs variants do not work correctly there.</br><br>
+
+  All functions take up to four arguments:<br>
   <ul>
-    <li>The first specifies an offset (in seconds), which will be added to the
-    event.</li>
-    <li>The second and third specify min and max values (format: "HH:MM").</li>
+    <li>altitude (optional)
+      altitude defines a horizon value which then is used instead of the
+      $defaultaltit in SUNRISE_EL.pm.<br> Possible values are: "REAL",
+      "CIVIL", "NAUTIC", "ASTRONOMIC" or a positive or negative number
+      prefixed with "HORIZON="<br>
+      REAL is 0, CIVIL is -6, NAUTIC is -12, ASTRONOMIC is -18 degrees above
+      horizon.<br>
+      </li>
+    <li>time-offset in seconds, which will be added to the event.
+      </li>
+    <li>min and max values (format: "HH:MM").
+      If min < max, than the day starts not before min, and ends not after max.
+      If min > max, than the day starts not after max, and ends not before min.
+      </li>
   </ul>
   <br>
   isday() can be used in some notify or at commands to check if the sun is up
-  or down. isday() ignores the seconds parameter, but respects min and max.
-  If min < max, than the day starts not before min, and ends not after max.
-  If min > max, than the day starts not after max, and ends not before min.
+  or down. isday() ignores the time-offset parameter, but respects min and max.
   <br><br>
-
-  Optionally, for all functions you can set first argument which defines a
-  horizon value which then is used instead of the $defaultaltit in
-  SUNRISE_EL.pm.<br> Possible values are: "REAL", "CIVIL", "NAUTIC",
-  "ASTRONOMIC" or a positive or negative number preceded by "HORIZON="<br> REAL
-  is 0, CIVIL is -6, NAUTIC is -12, ASTRONOMIC is -18 degrees above
-  horizon.<br><br>
 
   Examples:<br>
   <ul>
@@ -522,25 +541,25 @@ isday</pre>
         <li><code>sunset()</code> - absolute Zeit des n&auml;chsten
         Sonnenuntergangs (+ 24 h, wenn am n&auml;chsten Tag)</li>
 
-        <li><code>sunrise_rel()</code> - relative Zeit des n&auml;chsten
-        Sonnenaufgangs</li>
+        <li><code>sunrise_rel()</code> - relative Zeit bis zum n&auml;chsten
+        Sonnenaufgang</li>
 
-        <li><code>sunset_rel()</code> - relative Zeit des n&auml;chsten
-        Sonnenuntergangs</li>
+        <li><code>sunset_rel()</code> - relative Zeit bis zum n&auml;chsten
+        Sonnenuntergang</li>
 
-        <li><code>sunrise_abs()</code> - absolute Zeit des n&auml;chsten
-        Sonnenaufgangs (ohne Stundenzuschlag)</li>
+        <li><code>sunrise_abs()</code> - absolute Zeit des entsprechenden
+        Sonnenaufgangs am heutigen Tag (ohne Stundenzuschlag)</li>
 
-        <li><code>sunset_abs()</code> - absolute Zeit des n&auml;chsten
-        Sonnenuntergangs (ohne Stundenzuschlag)</li>
+        <li><code>sunset_abs()</code> - absolute Zeit des entsprechenden 
+        Sonnenuntergangs am heutigen Tag (ohne Stundenzuschlag)</li>
 
-        <li><code>sunrise_abs_dat()</code> - absolute Zeit des n&auml;chsten
+        <li><code>sunrise_abs_dat()</code> - absolute Zeit des entsprechenden
         Sonnenaufgangs an einem bestimmten Tag</li>
 
-        <li><code>sunset_abs_dat()</code> - absolute Zeit des n&auml;chsten
+        <li><code>sunset_abs_dat()</code> - absolute Zeit des entsprechenden
         Sonnenuntergangs an einem bestimmten Tag</li>
 
-        <li><code>isday()</code> - Tag oder Nacht</li>
+        <li><code>isday()</code> - (1) Tag oder (0) Nacht</li>
     </ul>
 
     <h4>Breite, L&auml;nge und H&ouml;henwinkel</h4>
@@ -610,37 +629,6 @@ isday</pre>
         zur&uuml;ckliefern, wenn max gesetzt und der aktuelle Zeitstempel
         gr&ouml;&szlig;er ist.
         </li>
-    </ul>
-
-    <h5>Subroutinen</h5>
-    <ul>
-      <li><code>sunrise(), sunset()</code><br>
-        liefern den absoluten Wert des n&auml;chsten Sonnenauf- bzw.
-        -untergangs zur&uuml;ck, wobei 24 Stunden zu diesem Wert addiert
-        werden, wenn der Zeitpunkt am n&auml;chsten Tag sein wird, im Format
-        hh:mm:ss.
-        </li><br>
-
-      <li><code>sunrise_rel(), sunset_rel()</code><br>
-        liefern die relative Zeit bis zum n&auml;chsten Sonnenauf- bzw.
-        -untergang im Format hh:mm:ss.
-        </li><br>
-        
-      <li><code>sunrise_abs(), sunset_abs()</code><br>
-        liefern den n&auml;chsten absoluten Zeitpunkt des n&auml;chsten
-        Sonnenauf- bzw. -untergangs ohne 24 Stunden zu addieren im Format
-        hh:mm:ss.
-        </li><br>
-        
-      <li><code>sunrise_abs_dat(), sunset_abs()_dat</code><br>
-        liefern den n&auml;chsten absoluten Zeitpunkt des n&auml;chsten
-        Sonnenauf- bzw. -untergangs ohne 24 Stunden zu addieren im Format
-        hh:mm:ss zu einem als ersten Parameter angegebenen Datum.
-        </li><br>
-
-      <li><code>isday()</code><br>
-        liefert (int) 1 wenn Tag ist, (int) 0 wenn Nacht ist.
-        </li><br>
     </ul>
 
     <h5>Beispiele</h5>

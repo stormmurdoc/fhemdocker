@@ -1,5 +1,5 @@
 ##############################################
-# $Id: HttpUtils.pm 20800 2019-12-22 09:13:49Z moises $
+# $Id: HttpUtils.pm 25327 2021-12-08 09:39:27Z rudolfkoenig $
 package main;
 
 use strict;
@@ -82,6 +82,7 @@ HttpUtils_Close($)
     }
   }
   delete($hash->{conn});
+  delete($hash->{hu_inProgress});
   delete($hash->{hu_sslAdded});
   delete($hash->{hu_filecount});
   delete($hash->{hu_blocking});
@@ -94,14 +95,14 @@ HttpUtils_Close($)
 }
 
 sub
-HttpUtils_Err($)
+HttpUtils_TimeoutErr($)
 {
-  my ($lhash, $errtxt) = @_;
+  my ($lhash) = @_;
   my $hash = $lhash->{hash};
 
   if($lhash->{sts} && $lhash->{sts} == $selectTimestamp) { # busy loop check
     Log 4, "extending '$lhash->{msg} $hash->{addr}' timeout due to busy loop";
-    InternalTimer(gettimeofday()+1, "HttpUtils_Err", $lhash);
+    InternalTimer(gettimeofday()+1, "HttpUtils_TimeoutErr", $lhash);
     return;
   }
   return if(!defined($hash->{FD})); # Already closed
@@ -251,7 +252,8 @@ HttpUtils_gethostbyname($$$$)
     my $fh;
     if(open($fh, $dh)) {
       while(my $line = <$fh>) {
-        if($line =~ m/^([^# \t]+).*\b\Q$host\E\b/) {
+        if($line =~ m/^([^#\s]+).*?\s\Q$host\E\s/ ||
+           $line =~ m/^([^#\s]+).*?\s\Q$host\E$/) {
           if($1 =~ m/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/ &&        # IP-Address
              $1<256 && $2<256 && $3<256 && $4<256) {
             $fn->($hash, undef, pack("CCCC", $1, $2, $3, $4));
@@ -301,15 +303,14 @@ HttpUtils_gethostbyname($$$$)
 
   $dh{dnsTo} = 0.25;
   $dh{lSelectTs} = $selectTimestamp;
-  $dh{selectTimestamp} = $selectTimestamp;
 
   sub
   dnsQuery($)
   {
     my ($dh) = @_;
-    $dh->{dnsTo} *= 2 if($dh->{lSelectTs} != $dh->{selectTimestamp});
-    $dh->{lSelectTs} = $dh->{selectTimestamp};
-    return HttpUtils_Err({ hash=>$dh, msg=>"DNS"})
+    $dh->{dnsTo} *= 2 if($dh->{lSelectTs} != $selectTimestamp);
+    $dh->{lSelectTs} = $selectTimestamp;
+    return HttpUtils_TimeoutErr({ hash=>$dh, msg=>"DNS"})
         if($dh->{dnsTo} > $dh->{origHash}->{timeout}/2);
     my $ret = syswrite $dh->{conn}, $dh->{qry};
     if(!$ret || $ret != $dh->{ql}) {
@@ -334,11 +335,9 @@ HttpUtils_Connect($)
   $hash->{displayurl} = $hash->{hideurl} ? "<hidden>" : $hash->{url};
   $hash->{sslargs}    = {} if(!defined($hash->{sslargs}));
 
-  Log3 $hash, $hash->{loglevel}+1, "HttpUtils url=$hash->{displayurl}";
-
   if($hash->{url} !~ /
       ^(http|https):\/\/                # $1: proto
-       (([^:\/]+):([^:\/]+)@)?          # $2: auth, $3:user, $4:password
+       (([^:\/]+):([^:\/]*)@)?          # $2: auth, $3:user, $4:password
        ([^:\/]+|\[[0-9a-f:]+\])         # $5: host or IPv6 address
        (:\d+)?                          # $6: port
        (\/.*)$                          # $7: path
@@ -350,7 +349,7 @@ HttpUtils_Connect($)
   ($hash->{protocol},$authstring,$user,$pwd,$host,$port,$hash->{path})
         = (lc($1),$2,$3,$4,$5,$6,$7);
   $hash->{host} = $host;
-  
+
   if(defined($port)) {
     $port =~ s/^://;
   } else {
@@ -371,6 +370,8 @@ HttpUtils_Connect($)
    $hash->{auth} = 0;
   }
   
+  Log3 $hash, $hash->{loglevel}+1, "HttpUtils url=$hash->{displayurl}"
+    .($hash->{callback} ? " NonBlocking":" Blocking")." via ".$hash->{protocol};
 
   my $proxy = AttrVal("global", "proxy", undef);
   if($proxy) {
@@ -411,6 +412,7 @@ HttpUtils_Connect($)
                       IO::Socket::INET6->new(Proto=>'tcp', Blocking=>0);
       if(!$hash->{conn}) {
         Log3 $hash, $hash->{loglevel}, "HttpUtils: Creating socket: $!";
+        delete($hash->{hu_inProgress});
         return $hash->{callback}($hash, "Creating socket: $!", "");
       }
       my $sa = length($iaddr)==4 ?  sockaddr_in($port, $iaddr) : 
@@ -429,6 +431,11 @@ HttpUtils_Connect($)
             delete($selectlist{$hash});
 
             RemoveInternalTimer(\%timerHash);
+            if(!$hash->{conn}) {
+              Log 1, "ERROR in HttpUtils: directWriteFn called without conn.";
+              map { Log 1, "   $_=$hash->{$_}" } sort keys %{$hash};
+              return;
+            }
             my $packed = getsockopt($hash->{conn}, SOL_SOCKET, SO_ERROR);
             my $errno = unpack("I",$packed);
             if($errno) {
@@ -442,6 +449,7 @@ HttpUtils_Connect($)
             my $err = HttpUtils_Connect2($hash);
             if($err) {
               Log3 $hash, $hash->{loglevel}, "HttpUtils: $err";
+              delete($hash->{hu_inProgress});
               $hash->{callback}($hash, $err, "");
             }
             return $err;
@@ -449,7 +457,7 @@ HttpUtils_Connect($)
           $hash->{NAME}="" if(!defined($hash->{NAME}));#Delete might check it
           $selectlist{$hash} = $hash;
           InternalTimer(gettimeofday()+$hash->{timeout},
-                        "HttpUtils_Err", \%timerHash);
+                        "HttpUtils_TimeoutErr", \%timerHash);
           return undef;
 
         } else {
@@ -547,7 +555,8 @@ HttpUtils_Connect2($)
     return "$hash->{displayurl}: Can't connect(2) to $hash->{addr}: $err"; 
   }
 
-  if($hash->{noConn2}) {
+  if($hash->{noConn2}) { # Used e.g. by DevIo.pm for a "plain" TCP connection
+    delete($hash->{hu_inProgress});
     $hash->{callback}($hash);
     return undef;
   }
@@ -612,6 +621,8 @@ HttpUtils_Connect2($)
   $s = 0 if($hash->{protocol} eq "https");
 
   if($hash->{callback}) { # Nonblocking read
+    $hash->{EventSource} = 1 if($hdr =~ m/Accept:\s*text\/event-stream/i);
+
     $hash->{FD} = $hash->{conn}->fileno();
     $hash->{buf} = "";
     delete($hash->{httpdatalen});
@@ -631,19 +642,22 @@ HttpUtils_Connect2($)
         delete($selectlist{$hash});
         RemoveInternalTimer(\%timerHash);
         my ($err, $ret, $redirect) = HttpUtils_ParseAnswer($hash);
-        $hash->{callback}($hash, $err, $ret) if(!$redirect);
+        if(!$redirect) {
+          delete($hash->{hu_inProgress});
+          $hash->{callback}($hash, $err, $ret);
+        }
 
       } elsif($hash->{incrementalTimeout}) {    # Forum #85307
         RemoveInternalTimer(\%timerHash);
         InternalTimer(gettimeofday()+$hash->{timeout},
-                      "HttpUtils_Err", \%timerHash);
+                      "HttpUtils_TimeoutErr", \%timerHash);
       }
     };
 
     $data = $hdr.(defined($data) ? $data:"");
     $hash->{directWriteFn} = sub($) { # Nonblocking write
       my $ret = syswrite $hash->{conn}, $data;
-      if($ret <= 0) {
+      if(!defined($ret) || $ret <= 0) {
         return if($! == EAGAIN);
         my $err = $!;
         RemoveInternalTimer(\%timerHash);
@@ -657,11 +671,12 @@ HttpUtils_Connect2($)
         RemoveInternalTimer(\%timerHash);
         $timerHash{msg} = "read from";
         InternalTimer(gettimeofday()+$hash->{timeout},
-                      "HttpUtils_Err", \%timerHash);
+                      "HttpUtils_TimeoutErr", \%timerHash);
       }
     };
     $selectlist{$hash} = $hash;
-    InternalTimer(gettimeofday()+$hash->{timeout}, "HttpUtils_Err",\%timerHash);
+    InternalTimer(gettimeofday()+$hash->{timeout},
+                      "HttpUtils_TimeoutErr", \%timerHash);
     return undef;
 
   } else {
@@ -683,17 +698,22 @@ HttpUtils_DataComplete($)
   if(!defined($hl)) {
     return 0 if($hash->{buf} !~ m/^(.*?)\r?\n\r?\n(.*)$/s);
     my ($hdr, $data) = ($1, $2);
-    if($hdr =~ m/Transfer-Encoding:\s*chunked/si) {
+    if($hdr =~ m/Transfer-Encoding:\s*chunked/i) {
       $hash->{httpheader} = $hdr;
       $hash->{httpdata} = "";
       $hash->{buf} = $data;
       $hash->{httpdatalen} = -1;
 
-    } elsif($hdr =~ m/Content-Length:\s*(\d+)/si) {
+    } elsif($hdr =~ m/Content-Length:\s*(\d+)/i) {
       $hash->{httpdatalen} = $1;
       $hash->{httpheader} = $hdr;
       $hash->{httpdata} = $data;
       $hash->{buf} = "";
+
+    } elsif($hdr =~ m/Upgrade:\s*websocket/i) {
+      $hash->{httpdatalen} = 0;
+      $hash->{httpheader} = $hdr;
+      $hash->{httpdata} = $hash->{buf} = "";
 
     } else {
       $hash->{httpdatalen} = -2;
@@ -711,7 +731,16 @@ HttpUtils_DataComplete($)
         return 1;
       }
       return 0 if(length($r) < $l);
-      $hash->{httpdata} .= substr($r, 0, $l);
+
+      my $ret = substr($r, 0, $l);
+      if( $hash->{EventSource} ) {
+        $hash->{callback}($hash, undef, $ret);
+
+      } else {
+        $hash->{httpdata} .= $ret;
+
+      }
+
       $hash->{buf} = substr($r, $l);
     }
     return 0;
@@ -845,6 +874,7 @@ HttpUtils_ParseAnswer($)
  
     # Request the URL with the Digest response
     if($hash->{callback}) {
+      delete($hash->{hu_inProgress});
       HttpUtils_NonblockingGet($hash);
       return ("", "", 1);
     } else {
@@ -856,19 +886,20 @@ HttpUtils_ParseAnswer($)
 
   }
   
-  if(($code==301 || $code==302 || $code==303) 
+  if(($code==301 || $code==302 || $code==303 || $code==308)
 	&& !$hash->{ignoreredirects}) { # redirect
     if(++$hash->{redirects} > 5) {
       return ("$hash->{displayurl}: Too many redirects", "");
 
     } else {
-      my $ra;
-      map { $ra=$1 if($_ =~ m/Location:\s*(\S+)$/) } @header;
+      my $ra="";
+      map { $ra=$1 if($_ =~ m/^Location:\s*(\S+)\s*$/i) } @header;
       $ra = "/$ra" if($ra !~ m/^http/ && $ra !~ m/^\//);
       $hash->{url} = ($ra =~ m/^http/) ? $ra: $hash->{addr}.$ra;
       Log3 $hash, $hash->{loglevel}, "HttpUtils $hash->{displayurl}: ".
           "Redirect to ".($hash->{hideurl} ? "<hidden>" : $hash->{url});
       if($hash->{callback}) {
+        delete($hash->{hu_inProgress});
         HttpUtils_NonblockingGet($hash);
         return ("", "", 1);
       } else {
@@ -917,8 +948,19 @@ HttpUtils_NonblockingGet($)
   $hash->{hu_blocking} = 0;
   my ($isFile, $fErr, $fContent) = HttpUtils_File($hash);
   return $hash->{callback}($hash, $fErr, $fContent) if($isFile);
+
+  my $st = stacktraceAsString(2);
+  if($hash->{hu_inProgress}) {
+    Log 4, "WARNING: another HttpUtils_NonblockingGet with the same hash ".
+           "in progress. OLD:$hash->{hu_inProgress} CURRENT:$st";
+  }
+  $hash->{hu_inProgress} = $st;
+
   my $err = HttpUtils_Connect($hash);
-  $hash->{callback}($hash, $err, "") if($err);
+  if($err) {
+    delete($hash->{hu_inProgress});
+    $hash->{callback}($hash, $err, "");
+  }
 }
 
 #################

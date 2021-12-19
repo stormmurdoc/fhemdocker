@@ -1,4 +1,4 @@
-﻿# $Id: 71_YAMAHA_MC.pm 21033 2020-01-22 21:40:14Z Leugi $
+﻿# $Id: 71_YAMAHA_MC.pm 23534 2021-01-16 17:51:41Z Leugi $
 ##############################################################################
 #
 #     71_YAMAHA_MC.pm
@@ -43,8 +43,19 @@ use Encode qw(decode encode);
 
 #use UPnP::ControlPoint;
 #use Net::UPnP::ControlPoint;
-use Net::UPnP::AV::MediaRenderer;
+#use lib from fhem instead UPnP::ControlPoint :
+#my $gPath = '';
+#BEGIN {
+#	$gPath = substr($0, 0, rindex($0, '/'));
+#}
+#if (lc(substr($0, -7)) eq 'fhem.pl') {
+#	$gPath = $attr{global}{modpath}.'/FHEM';
+#}
+#use lib ($gPath.'/lib', $gPath.'/FHEM/lib', './FHEM/lib', './lib', './FHEM', './', '/usr/local/FHEM/share/fhem/FHEM/lib');
+#
+#use UPnP::ControlPoint;
 use Net::UPnP::ControlPoint;
+use Net::UPnP::AV::MediaRenderer;
 use Net::UPnP::Device;
 use Net::UPnP::Service;
 use Net::UPnP::AV::MediaServer;
@@ -102,6 +113,8 @@ my %YAMAHA_MC_setCmdswithoutArgs = (
     "selectPlayMenu"           => "/v1/netusb/setListControl?list_id=main&type=play&index=",
     "selectPlayMenuItem"       => "/v1/netusb/setListControl?list_id=main&type=play&index=",
     "getPlayInfo"              => "/v1/netusb/getPlayInfo",
+	"toggleRepeat"             => "/v1/netusb/toggleRepeat",	
+	"toggleShuffle"            => "/v1/netusb/toggleShuffle",	
     "playback"                 => "/v1/netusb/setPlayback?playback=",
     "getMenu"                  => "/v1/netusb/getListInfo?input=net_radio&index=0&size=8&lang=en",
     "getMenuItems"             => "/v1/netusb/getListInfo?input=net_radio&index=0&size=8&lang=en",
@@ -147,9 +160,9 @@ my %YAMAHA_MC_setCmdsWithArgs = (
     "volumeStraight"                                                                                                            => "/v1/main/setVolume?volume=",
     "volumeUp:noArg"                                                                                                            => "/v1/main/setVolume?volume=",
     "volumeDown:noArg"                                                                                                          => "/v1/main/setVolume?volume=",
-    "mute:toggle,true,false"                                                                                                    => "/v1/main/setMute?enable=",
-    "setSpeakerA:toggle,true,false"                                                                                             => "/v1/main/setSpeakerA?enable=",
-    "setSpeakerB:toggle,true,false"                                                                                             => "/v1/main/setSpeakerB?enable=",
+    "mute:toggle,true,false,0,1"                                                                                                => "/v1/main/setMute?enable=",
+    "setSpeakerA:toggle,true,false"                                                                                             => "/v1/system/setSpeakerA?enable=",
+    "setSpeakerB:toggle,true,false"                                                                                             => "/v1/system/setSpeakerB?enable=",
     "setToneBass:slider,-10,1,10"                                                                                               => "/v1/main/setEqualizer?low=",
     "setToneMid:slider,-10,1,10"                                                                                                => "/v1/main/setEqualizer?mid=",
     "setToneHigh:slider,-10,1,10"                                                                                               => "/v1/main/setEqualizer?high=",
@@ -163,6 +176,8 @@ my %YAMAHA_MC_setCmdsWithArgs = (
     "selectPlayMenu"                                                                                                            => "/v1/netusb/setListControl?list_id=main&type=play&index=",
     "selectPlayMenuItem"                                                                                                        => "/v1/netusb/setListControl?list_id=main&type=play&selectMenu=",
     "getPlayInfo:noArg"                                                                                                         => "/v1/netusb/getPlayInfo",
+	"toggleRepeat:noArg"                                                                                                        => "/v1/netusb/toggleRepeat",	
+	"toggleShuffle:noArg"                                                                                                       => "/v1/netusb/toggleShuffle",		
     "playback:play,stop,pause,play_pause,previous,next,fast_reverse_start,fast_reverse_end,fast_forward_start,fast_forward_end" => "/v1/netusb/setPlayback?playback=",
     "getMenu:noArg"                                                                                                             => "/v1/netusb/getListInfo?input=net_radio&index=0&size=8&lang=en",
     "getMenuItems:noArg"                                                                                                        => "/v1/netusb/getListInfo?input=net_radio&index=0&size=8&lang=en",
@@ -215,7 +230,7 @@ sub YAMAHA_MC_Initialize($) {
     $hash->{ReadFn} = "YAMAHA_MC_Read";
 
     # modules attributes
-    $hash->{AttrList} = "do_not_notify:0,1 " . "disable:1,0 " . "disabledForIntervals " . "request-timeout:1,2,3,4,5,10 " . "model " . "standard_volume:15 " . "ttsvolume " . "volumeSteps:3 " . "pathToFavoriteServer " . "FavoriteServerChannel " . "FavoriteNetRadioChannel " . "autoplay_disabled:true,false " . "autoReadReg:4_reqStatus " . "actCycle:off " . "DLNAsearch:on,off " . "DLNAServer " . "powerCmdDelay " . "menuLayerDelay " . "homebridgeMapping " . "eventProcessing:0,1 " . $readingFnAttributes;
+    $hash->{AttrList} = "do_not_notify:0,1 " . "disable:1,0 " . "disabledForIntervals " . "request-timeout:1,2,3,4,5,10 " . "model " . "standard_volume:15 " . "ttsvolume " . "volumeSteps:3 " . "pathToFavoriteServer " . "FavoriteServerChannel " . "FavoriteNetRadioChannel " . "autoplay_disabled:true,false " . "autoReadReg:4_reqStatus " . "actCycle:off " . "DLNAsearch:on,off " . "DLNAServer " . "powerCmdDelay " . "menuLayerDelay " . "homebridgeMapping " . "eventProcessing:0,1 " . "ignoredIPs " . "usedonlyIPs " . $readingFnAttributes;
 }
 
 # ------------------------------------------------------------------------------
@@ -464,16 +479,18 @@ sub YAMAHA_MC_setupControlpoint {
     my ($hash) = @_;
     my $error;
     my $cp;
-    my @usedonlyIPs = split( /,/, AttrVal( $hash->{NAME}, 'usedonlyIPs', '' ) );
-    my @ignoredIPs  = split( /,/, AttrVal( $hash->{NAME}, 'ignoredIPs',  '' ) );
+    #my @usedonlyIPs = split( /,/, AttrVal( $hash->{NAME}, 'usedonlyIPs', '' ) );
+    #my @ignoredIPs  = split( /,/, AttrVal( $hash->{NAME}, 'ignoredIPs',  '' ) );
 
     do {
         eval {
-            #$cp = UPnP::ControlPoint->new(SearchPort => 0, SubscriptionPort => 0, MaxWait => 30, UsedOnlyIP => \@usedonlyIPs, IgnoreIP => \@ignoredIPs, LogLevel => AttrVal($hash->{NAME}, 'verbose', 0));
+		    Log3 $hash->{NAME}, 1, "$hash->{TYPE}: $hash->{NAME}  - try to setupControlpoint"; 
+            #$cp = UPnP::ControlPoint->new(SearchPort => 0, SubscriptionPort => 0, MaxWait => 30, UsedOnlyIP => \@usedonlyIPs, IgnoreIP => \@ignoredIPs, LogLevel => AttrVal($hash->{NAME}, 'verbose', 0));			
             $cp = Net::UPnP::ControlPoint->new();
             $hash->{helper}{controlpoint} = $cp;
         };
         $error = $@;
+		Log3 $hash->{NAME}, 1, "$hash->{TYPE}: $hash->{NAME}  YAMAHA_MC_setupControlpoint end result:$error"; 
     } while ($error);
 
     return undef;
@@ -491,6 +508,7 @@ sub YAMAHA_MC_setupMediaRenderer {
 
     do {
         eval {
+		    Log3 $hash->{NAME}, 1, "$hash->{TYPE}: $hash->{NAME}  - try to setupMediaRenderer"; 
             $MediaRenderer = Net::UPnP::AV::MediaRenderer->new();
             $hash->{helper}{MediaRenderer} = $MediaRenderer;
         };
@@ -683,6 +701,11 @@ sub YAMAHA_MC_GetStatus($;$) {
         # get distribution info
         Log3 $name, 4, "$type: $name YAMAHA_MC_GetStatus fetching getLocationInfo now";
         YAMAHA_MC_getDistributionInfo( $hash, $priority );
+		
+		#Function Status auch wichtig für Speaker_a und Speaker_b Status
+	    Log3 $name, 4, "$type: $name YAMAHA_MC_GetStatus fetching getFuncStatus now";
+        YAMAHA_MC_httpRequestQueue( $hash, "getFuncStatus", "", { options => { at_first => 0, priority => $priority, unless_in_queue => 1 } } );    # call fn that will do the http request
+
 
     }
     else {
@@ -937,6 +960,7 @@ sub YAMAHA_MC_DiscoverRenderer($) {
 
     my $HOST       = $hash->{HOST};
     my $DLNAsearch = AttrVal( $hash->{NAME}, "DLNAsearch", "off" );
+	my $MediaRendererFound = 0;
 
     Log3 $name, 4, "$name  YAMAHA_MC_DiscoverRenderer DLNAsearch is turned " . $DLNAsearch . "\n";
     if ( $DLNAsearch eq "on" ) {
@@ -947,14 +971,53 @@ sub YAMAHA_MC_DiscoverRenderer($) {
         #my $MediaRendererDLNA = Net::UPnP::AV::MediaRenderer->new();
         my $MediaRendererDLNA = $hash->{helper}{MediaRenderer};
 
+        # wenn die Helper nicht gesetzt dann hier nochnals starten
+        if ( !defined( $ControlPointDLNA ) )  {
+          Log3 $name, 1, "$name  - Controlpoint not yet defined, starting YAMAHA_MC_setupControlpoint ";
+		  YAMAHA_MC_setupControlpoint($hash);			
+        }
+
+        if ( !defined( $MediaRendererDLNA ) ) {
+          Log3 $name, 1, "$name  - MediaRendererDLNA not yet defined, starting YAMAHA_MC_setupMediaRenderer ";
+		  YAMAHA_MC_setupMediaRenderer($hash);
+        }
+		
+		# wenn die Helper immer noch nicht gesetzt dann hier abbrechen
+        if ( !defined( $hash->{helper}{controlpoint} ) ) {
+          Log3 $name, 1, "$name  - Controlpoint still not defined, exiting";
+		  return undef;			
+        }
+		else {
+		   Log3 $name, 1, "$name  - ControlPointDLNA defined found, now ";
+		   $ControlPointDLNA = $hash->{helper}{controlpoint};
+		}
+
+        if ( !defined( $hash->{helper}{MediaRenderer} ) ) {
+          Log3 $name, 1, "$name  - MediaRendererDLNA still not defined, exiting ";
+		  return undef;
+        }
+		else {
+		   Log3 $name, 1, "$name  - MediaRendererDLNA found, now ";
+		   $MediaRendererDLNA = $hash->{helper}{MediaRenderer};
+		}
+			
+		
         Log3 $name, 4, "$name YAMAHA_MC_DiscoverRenderer start search for own dlna Renderer";
 
+        # search via root device
         my @dev_list  = ();
         my $retry_cnt = 0;
-        while ( @dev_list <= 0 || $retry_cnt > 5 ) {
-            @dev_list = $ControlPointDLNA->search( st => 'upnp:rootdevice', mx => 3 );
+        while ( @dev_list <= 0 and $retry_cnt < 10 ) {
+		    Log3 $name, 4, "$name YAMAHA_MC_DiscoverRenderer ControlPointDLNA Retrycount=$retry_cnt";
+			eval {
+              @dev_list = $ControlPointDLNA->search( st => 'upnp:rootdevice', mx => 5 );		
+			};  
+			if($@) {
+              Log3 $hash, 3, "$name, 4, $name YAMAHA_MC_DiscoverRenderer ControlPointDLNA failed with error $@";
+            }
             $retry_cnt++;
         }
+        
 
         # Network Name als DLNA Renderer verwenden
         if ( !defined( $hash->{network_name} ) ) {
@@ -966,7 +1029,10 @@ sub YAMAHA_MC_DiscoverRenderer($) {
 
         unless ( defined( $hash->{network_name} ) ) { $hash->{network_name} = 'No Network name available' }
 
+        # go throuh device list 
+        Log3 $name, 4, "$name YAMAHA_MC_DiscoverRenderer Networkname is defined = $hash->{network_name}, query Device List now ..";
         my $devNum = 0;
+		
         foreach my $dev (@dev_list) {
             my $device_type = $dev->getdevicetype();
             if ( $device_type ne 'urn:schemas-upnp-org:device:MediaRenderer:1' ) {
@@ -980,6 +1046,7 @@ sub YAMAHA_MC_DiscoverRenderer($) {
                 $MediaRendererDLNA->setdevice($dev);
                 $MediaRendererDLNA->stop();
 
+                $MediaRendererFound = 1;
                 Log3 $name, 4, "$name YAMAHA_MC_DiscoverRenderer Saving MediaRendererDLNA in helper ";
                 $hash->{helper}{MediaRendererDLNA} = $MediaRendererDLNA;
 
@@ -1008,6 +1075,13 @@ sub YAMAHA_MC_DiscoverRenderer($) {
     if ($@) {
         Log3 $hash, 3, "YAMAHA_MC_DiscoverRenderer: Discovery failed with: $@";
     }
+	
+	if ($MediaRendererFound) {
+	  Log3 $hash, 3, "YAMAHA_MC_DiscoverRenderer: Correct MediaRenderer found";
+	} else {
+	  Log3 $hash, 3, "YAMAHA_MC_DiscoverRenderer: MediaRenderer not found";
+	}
+	
 
     return undef;
 }
@@ -1041,8 +1115,13 @@ sub YAMAHA_MC_DiscoverMediaServer($) {
 
         while ( @dev_list <= 0 ) {
             Log3 $hash, 3, "$name  Searching for MediaServer.. @dev_list";
-            my $obj = Net::UPnP::ControlPoint->new();
-            @dev_list = $obj->search( st => 'urn:schemas-upnp-org:device:MediaServer:1', mx => 5 );
+            eval {
+			  my $obj = Net::UPnP::ControlPoint->new();            
+			  @dev_list = $obj->search( st => 'urn:schemas-upnp-org:device:MediaServer:1', mx => 5 );
+			};
+            if($@) {
+              Log3 $hash, 3, "$name, 4, $name YAMAHA_MC_DiscoverMediaServer ControlPointDLNA search failed with error $@";
+            }			
             $retry_cnt++;
             if ( $retry_cnt >= 3 ) {
                 Log3 $hash, 3, "$name  [!] No media found. Releasing semaphore, exiting.";
@@ -1053,13 +1132,25 @@ sub YAMAHA_MC_DiscoverMediaServer($) {
 
         my $devNum = 0;
         my $dev;
+		my $device_type;
+		my $friendlyname;
         foreach $dev (@dev_list) {
-            my $device_type = $dev->getdevicetype();
+            eval {
+			  $device_type = $dev->getdevicetype();
+			};
+            if($@) {
+              Log3 $hash, 3, "$name, 4, $name YAMAHA_MC_DiscoverMediaServer getdevicetype failed with error $@";
+            }				
             if ( $device_type ne 'urn:schemas-upnp-org:device:MediaServer:1' ) {
                 next;
             }
             $devNum++;
-            my $friendlyname = $dev->getfriendlyname();
+            eval {
+			   $friendlyname = $dev->getfriendlyname();
+			};
+            if($@) {
+              Log3 $hash, 3, "$name, 4, $name YAMAHA_MC_DiscoverMediaServer getfriendlyname failed with error $@";
+            }	   
             Log3 $hash, 3, "$name  found [$devNum] : device name: [" . $friendlyname . "] ";
             if ( $friendlyname ne $miniDLNAname ) {
                 Log3 $hash, 3, "$name  skipping this device.";
@@ -1070,8 +1161,13 @@ sub YAMAHA_MC_DiscoverMediaServer($) {
             }
 
             Log3 $hash, 3, "Init MediaServer now";
-            my $MediaServer = Net::UPnP::AV::MediaServer->new();
-            $MediaServer->setdevice($dev);
+            eval {
+			  my $MediaServer = Net::UPnP::AV::MediaServer->new();
+              $MediaServer->setdevice($dev);
+			};
+            if($@) {
+              Log3 $hash, 3, "$name, 4, $name YAMAHA_MC_DiscoverMediaServer MediaServer  setdevice failed with error $@";
+            }	  
             Log3 $name, 4, "$name  Saving MediaServer in helper ";
             $hash->{helper}{MediaServerDLNA} = $dev;
             readingsSingleUpdate( $hash, 'MediaServer', $friendlyname, 1 );
@@ -1409,7 +1505,9 @@ sub YAMAHA_MC_SpeakFile($$)    # only called when defined, not on reload.
 
         # Deleting tts File
         Log3 $name, 4, "$name YAMAHA_MC_SpeakFile try delete tts file $originalSearchfilename : $ret";
-        $ret .= qx(timeout 2 sudo id && sudo rm -f $originalSearchfilename || rm -f $originalSearchfilename );
+		if ( $originalSearchfilename !~ /keep/ ) {
+          $ret .= qx(timeout 2 sudo id && sudo rm -f $originalSearchfilename || rm -f $originalSearchfilename );
+		}  
         Log3 $name, 4, "$name YAMAHA_MC_SpeakFile delete tts file $originalSearchfilename : $ret";
 
         if ( ( defined($URILink) ) and ( defined( $hash->{helper}{MediaRendererDLNA} ) ) ) {
@@ -1614,9 +1712,9 @@ sub YAMAHA_MC_UpdateLists($;$) {
         "volumeStraight"                 => "/v1/main/setVolume?volume=",
         "volumeUp:noArg"                 => "/v1/main/setVolume?volume=",
         "volumeDown:noArg"               => "/v1/main/setVolume?volume=",
-        "mute:toggle,true,false"         => "/v1/main/setMute?enable=",
-        "setSpeakerA:toggle,true,false"  => "/v1/main/setSpeakerA?enable=",
-        "setSpeakerB:toggle,true,false"  => "/v1/main/setSpeakerB?enable=",
+        "mute:toggle,true,false,0,1"         => "/v1/main/setMute?enable=",
+        "setSpeakerA:toggle,true,false"  => "/v1/system/setSpeakerA?enable=",
+        "setSpeakerB:toggle,true,false"  => "/v1/system/setSpeakerB?enable=",
         "setToneBass:slider,-10,1,10"    => "/v1/main/setEqualizer?low=",
         "setToneMid:slider,-10,1,10"     => "/v1/main/setEqualizer?mid=",
         "setToneHigh:slider,-10,1,10"    => "/v1/main/setEqualizer?high=",
@@ -1630,6 +1728,8 @@ sub YAMAHA_MC_UpdateLists($;$) {
         "selectPlayMenu" => "/v1/netusb/setListControl?list_id=main&type=play&index=",
         ( exists( $hash->{helper}{MENUITEMS} ) ? "selectPlayMenuItem:" . $menuitems_comma . " " : "" ) => "/v1/netusb/setListControl?list_id=main&type=play&selectMenu=",
         "getPlayInfo:noArg"                                                                                                         => "/v1/netusb/getPlayInfo",
+		"toggleRepeat:noArg"                                                                                                        => "/v1/netusb/toggleRepeat",		
+		"toggleShuffle:noArg"                                                                                                       => "/v1/netusb/toggleShuffle",				
         "playback:play,stop,pause,play_pause,previous,next,fast_reverse_start,fast_reverse_end,fast_forward_start,fast_forward_end" => "/v1/netusb/setPlayback?playback=",
         "getMenu:noArg"                                                                                                             => "/v1/netusb/getListInfo?input=" . $currentInput . "&index=0&size=8&lang=en",
         "getMenuItems:noArg"                                                                                                        => "/v1/netusb/getListInfo?input=" . $currentInput . "&index=0&size=8&lang=en",
@@ -1777,7 +1877,7 @@ sub YAMAHA_MC_Set($$@) {
     my $deviceList_comma = join( ",", @deviceList );
 
     $cmd = "?" unless defined $cmd;
-    my $usage = "Unknown argument $cmd, choose one of " . "on:noArg " . "off:noArg " . "power:on,standby,toggle " . "toggle:noArg " . "setAutoPowerStandby:true,false " . "volume:slider,0,1,100 " . "volumeStraight " . "volumeUp:noArg " . "volumeDown:noArg " . "mute:toggle,true,false " . "setSpeakerA:toggle,true,false " . "setSpeakerB:toggle,true,false " . "setToneBass:slider,-10,1,10 " . "setToneMid:slider,-10,1,10 " . "setToneHigh:slider,-10,1,10 " . ( exists( $hash->{helper}{INPUTS} ) ? "input:" . $inputs_comma . " " : "input " ) . ( exists( $hash->{helper}{INPUTS} ) ? "prepareInputChange:" . $inputs_comma . " " : "prepareInputChange " ) . "getStatus:noArg " . "getFeatures:noArg " . "getFuncStatus:noArg " . "selectMenu " . ( exists( $hash->{helper}{MENUITEMS} ) ? "selectMenuItem:" . $menuitems_comma . " " : "selectMenuItem " ) . "selectPlayMenu " . ( exists( $hash->{helper}{MENUITEMS} ) ? "selectPlayMenuItem:" . $menuitems_comma . " " : "" ) . "getPlayInfo:noArg " . "playback:play,stop,pause,play_pause,previous,next,fast_reverse_start,fast_reverse_end,fast_forward_start,fast_forward_end " . "getMenu:noArg " . "getMenuItems:noArg " . "returnMenu:noArg " . "getDeviceInfo:noArg " . "getSoundProgramList:noArg " . ( exists( $hash->{helper}{SOUNDPROGRAMS} ) ? "setSoundProgramList:" . $soundprograms_comma . " " : "" ) . "setFmTunerPreset:slider,0,1,20 " . "setDabTunerPreset:slider,0,1,20 " . "setNetRadioPreset " . "TurnFavNetRadioChannelOn:1,2,3,4,5,6,7,8 " . "TurnFavServerChannelOn:noArg " . "navigateListMenu " . "NetRadioNextFavChannel:noArg " . "NetRadioPrevFavChannel:noArg " . "sleep:uzsuSelectRadio,0,30,60,90,120 " . "getNetworkStatus:noArg " . "getLocationInfo:noArg " . "getDistributionInfo:noArg " . "getBluetoothInfo:noArg " . "enableBluetooth:true,false " . "setGroupName " . "mcLinkTo:multiple," . $deviceList_comma . " " . "speakfile " . "mcUnLink:multiple," . ReadingsVal( $hash->{NAME}, "linkedClients", "" ) . " " . "setServerInfo " . "setClientInfo " . "startDistribution " . "isNewFirmwareAvailable:noArg " . "statusRequest:noArg ";
+    my $usage = "Unknown argument $cmd, choose one of " . "on:noArg " . "off:noArg " . "power:on,standby,toggle " . "toggle:noArg " . "setAutoPowerStandby:true,false " . "volume:slider,0,1,100 " . "volumeStraight " . "volumeUp:noArg " . "volumeDown:noArg " . "mute:toggle,true,false,0,1 " . "setSpeakerA:toggle,true,false " . "setSpeakerB:toggle,true,false " . "setToneBass:slider,-10,1,10 " . "setToneMid:slider,-10,1,10 " . "setToneHigh:slider,-10,1,10 " . ( exists( $hash->{helper}{INPUTS} ) ? "input:" . $inputs_comma . " " : "input " ) . ( exists( $hash->{helper}{INPUTS} ) ? "prepareInputChange:" . $inputs_comma . " " : "prepareInputChange " ) . "getStatus:noArg " . "getFeatures:noArg " . "getFuncStatus:noArg " . "selectMenu " . ( exists( $hash->{helper}{MENUITEMS} ) ? "selectMenuItem:" . $menuitems_comma . " " : "selectMenuItem " ) . "selectPlayMenu " . ( exists( $hash->{helper}{MENUITEMS} ) ? "selectPlayMenuItem:" . $menuitems_comma . " " : "" ) . "getPlayInfo:noArg " . "toggleRepeat:noArg " . "toggleShuffle:noArg " . "playback:play,stop,pause,play_pause,previous,next,fast_reverse_start,fast_reverse_end,fast_forward_start,fast_forward_end " . "getMenu:noArg " . "getMenuItems:noArg " . "returnMenu:noArg " . "getDeviceInfo:noArg " . "getSoundProgramList:noArg " . ( exists( $hash->{helper}{SOUNDPROGRAMS} ) ? "setSoundProgramList:" . $soundprograms_comma . " " : "" ) . "setFmTunerPreset:slider,0,1,20 " . "setDabTunerPreset:slider,0,1,20 " . "setNetRadioPreset " . "TurnFavNetRadioChannelOn:1,2,3,4,5,6,7,8 " . "TurnFavServerChannelOn:noArg " . "navigateListMenu " . "NetRadioNextFavChannel:noArg " . "NetRadioPrevFavChannel:noArg " . "sleep:uzsuSelectRadio,0,30,60,90,120 " . "getNetworkStatus:noArg " . "getLocationInfo:noArg " . "getDistributionInfo:noArg " . "getBluetoothInfo:noArg " . "enableBluetooth:true,false " . "setGroupName " . "mcLinkTo:multiple," . $deviceList_comma . " " . "speakfile " . "mcUnLink:multiple," . ReadingsVal( $hash->{NAME}, "linkedClients", "" ) . " " . "setServerInfo " . "setClientInfo " . "startDistribution " . "isNewFirmwareAvailable:noArg " . "statusRequest:noArg ";
 
     # delay in Seks for next request after turning on device
     my $powerCmdDelay = AttrVal( $hash->{NAME}, "powerCmdDelay", 3 );
@@ -1866,13 +1966,27 @@ sub YAMAHA_MC_Set($$@) {
         if ( ( defined( $a[2] ) ) && ( ( lc( $a[2] ) eq "true" ) || ( lc( $a[2] ) eq "false" ) ) ) {
             YAMAHA_MC_httpRequestQueue( $hash, "mute", lc( $a[2] ) );    # call fn that will do the http request
         }
+		elsif ( ( defined( $a[2] ) ) && ( lc( $a[2] ) eq "0" ) ) {
+            Log3 $name, 4, "$name : YAMAHA_MC_Set mute 0";
+            YAMAHA_MC_httpRequestQueue( $hash, "mute", "false" ) ;    # call fn that will do the http request
+        }
+		elsif ( ( defined( $a[2] ) ) && ( lc( $a[2] ) eq "1" ) ) {
+            Log3 $name, 4, "$name : YAMAHA_MC_Set mute 1";
+            YAMAHA_MC_httpRequestQueue( $hash, "mute", "true" ) ;    # call fn that will do the http request
+        }
         elsif ( ( defined( $a[2] ) ) && ( lc( $a[2] ) eq "toggle" ) ) {
             Log3 $name, 4, "$name : YAMAHA_MC_Set mute toggle";
             if ( ReadingsVal( $name, "mute", "false" ) eq "false" ) {
                 YAMAHA_MC_httpRequestQueue( $hash, "mute", "true", { options => { can_fail => 1 } } );    # call fn that will do the http request
             }
-            else {
+            elsif ( ReadingsVal( $name, "mute", "false" ) eq "true" ) {
                 YAMAHA_MC_httpRequestQueue( $hash, "mute", "false", { options => { can_fail => 1 } } );    # call fn that will do the http request
+            }
+			elsif ( ReadingsVal( $name, "mute", "false" ) eq "0" ) {
+                YAMAHA_MC_httpRequestQueue( $hash, "mute", "1", { options => { can_fail => 1 } } );    # call fn that will do the http request
+            }
+            elsif ( ReadingsVal( $name, "mute", "false" ) eq "1" ) {
+                YAMAHA_MC_httpRequestQueue( $hash, "mute", "0", { options => { can_fail => 1 } } );    # call fn that will do the http request
             }
         }
         else {
@@ -1921,7 +2035,7 @@ sub YAMAHA_MC_Set($$@) {
             YAMAHA_MC_httpRequestQueue( $hash, $cmd, ( $a[2] ) );                                                 # call fn that will do the http request
         }
         else {
-            return "invalid parameter $a[2] for set mute";
+            return "invalid parameter $a[2] for set $cmd";
         }
     }
     elsif ( $cmd eq "setSoundProgramList" ) {
@@ -2438,7 +2552,7 @@ sub YAMAHA_MC_Set($$@) {
     }
 
     # valid "set cmds" are defind in %cmd_hash (see above)
-    elsif ( $cmd =~ /^(prepareInputChange|getStatus|getFeatures|getFuncStatus|getPlayInfo|getDeviceInfo|sleep|getNetworkStatus|getLocationInfo|getDistributionInfo|getSoundProgramList)$/ ) {
+    elsif ( $cmd =~ /^(prepareInputChange|getStatus|getFeatures|getFuncStatus|getPlayInfo|toggleRepeat|toggleShuffle|getDeviceInfo|sleep|getNetworkStatus|getLocationInfo|getDistributionInfo|getSoundProgramList)$/ ) {
 
         # known cmd, is in cmd_hash but no particular handling above
         # so execute standard url associated
@@ -2758,7 +2872,9 @@ sub YAMAHA_MC_HandleCmdQueue($$$) {
                 Log3 $name, 4, " $type ($name) - YAMAHA_MC_HandleCmdQueue: API Version cut to $shortAPI URL before $url";
 
                 #api version setzen durch korrekte Version des Devices
-                $url =~ s/v1/v$shortAPI/g;
+                #$url =~ s/(/v1/)/(/v$shortAPI/)/g;
+				$url =~ s|/v1/|/v$shortAPI/|g;
+				
 
                 Log3 $name, 4, "$type ($name) - YAMAHA_MC_HandleCmdQueue: cmd=$reqCmd starte httpRequest replaced url => $url";
 
@@ -3036,6 +3152,10 @@ sub YAMAHA_MC_udpEventParse($$) {
                     $volume = YAMAHA_MC_volume_abs2rel( $hash, $volume );
                     readingsBulkUpdateIfChanged( $hash, "volume", $volume, 1 );
                 }
+				if ( my $volume = $main->{"input"} ) {
+                     Log3 $name, 4, "$type: $name YAMAHA_MC_udpEventParse got new input \n";
+                     readingsBulkUpdateIfChanged( $hash, "input",  $main->{"input"}, 1 );
+                 }         
             }
             if ( my $tuner = $event->{"tuner"} ) {
 
@@ -3863,6 +3983,10 @@ sub YAMAHA_MC_httpRequestParse($$$) {
 
                         my $playback_input  = $res{"input"};
                         my $playback_status = $res{"playback"};
+						my $repeat_status   = $res{"repeat"};
+						my $shuffle_status  = $res{"shuffle"};
+						my $play_time       = $res{"play_time"};
+						my $total_time      = $res{"total_time"};
                         my $station_name    = $res{"artist"};
                         my $album_name      = $res{"album"};
                         my $track           = $res{"track"};
@@ -3884,8 +4008,44 @@ sub YAMAHA_MC_httpRequestParse($$$) {
                         readingsBulkUpdate( $hash, "track",           $track,           1 );
                         readingsBulkUpdate( $hash, "albumart_url",    $albumart_url,    undef, 1 );
                         readingsBulkUpdate( $hash, "albumart_id",     $albumart_id,     1 );
+						
+						readingsBulkUpdate( $hash, "repeat_status",   $repeat_status, 1 );
+						readingsBulkUpdate( $hash, "shuffle_status",  $shuffle_status, 1 );
+						readingsBulkUpdate( $hash, "play_time",       $play_time, 1 );
+						readingsBulkUpdate( $hash, "total_time",      $total_time, 1 );
+						
+						
                         readingsEndUpdate( $hash, 1 );
                     }
+					 elsif ( $cmd eq "toggleRepeat" ) {
+                        Log3 $name, 4, "$type: $name YAMAHA_MC_httpRequestParse Start Handling for toggleRepeat";
+                        my $currentRepeat = ReadingsVal( $name, "repeat_status", "off" );
+						
+						Log3 $name, 4, "$type: $name YAMAHA_MC_httpRequestParse toggleRepeat Current=$currentRepeat";
+						if ( $currentRepeat eq "off" ) {
+						  readingsSingleUpdate( $hash, "repeat_status", "all", 1 );
+						}	
+						elsif ( $currentRepeat eq "all" ) {
+						  readingsSingleUpdate( $hash, "repeat_status", "one", 1 );
+						}
+						else {
+						  readingsSingleUpdate( $hash, "repeat_status", "off", 1 );	
+						}  
+						
+					 }
+					 elsif ( $cmd eq "toggleShuffle" ) {
+
+                        Log3 $name, 4, "$type: $name YAMAHA_MC_httpRequestParse Start Handling for toggleShuffle";						
+                        my $currentShuffle = ReadingsVal( $name, "shuffle_status", "off" );
+						
+						Log3 $name, 4, "$type: $name YAMAHA_MC_httpRequestParse toggleShuffle Current=$currentShuffle";
+						if ( $currentShuffle eq "off" ) {
+						  readingsSingleUpdate( $hash, "shuffle_status", "on", 1 );
+						}	
+						else {
+						  readingsSingleUpdate( $hash, "shuffle_status", "off", 1 );	
+						}  
+					 }					 
                     elsif ( $cmd eq "volume" ) {
 
                         Log3 $name, 4, "$type: $name YAMAHA_MC_httpRequestParse Start Handling for volume";
@@ -4042,7 +4202,7 @@ sub YAMAHA_MC_httpRequestParse($$$) {
 
                     }
                     elsif ( ( $cmd eq "mute" ) ) {
-                        if ( $arg eq "true" ) {
+                        if ( ( $arg eq "true" ) || ( $arg eq "1" ) ) {
                             readingsSingleUpdate( $hash, "mute", "true", 1 );
                         }
                         else {
@@ -4347,7 +4507,8 @@ sub YAMAHA_MC_httpRequestDirect($$@) {
     Log3 $name, 4, " $type ($name) - YAMAHA_MC_httpRequestDirect: API Version cut to $shortAPI URL before $url";
 
     #api version setzen durch korrekte Version des Devices
-    $url =~ s/v1/v$shortAPI/g;
+    #$url =~ s/(/v1/)/(/v$shortAPI/)/g;
+	$url =~ s|/v1/|/v$shortAPI/|g;
 
     Log3 $name, 4, "$type ($name) - YAMAHA_MC_httpRequestDirect: cmd=$cmd starte httpRequest replaced url => $url";
 
@@ -4892,7 +5053,12 @@ sub YAMAHA_URI_Escape($) {
       will work with basic functions. Use "cpan install JSON" or operating
       system's package manager to install JSON Modul. Depending on your os
       the required package is named: libjson-perl or perl-JSON.
+	  Futher needed packages :
       </li><br>
+	  <li>sudo apt-get install libjson-perl</li>
+      <li>sudo apt-get install libmp3-info-perl</li>
+      <li>sudo apt-get install -y libnet-upnp-perl</li>
+      <li>perl -MCPAN -e 'install MP3::Info'</li>
   </ul>
 
   <br>
@@ -4997,6 +5163,8 @@ sub YAMAHA_URI_Escape($) {
 <li><b>getNetworkStatus</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the current network info like network_name, wlan and wlan strength</li>
 <li><b>getLocationInfo</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the current location info like zones</li>
 <li><b>getPlayInfo</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the current playback info of the device like play status</li>
+<li><b>toggleRepeat</b> &nbsp;&nbsp;-&nbsp;&nbsp; toggles the Repeat Function in netusb Mode</li>
+<li><b>toggleShuffle</b> &nbsp;&nbsp;-&nbsp;&nbsp; toggles the Shuffle Function in netusb Mode</li>
 <li><b>getDeviceInfo</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the current device info of the device like model_name, firmware, device_id</li>
 <li><b>getFeatures</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the general status of the device, creates the possible inputs</li>
 <li><b>getFuncStatus</b> &nbsp;&nbsp;-&nbsp;&nbsp; requests the general functions of the device, creates the possible speakers/headphone</li>

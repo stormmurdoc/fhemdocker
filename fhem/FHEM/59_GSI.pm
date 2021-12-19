@@ -1,4 +1,4 @@
-# $Id: 59_GSI.pm 21173 2020-02-11 00:12:41Z herrmannj $
+# $Id: 59_GSI.pm 21380 2020-03-08 17:09:49Z herrmannj $
 ###############################################################################
 #
 #     This file is part of fhem.
@@ -21,11 +21,16 @@
 
 package main;
 
+use 5.018;
+use feature qw( lexical_subs );
+
 use strict;
 use warnings;
 use utf8;
 use Time::HiRes qw( gettimeofday tv_interval );
 use HttpUtils;
+
+no warnings qw( experimental::lexical_subs );
 
 sub GSI_Initialize {
 	my ($hash) = @_;
@@ -34,7 +39,7 @@ sub GSI_Initialize {
 	$hash->{'UndefFn'}				= 'GSI_Undef';
 	$hash->{'NotifyFn'}				= 'GSI_Notify';
 	$hash->{'FW_detailFn'}			= 'GSI_FW_detailFn';
-	$hash->{'AttrList'}				= "$readingFnAttributes ";
+	$hash->{'AttrList'}				= "continuous:1,0 $readingFnAttributes ";
 	$hash->{'NOTIFYDEV'}			= 'TYPE=Global';
 	return undef;
 };
@@ -43,9 +48,9 @@ sub GSI_Define {
 	my ($hash, $def) = @_;
 	my ($name, $type, $plz) = split /\s/, $def;
 
-	my $cvsid = '$Id: 59_GSI.pm 21173 2020-02-11 00:12:41Z herrmannj $';
+	my $cvsid = '$Id: 59_GSI.pm 21380 2020-03-08 17:09:49Z herrmannj $';
 	$cvsid =~ s/^.*pm\s//;
-	$cvsid =~ s/Z\s\S+\s\$$//;	
+	$cvsid =~ s/Z\s\S+\s\$$//;
 
 	return "German ZIP code required" unless ($plz =~ m/\d{5}/);
 	$hash->{'ZIP'} = $plz;
@@ -184,7 +189,9 @@ sub GSI_doReadings {
 			my $val = linearInterpolate($t, $fc->[0]->{'epochtime'}, 
 						$fc->[1]->{'epochtime'}, $fc->[0]->{$dataName}, $fc->[1]->{$dataName});
 			my $diff = abs(ReadingsVal($hash->{'NAME'}, $readingName, 0) - $val);
-			if ($diff >= 1) {
+			if (AttrVal($hash->{'NAME'}, 'continuous', 1) and ($diff >= 1)) {
+				readingsBulkUpdate($hash, $readingName, sprintf('%.f', $val));
+			} elsif (AttrVal($hash->{'NAME'}, 'continuous', 1) == 0) {
 				readingsBulkUpdate($hash, $readingName, sprintf('%.f', $val));
 			};
 		};
@@ -209,13 +216,19 @@ sub GSI_doReadings {
 			};
 		};
 
-		my $next = 3600;
-		foreach my $item ('eevalue', 'co2_g_oekostrom', 'co2_g_standard') {
-			my $n = calcNext($item, 3600);
-			$next = $n if ($n < $next);
+		if (AttrVal($hash->{'NAME'}, 'continuous', 1)) {
+			my $next = 3600;
+			foreach my $item ('eevalue', 'co2_g_oekostrom', 'co2_g_standard') {
+				my $n = calcNext($item, 3600);
+				$next = $n if ($n < $next);
+			};
+			$hash->{'NEXT_EVENT'} = int($t + $next);
+			InternalTimer($t + $next, \&GSI_doReadings, $hash);
+		} else {
+			my $next = (int($t / 3600) * 3600) + 3600;
+			$hash->{'NEXT_EVENT'} = $next;
+			InternalTimer($next, \&GSI_doReadings, $hash);
 		};
-		$hash->{'NEXT_EVENT'} = int($t + $next);
-		InternalTimer($t + $next, \&GSI_doReadings, $hash);
 	};
 
 	return undef;
@@ -696,20 +709,24 @@ sub parse {
 	<a name="GSIattr"></a>
 	<b>Attributes</b>
 	<ul>
-    	<a name="cmdStateIcon"></a>
-    	<li>cmdStateIcon<br>
-    		preset to the function
-    		<ul><li><code>{GSI::devStateIcon($name)}</code></li></ul>
-    		and can be advanced to 
-    		<ul><li><code>{GSI::devStateIcon($name,'other_valid_svg_icon_name')}</code></li></ul>
-    		The icon will be colored based on share of renewable energy (GSI) available:
-    		<ul>
-    			<li>0..39: black</li>
-    			<li>40..59: orange</li>
-    			<li>60..100: green</li>
-			</ul><br>
+		<a name="cmdStateIcon"></a>
+		<li>cmdStateIcon<br>
+			preset to the function
+			<ul><li><code>{GSI::devStateIcon($name)}</code></li></ul>
+			and can be advanced to 
+			<ul><li><code>{GSI::devStateIcon($name,'other_valid_svg_icon_name')}</code></li></ul>
+			The icon will be colored based on share of renewable energy (GSI) available:
+			<ul>
+				<li>0..39: black</li>
+				<li>40..59: orange</li>
+				<li>60..100: green</li>
+			</ul>
 		</li>
-	</ul>
+		<a name="continuous"></a>
+		<li>continuous<br>
+			if set to 0 readings will be updated on hourly base. Otherwise readings will be continuously updated with interpolated values.
+		</li>
+	</ul><br>
 
 	<a name="GSIschedule"></a>
 	<b>Consumption schedule</b>

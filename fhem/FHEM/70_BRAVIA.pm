@@ -1,4 +1,4 @@
-# $Id: 70_BRAVIA.pm 20868 2020-01-02 15:34:22Z vuffiraa $
+# $Id: 70_BRAVIA.pm 24219 2021-04-11 14:29:19Z vuffiraa $
 ##############################################################################
 #
 #     70_BRAVIA.pm
@@ -24,36 +24,12 @@
 #     along with fhem.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+#
+#     05.03.2020 Sandro Gertz: add "requestReboot"
+#
+##############################################################################
 
-package main;
-
-use strict;
-use warnings;
-
-use vars qw( $readingFnAttributes );
-
-###################################
-sub BRAVIA_Initialize($) {
-    my ($hash) = @_;
-
-    Log3($hash, 5, "BRAVIA_Initialize: Entering");
-
-    $hash->{GetFn}   = "BRAVIA::Get";
-    $hash->{SetFn}   = "BRAVIA::Set";
-    $hash->{DefFn}   = "BRAVIA::Define";
-    $hash->{UndefFn} = "BRAVIA::Undefine";
-
-    $hash->{AttrList} = "disable:0,1 macaddr:textField channelsMax:textField wolBroadcast:textField " . $readingFnAttributes;
-
-    $::data{RC_layout}{BRAVIA_SVG} = "BRAVIA::RClayout_SVG";
-    $::data{RC_layout}{BRAVIA}     = "BRAVIA::RClayout";
-
-    $::data{RC_makenotify}{BRAVIA} = "BRAVIA::RCmakenotify";
-
-    return;
-}
-
-package BRAVIA;
+package FHEM::BRAVIA;
 
 use strict;
 use warnings;
@@ -70,7 +46,7 @@ use MIME::Base64;
 use XML::Simple qw(:strict);
 use IO::Socket;
 
-require "HttpUtils.pm";
+require HttpUtils;
 
 ## Import der FHEM Funktionen
 BEGIN {
@@ -81,29 +57,56 @@ BEGIN {
         fhemTimeLocal
         InternalTimer
         InternalVal
-        readingsSingleUpdate
+        Log3
+        readingFnAttributes
+        ReadingsAge
+        readingsBeginUpdate
         readingsBulkUpdate
         readingsBulkUpdateIfChanged
-        readingsBeginUpdate
         readingsDelete
+        readingsSingleUpdate
         readingsEndUpdate
-        ReadingsAge
         ReadingsNum
         ReadingsTimestamp
         ReadingsVal
         RemoveInternalTimer
-        Log3
     ))
 };
 
-sub Set($@);
-sub Get($@);
-sub GetStatus($;$);
-sub Define($$);
-sub Undefine($$);
+GP_Export(
+    qw(
+      Initialize
+      )
+);
 
 ###################################
-sub Define($$) {
+sub Initialize {
+    my ($hash) = @_;
+
+    Log3($hash, 5, "BRAVIA_Initialize: Entering");
+
+    $hash->{GetFn}   = \&Get;
+    $hash->{SetFn}   = \&Set;
+    $hash->{DefFn}   = \&Define;
+    $hash->{UndefFn} = \&Undefine;
+
+    $hash->{AttrList} =
+        "disable:0,1 "
+      . "macaddr:textField "
+      . "channelsMax:textField "
+      . "wolBroadcast:textField "
+      . $readingFnAttributes;
+
+    $::data{RC_layout}{BRAVIA_SVG} = \&RClayout_SVG;
+    $::data{RC_layout}{BRAVIA}     = \&RClayout;
+
+    $::data{RC_makenotify}{BRAVIA} = \&RCmakenotify;
+
+    return;
+}
+
+###################################
+sub Define {
     my ( $hash, $def ) = @_;
     my @a = split( "[ \t][ \t]*", $def );
     my $name = $hash->{NAME};
@@ -151,13 +154,13 @@ sub Define($$) {
 
     # start the status update timer
     RemoveInternalTimer($hash);
-    InternalTimer( gettimeofday() + 2, "BRAVIA::GetStatus", $hash, 1 );
+    InternalTimer( gettimeofday() + 2, \&GetStatus, $hash, 1 );
 
     return;
 }
 
 ###################################
-sub Undefine($$) {
+sub Undefine {
     my ( $hash, $arg ) = @_;
     my $name = $hash->{NAME};
 
@@ -170,7 +173,7 @@ sub Undefine($$) {
 }
 
 #####################################
-sub GetStatus($;$) {
+sub GetStatus {
     my ( $hash, $update ) = @_;
     my $name     = $hash->{NAME};
     my $interval = $hash->{INTERVAL};
@@ -178,7 +181,7 @@ sub GetStatus($;$) {
     Log3($name, 5, "BRAVIA $name: called function GetStatus()");
 
     RemoveInternalTimer($hash);
-    InternalTimer( gettimeofday() + $interval, "BRAVIA::GetStatus", $hash, 0 );
+    InternalTimer( gettimeofday() + $interval, \&GetStatus, $hash, 0 );
 
     return if ( AttrVal($name, "disable", 0) == 1 );
 
@@ -194,7 +197,7 @@ sub GetStatus($;$) {
 }
 
 ###################################
-sub Get($@) {
+sub Get {
     my ( $hash, @a ) = @_;
     my $name = $hash->{NAME};
     my $what;
@@ -204,8 +207,7 @@ sub Get($@) {
     return "argument is missing" if ( int(@a) < 2 );
 
     $what = $a[1];
-
-    if ( $what =~ /^(power|presence|input|channel|volume|mute)$/ ) {
+    if ( $what =~ /^(power|presence|input|channel|volume|mute)$/xms ) {
         my $value = ReadingsVal($name, $what, "");
         if ($value ne "") {
             return $value;
@@ -222,7 +224,7 @@ sub Get($@) {
 }
 
 ###################################
-sub Set($@) {
+sub Set {
     my ( $hash, @a ) = @_;
     my $name  = $hash->{NAME};
     my $power = ReadingsVal($name, "power", "");
@@ -278,7 +280,7 @@ sub Set($@) {
     }
     if ( $channel ne "" && $channel ne "-" && $channelId ne "-" ) {
         my $currentChannel = $channelId . ":" . $channel;
-        my @matches = grep("/".$currentChannel."/", @channels);
+        my @matches = grep {"/".$currentChannel."/"} @channels ;
         push( @channels, $currentChannel ) if ( ( scalar @matches ) eq "0" );
     }
     @channels = sort(@channels);
@@ -306,9 +308,9 @@ sub Set($@) {
     $usage .= " channel:$channels" if ( $channels ne "" );
     $usage .= " openUrl application:" . $apps if ( $apps ne "" );
     $usage .= " text" if (ReadingsVal($name, "requestFormat", "") eq "json");
+    $usage .= " requestReboot:noArg " if (ReadingsVal($name, "requestFormat", "") eq "json");
 
     my $cmd = '';
-    my $result;
 
     # statusRequest
     if ( lc( $a[1] ) eq "statusrequest" ) {
@@ -347,7 +349,7 @@ sub Set($@) {
                 ($presence eq "absent" ||
                  ReadingsVal($name, "generation", "") eq "1.0.5" ||
                  ReadingsVal($name, "generation", "") eq "2.5.0") ) {
-                $result = wake( $name, $macAddr );
+                wake( $name, $macAddr );
                 return "wake-up command sent";
             } else {
                 $cmd = "POWER";
@@ -374,32 +376,33 @@ sub Set($@) {
     }
 
     # volume
-    elsif ( $a[1] eq "volume" ) {
+    elsif ( $a[1] eq 'volume' ) {
         Log3($name, 2, "BRAVIA set $name " . $a[1] . " " . $a[2]);
 
-        return "No argument given" if ( !defined( $a[2] ) );
+        return 'No argument given' if ( !defined( $a[2] ) );
 
         my $vol = $a[2];
-        if ( $presence eq "present" ) {
-            if ( $vol =~ m/^\d+$/ && $vol >= 1 && $vol <= 100 ) {
-                $cmd = 'setVolume:' . $vol;
+        if ( $presence eq 'present' ) {
+            if ( $vol =~ m/^\d+$/xms && $vol >= 1 && $vol <= 100 ) {
+                $cmd = $vol;
             }
             else {
                 return
-                  "Argument does not seem to be a valid integer between 1 and 100";
+                  'Argument does not seem to be a valid integer between 1 and 100';
             }
-            SendCommand( $hash, "upnp", $cmd );
+            SendCommand( $hash, 'setAudioVolume', $cmd );
 
-            readingsSingleUpdate( $hash, "volume", $a[2], 1 )
-              if ( ReadingsVal($name, "volume", "") ne $a[2] );
+            readingsBeginUpdate($hash);
+            readingsBulkUpdateIfChanged($hash, 'volume', $a[2]);
+            readingsEndUpdate($hash, 1);
         }
         else {
-            return "Device needs to be ON to adjust volume.";
+            return 'Device needs to be ON to adjust volume.';
         }
     }
 
     # volumeUp/volumeDown
-    elsif ( lc( $a[1] ) =~ /^(volumeup|volumedown)$/ ) {
+    elsif ( lc( $a[1] ) =~ /^(volumeup|volumedown)$/xms ) {
         Log3($name, 2, "BRAVIA set $name " . $a[1]);
 
         if ( $presence eq "present" ) {
@@ -417,7 +420,7 @@ sub Set($@) {
     }
 
     # mute
-    elsif ( $a[1] eq "mute" ) {
+    elsif ( $a[1] eq 'mute' ) {
         if ( defined( $a[2] ) ) {
             Log3($name, 2, "BRAVIA set $name " . $a[1] . " " . $a[2]);
         }
@@ -425,29 +428,23 @@ sub Set($@) {
             Log3($name, 2, "BRAVIA set $name " . $a[1]);
         }
 
-        if ( $presence eq "present" ) {
-            if ( !defined( $a[2] ) || $a[2] eq "toggle" ) {
-                $result = SendCommand( $hash, "ircc", "MUTE" );
-                readingsSingleUpdate( $hash, "mute", (ReadingsVal($name, "mute", "") eq "on" ? "off" : "on"), 1 );
+        if ( $presence eq 'present' ) {
+            if ( !defined( $a[2] ) || $a[2] eq 'toggle' ) {
+                SendCommand( $hash, 'ircc', 'MUTE' );
+                readingsSingleUpdate( $hash, 'mute', (ReadingsVal($name, 'mute', '') eq 'on' ? 'off' : 'on'), 1 );
             }
-            elsif ( $a[2] eq "off" ) {
-                #$result = SendCommand( $hash, "MuteOff" )
-                $result = SendCommand( $hash, "upnp", "setMute:0" );
-                readingsSingleUpdate( $hash, "mute", $a[2], 1 )
-                   if ( ReadingsVal($name, "mute", "") ne $a[2] );
-            }
-            elsif ( $a[2] eq "on" ) {
-                #$result = SendCommand( $hash, "MuteOn" )
-                $result = SendCommand( $hash, "upnp", "setMute:1" );
-                readingsSingleUpdate( $hash, "mute", $a[2], 1 )
-                   if ( ReadingsVal($name, "mute", "") ne $a[2] );
+            elsif ( $a[2] eq 'on' || $a[2] eq 'off' ) {
+                SendCommand( $hash, 'setAudioMute', ($a[2] eq 'on' ? 'true' : 'false') );
+                readingsBeginUpdate($hash);
+                readingsBulkUpdateIfChanged($hash, 'mute', $a[2]);
+                readingsEndUpdate($hash, 1);
             }
             else {
-                return "Unknown argument " . $a[2];
+                return 'Unknown argument ' . $a[2];
             }
         }
         else {
-            return "Device needs to be ON to mute/unmute audio.";
+            return 'Device needs to be ON to mute/unmute audio.';
         }
     }
 
@@ -517,13 +514,13 @@ sub Set($@) {
 
         if ( $presence eq "present" ) {
             my $channelName = $channelStr;
-            if ( defined($hash->{helper}{device}{channelPreset}) && $channelName =~ /^(\d+).*$/ ) {
+            if ( defined($hash->{helper}{device}{channelPreset}) && $channelName =~ /^(\d+).*$/xms ) {
               if ( defined($hash->{helper}{device}{channelPreset}{$1}{uri}) ) {
                 SendCommand( $hash, "setPlayContent", $hash->{helper}{device}{channelPreset}{$1}{uri} );
                 return;
               }
             }
-            if ( $channelName =~ /^(\d)(\d?)(\d?)(\d?).*$/ ) {
+            if ( $channelName =~ /^(\d)(\d?)(\d?)(\d?).*$/xms ) {
               my @successor = ();
               push(@successor, ["ircc", $2]) if (defined($2));
               push(@successor, ["ircc", $3]) if (defined($3));
@@ -540,7 +537,7 @@ sub Set($@) {
     }
 
     # channelUp/channelDown
-    elsif ( lc( $a[1] ) =~ /^(channelup|channeldown)$/ ) {
+    elsif ( lc( $a[1] ) =~ /^(channelup|channeldown)$/xms ) {
         Log3($name, 2, "BRAVIA set $name " . $a[1]);
 
         if ( $presence eq "present" ) {
@@ -644,10 +641,10 @@ sub Set($@) {
         if ( $presence eq "present" ) {
             Log3($name, 2, "BRAVIA set $name " . $a[1] . " " . $a[2]);
             my $url = lc($a[2]);
-            if ($url !~ /^https?:\/\/.*/) {
+            if ($url !~ /^https?:\/\/.*/xms) {
                 $url = "http://$url";
             }
-            $url =~ s/([\x2F \x3A])/sprintf("%%%02X",ord($1))/eg;
+            $url =~ s/([\x2F \x3A])/sprintf("%%%02X",ord($1))/egxms;
             $url = "localapp://webappruntime?url=$url";
             Log3($name, 2, "BRAVIA set $name " . $a[1] . " " . $url);
             SendCommand( $hash, "setActiveApp", $url );
@@ -745,7 +742,13 @@ sub Set($@) {
         readingsSingleUpdate( $hash, "upnp", $a[2], 1 )
            if ( ReadingsVal($name, "upnp", "") ne $a[2] );
     }
-    
+        
+      # reboot
+    elsif ($a[1] eq "requestReboot") {  
+        Log3($name, 2, "BRAVIA set $name " . $a[1]);     
+        SendCommand( $hash, "requestReboot" );
+      }
+        
     # text
     elsif ( $a[1] eq "text" ) {
         return "No 2nd argument given" if ( !defined( $a[2] ) );
@@ -772,7 +775,7 @@ sub Set($@) {
 ############################################################################################################
 
 ###################################
-sub SendCommand($$;$$@) {
+sub SendCommand {
     my ( $hash, $service, $cmd, $param, @successor ) = @_;
     my $name        = $hash->{NAME};
     my $address     = $hash->{helper}{ADDRESS};
@@ -785,12 +788,15 @@ sub SendCommand($$;$$@) {
     Log3($name, 5, "BRAVIA $name: called function SendCommand()");
 
     my $URL;
-    my $response;
     my $return;
     my $requestFormat = ReadingsVal($name, "requestFormat", "");
 
     if ($service ne "register" && $service ne "getStatus") {
       return if CheckRegistration($hash, $service, $cmd, $param, @successor);
+    }
+
+    if (!CheckServiceAvailable($hash, $service, $cmd, $param, @successor)) {
+      return;
     }
 
     if ( !defined($cmd) ) {
@@ -815,7 +821,7 @@ sub SendCommand($$;$$@) {
       $data = GetIrccRequest($cmd);
     } elsif ($service eq "upnp") {
       my $value;
-      if ($cmd =~ m/^(.+):(\d+)$/) {
+      if ($cmd =~ m/^(.+):(\d+)$/xms) {
         $cmd = $1;
         $value = $2;
       }
@@ -849,7 +855,7 @@ sub SendCommand($$;$$@) {
         $data .= "\"level\":\"private\"},";
         $data .= "[{\"value\":\"yes\",\"function\":\"WOL\"}]],\"id\":8,\"version\":\"1.0\"}";
       } else {
-        $URL .= "/cers/api/register?name=".urlEncode($id)."&registrAtionType=initial&deviceId=".$device;
+        $URL .= "/cers/api/register?name=".::urlEncode($id)."&registrAtionType=initial&deviceId=".$device;
       }
     } elsif ($service eq "getStatus") {
       $URL .= $port->{SERVICE};
@@ -878,7 +884,7 @@ sub SendCommand($$;$$@) {
       if ($requestFormat eq "json") {
         my $source = $cmd;
         my $index = 0;
-        if ($cmd =~ /^(.*)\|(\d+)$/){
+        if ($cmd =~ /^(.*)\|(\d+)$/xms){
           $source = $1;
           $index = $2;
         }
@@ -937,7 +943,31 @@ sub SendCommand($$;$$@) {
         $data .= ",\"data\":\"".$param."\"" if (defined($param));
         $data .= "}]}";
       }
-    } elsif ($service eq "text") {
+    } elsif ($service eq "getVolumeInformation") {
+      $URL .= $port->{SERVICE};
+      if ($requestFormat eq "json") {
+        $URL .= "/sony/audio";
+        $data = "{\"id\":2,\"method\":\"getVolumeInformation\",\"version\":\"1.0\",\"params\":[]}";
+      }
+    } elsif ($service eq "setAudioVolume") {
+      $URL .= $port->{SERVICE};
+      if ($requestFormat eq "json") {
+        $URL .= "/sony/audio";
+        $data = "{\"id\":2,\"method\":\"setAudioVolume\",\"version\":\"1.0\",\"params\":[{\"volume\":\"".$cmd."\",\"target\":\"speaker\"}]}";
+      }
+    } elsif ($service eq "setAudioMute") {
+      $URL .= $port->{SERVICE};
+      if ($requestFormat eq "json") {
+        $URL .= "/sony/audio";
+        $data = "{\"id\":2,\"method\":\"setAudioMute\",\"version\":\"1.0\",\"params\":[{\"status\":".$cmd."}]}";
+      }
+    } elsif ($service eq "getSupportedApiInfo") {
+      $URL .= $port->{SERVICE};
+      if ($requestFormat eq "json") {
+        $URL .= "/sony/guide";
+        $data = "{\"id\":2,\"method\":\"getSupportedApiInfo\",\"version\":\"1.0\",\"params\":[{\"services\":[\"audio\"]}]}";
+      }
+   } elsif ($service eq "text") {
       $URL .= $port->{SERVICE};
       if ($requestFormat eq "json") {
         $URL .= "/sony/appControl";
@@ -950,7 +980,7 @@ sub SendCommand($$;$$@) {
         $data = "{\"method\":\"".$service."\",\"params\":[],\"id\":1,\"version\":\"1.0\"}";
       } else {
         $URL .= "/cers";
-        if ($service =~ /^Mute.*$/) {
+        if ($service =~ /^Mute.*$/xms) {
           $URL .= "/command/".$service;
         } else {
           $URL .= "/api/" . $service;
@@ -959,7 +989,7 @@ sub SendCommand($$;$$@) {
     }
 
     $timeout = AttrVal($name, "timeout", 0);
-    if ($timeout !~ /^\d+$/ or $timeout == 0) {
+    if ($timeout !~ /^\d+$/xms or $timeout == 0) {
       if ( $service eq "getStatus" ) {
         $timeout = 10;
       } else {
@@ -987,7 +1017,7 @@ sub SendCommand($$;$$@) {
             cmd         => $cmd,
             successor   => \@successor,
             timestamp   => $timestamp,
-            callback    => \&BRAVIA::ReceiveCommand,
+            callback    => \&ReceiveCommand,
         }
     );
 
@@ -995,7 +1025,7 @@ sub SendCommand($$;$$@) {
 }
 
 ###################################
-sub ReceiveCommand($$$) {
+sub ReceiveCommand {
     my ( $param, $err, $data ) = @_;
     my $hash      = $param->{hash};
     my $name      = $hash->{NAME};
@@ -1027,7 +1057,7 @@ sub ReceiveCommand($$$) {
             if (
                 ( !defined( $hash->{helper}{AVAILABLE} ) )
                 or ( defined( $hash->{helper}{AVAILABLE} )
-                    and $hash->{helper}{AVAILABLE} eq 1 )
+                    and $hash->{helper}{AVAILABLE} == 1 )
               )
             {
                 $hash->{helper}{AVAILABLE} = 0;
@@ -1049,7 +1079,7 @@ sub ReceiveCommand($$$) {
         if (
             ( !defined( $hash->{helper}{AVAILABLE} ) )
             or ( defined( $hash->{helper}{AVAILABLE} )
-                and $hash->{helper}{AVAILABLE} eq 0 )
+                and $hash->{helper}{AVAILABLE} == 0 )
           )
         {
             $hash->{helper}{AVAILABLE} = 1;
@@ -1065,7 +1095,7 @@ sub ReceiveCommand($$$) {
         LogSuccessors($hash, @successor);
 
         if ( $data ne "" ) {
-            if ( $data =~ /^<\?xml/ ) {
+            if ( $data =~ /^<\?xml/xms ) {
                 my $parser = XML::Simple->new(
                     NormaliseSpace => 2,
                     KeepRoot       => 0,
@@ -1086,7 +1116,7 @@ sub ReceiveCommand($$$) {
                 $return = $parser->XMLin( encode_utf8($data), KeyAttr => [ ] );
             }
 
-            elsif ( $data =~ /^{/ || $data =~ /^\[/ ) {
+            elsif ( $data =~ /^\{/xms || $data =~ /^\[/xms ) {
                  if ( !defined($cmd) || ref($cmd) eq "HASH" || $cmd eq "" ) {
                     Log3($name, 4, "BRAVIA $name: RES $service - $data");
                 }
@@ -1111,7 +1141,7 @@ sub ReceiveCommand($$$) {
                 $return = "not found";
             }
 
-            elsif ( $data =~ /^<s:Envelope/ ) {
+            elsif ( $data =~ /^<s:Envelope/xms ) {
                 if ( !defined($cmd) ) {
                     Log3($name, 4, "BRAVIA $name: RES $service - response");
                 }
@@ -1130,7 +1160,7 @@ sub ReceiveCommand($$$) {
                     Log3($name, 5, "BRAVIA $name: RES ERROR $service/" . ::urlDecode($cmd) . "\n" . $data);
                 }
 
-                return undef;
+                return;
             }
         }
 
@@ -1158,9 +1188,9 @@ sub ReceiveCommand($$$) {
       # Set reading for state
       #
       my $currentState = ReadingsVal($name, "state", "");
-      if ( ( $currentState !~ /set_.*/ and $currentState ne $newstate )
+      if ( ( $currentState !~ /set_.*/xms and $currentState ne $newstate )
           or $currentState eq "set_".$newstate
-          or ($currentState =~ /set_.*/ and ReadingsAge($name, "state", 0) > 60) )
+          or ($currentState =~ /set_.*/xms and ReadingsAge($name, "state", 0) > 60) )
       {
           readingsBulkUpdate( $hash, "state", $newstate );
       }
@@ -1197,26 +1227,26 @@ sub ReceiveCommand($$$) {
 }
 
 ###################################
-sub wake ($$) {
+sub wake {
     my ( $name, $mac_addr ) = @_;
     my $address = AttrVal($name, 'wolBroadcast', '255.255.255.255');
     my $port = 9;
 
-    my $sock = new IO::Socket::INET( Proto => 'udp' )
-      or die "socket : $!";
-    die "Can't create WOL socket" if ( !$sock );
+    my $sock = IO::Socket::INET->new( Proto => 'udp' )
+      or die "socket : $!\n";
+    die "Can't create WOL socket\n" if ( !$sock );
 
     my $ip_addr = inet_aton($address);
     my $sock_addr = sockaddr_in( $port, $ip_addr );
-    $mac_addr =~ s/://g;
+    $mac_addr =~ s/://gxms;
     my $packet =
       pack( 'C6H*', 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, $mac_addr x 16 );
 
     setsockopt( $sock, SOL_SOCKET, SO_BROADCAST, 1 )
-      or die "setsockopt : $!";
+      or die "setsockopt : $!\n";
 
     Log3($name, 4, "BRAVIA $name: Waking up by sending Wake-On-Lan magic packet to $mac_addr");
-    send( $sock, $packet, 0, $sock_addr ) or die "send : $!";
+    send( $sock, $packet, 0, $sock_addr ) or die "send : $!\n";
     close($sock);
 
     return;
@@ -1224,7 +1254,7 @@ sub wake ($$) {
 
 ###################################
 # process return data
-sub ProcessCommandData ($$$) {
+sub ProcessCommandData {
 
     my ($param,$return,$successor) = @_;
     my $hash      = $param->{hash};
@@ -1265,7 +1295,7 @@ sub ProcessCommandData ($$$) {
     
       my %statusKeys;
       foreach ( keys %{ $hash->{READINGS} } ) {
-        $statusKeys{$_} = 1 if ( $_ =~ /^s_.*/ && ReadingsVal($name, $_, "") ne "-" );
+        $statusKeys{$_} = 1 if ( $_ =~ /^s_.*/xms && ReadingsVal($name, $_, "") ne "-" );
       }
 
       readingsBeginUpdate($hash);
@@ -1316,6 +1346,9 @@ sub ProcessCommandData ($$$) {
       # read system information if not existing
       push(@$successor, ["getSystemInformation"])
           if ( ReadingsVal($name, "name", "0") eq "0" || ReadingsVal($name, "model", "0") eq "0" );
+      push(@$successor, ["getSupportedApiInfo"])
+          if ( ReadingsVal( $name, "requestFormat", "" ) eq "json" &&
+              (!defined($hash->{helper}{services}) || scalar($hash->{helper}{services}) == 0) );
     
       # read content information
       if ( ReadingsVal($name, "generation", "1.0") ne "1.0" ) {
@@ -1333,9 +1366,8 @@ sub ProcessCommandData ($$$) {
           $newstate = ( $return->{status}{name} eq "viewing" ? "on" : $return->{status}{name} );
         }
         # get current system settings
-        if ($newstate eq "on" && ReadingsVal($name, "upnp", "on") eq "on") {
-          push(@$successor, ["upnp", "getVolume"]);
-          push(@$successor, ["upnp", "getMute"]);
+        if ($newstate eq 'on') {
+          push(@$successor, ['getVolumeInformation']);
         }
       }
     }
@@ -1365,6 +1397,19 @@ sub ProcessCommandData ($$$) {
       }
     }
     
+    # getSupportedApiInfo
+    elsif ( $service eq "getSupportedApiInfo" ) {
+      if ( ref($return) eq "HASH" && ref($return->{result}) eq "ARRAY") {
+        my $elements = $return->{result}[0];
+        if (ref($elements) eq "ARRAY") {
+          $hash->{helper}{services} = ();
+          foreach my $srvName (@$elements) {
+            push(@{$hash->{helper}{services}}, $srvName->{service});
+          }
+        }
+      }
+    }
+    
     # getContentInformation
     elsif ( $service eq "getContentInformation" ) {
       my %contentKeys;
@@ -1375,7 +1420,7 @@ sub ProcessCommandData ($$$) {
       my $currentMedia = "-";
       foreach ( keys %{ $hash->{READINGS} } ) {
         $contentKeys{$_} = 1
-            if ( $_ =~ /^ci_.*/ and ReadingsVal($name, $_, "") ne "-" );
+            if ( $_ =~ /^ci_.*/xms and ReadingsVal($name, $_, "") ne "-" );
       }
       if ( ref($return) eq "HASH" ) {
         $newstate = "on";
@@ -1426,7 +1471,7 @@ sub ProcessCommandData ($$$) {
                 $uri = $return->{result}[0]{$_};
                 # set TV input uri to last tv-norm (tv:dvbt, tv:dvbs)
                 $hash->{helper}{device}{inputPreset}{TV}{uri} = $return->{result}[0]{$_}
-                    if (defined($hash->{helper}{device}{inputPreset}) && $return->{result}[0]{$_} =~ /tv:.*/);
+                    if (defined($hash->{helper}{device}{inputPreset}) && $return->{result}[0]{$_} =~ /tv:.*/xms);
               } else {
                 readingsBulkUpdateIfChanged( $hash, "ci_".$_, $return->{result}[0]{$_} );
                 delete $contentKeys{"ci_".$_};
@@ -1438,7 +1483,7 @@ sub ProcessCommandData ($$$) {
               foreach ( keys %{$hash->{helper}{device}{inputPreset}} )  {
                 if ($hash->{helper}{device}{inputPreset}{$_}{uri} eq $uri) {
                   $input = $_;
-                  $input =~ s/#/ /g;
+                  $input =~ s/\#/ /gxms;
                   last;
                 }
               }
@@ -1486,9 +1531,8 @@ sub ProcessCommandData ($$$) {
       }
     
       # get current system settings
-      if ($newstate eq "on" && ReadingsVal($name, "upnp", "on") eq "on") {
-        push(@$successor, ["upnp", "getVolume"]);
-        push(@$successor, ["upnp", "getMute"]);
+      if ($newstate eq 'on') {
+        push(@$successor, ['getVolumeInformation']);
       }
       
       FetchPresets($hash, $successor) if ($newstate eq "on");
@@ -1503,7 +1547,7 @@ sub ProcessCommandData ($$$) {
 
       foreach ( keys %{ $hash->{READINGS} } ) {
         $contentKeys{$_} = 1
-            if ( $_ =~ /^ci_.*/ and ReadingsVal($name, $_, "") ne "-" );
+            if ( $_ =~ /^ci_.*/xms and ReadingsVal($name, $_, "") ne "-" );
       }
       
       readingsBeginUpdate($hash);
@@ -1514,8 +1558,7 @@ sub ProcessCommandData ($$$) {
           foreach ( @{ $return->{result} } ) {
             foreach ( @{ $_ } ) {
               if ($_->{recordingStatus} eq "recording") {
-                my $key;
-                foreach $key ( keys %{ $_ }) {
+                foreach my $key ( keys %{ $_ }) {
                   if ( $key eq "type" ) {
                     $currentMedia = $_->{$key};
                     readingsBulkUpdateIfChanged( $hash, "input", $_->{$key} );
@@ -1561,8 +1604,7 @@ sub ProcessCommandData ($$$) {
               my $channelNo;
               my $channelName;
               my $channelUri;
-              my $key;
-              foreach $key ( keys %{ $_ }) {
+              foreach my $key ( keys %{ $_ }) {
                 if ( $key eq "dispNum" ) {
                   $channelNo = $_->{$key};
                 } elsif ( $key eq "title" ) {
@@ -1584,7 +1626,7 @@ sub ProcessCommandData ($$$) {
       if (++$channelIndex % InternalVal($name, "CHANNELCOUNT", 50) == 0) {
         # try next junk of channels
         my $source = $cmd;
-        if ($cmd =~ /^(.*)\|(\d+)$/){
+        if ($cmd =~ /^(.*)\|(\d+)$/xms){
           $source = $1;
         }
         push(@$successor, ["getContentList", $source."|".$channelIndex]);
@@ -1597,9 +1639,8 @@ sub ProcessCommandData ($$$) {
         if (ref($return->{result}) eq "ARRAY") {
           foreach ( @{ $return->{result} } ) {
             foreach ( @{ $_ } ) {
-              my $key;
               my $scheme = undef;
-              foreach $key ( keys %{ $_ }) {
+              foreach my $key ( keys %{ $_ }) {
                 if ( $key eq "scheme" ) {
                   $scheme = $_->{$key};
                 }
@@ -1623,14 +1664,13 @@ sub ProcessCommandData ($$$) {
         if (ref($return->{result}) eq "ARRAY") {
           foreach ( @{ $return->{result} } ) {
             foreach ( @{ $_ } ) {
-              my $key;
               my $source = undef;
-              foreach $key ( keys %{ $_ }) {
+              foreach my $key ( keys %{ $_ }) {
                 if ( $key eq "source" ) {
                   $source = $_->{$key};
                 }
               }
-              if (defined($source) and $source =~ /tv:dvb(.)/) {
+              if (defined($source) and $source =~ /tv:dvb(.)/xms) {
                 my $dvbName = GetNormalizedName("TV / DVB-".uc($1));
                 $hash->{helper}{device}{inputPreset}{$dvbName}{uri} = $source;
                 push(@$successor, ["getContentList", $source]);
@@ -1650,8 +1690,7 @@ sub ProcessCommandData ($$$) {
               my $inputName;
               my $inputLabel;
               my $inputUri;
-              my $key;
-              foreach $key ( keys %{ $_ }) {
+              foreach my $key ( keys %{ $_ }) {
                 if ( $key eq "uri" ) {
                   $inputUri = $_->{$key};
                 } elsif ( $key eq "title" ) {
@@ -1664,7 +1703,7 @@ sub ProcessCommandData ($$$) {
             }
           }
           my $tvUri = ReadingsVal($name, "uri", "tv");
-          $tvUri = "tv" if ($tvUri !~ /tv.*/);
+          $tvUri = "tv" if ($tvUri !~ /tv.*/xms);
           $hash->{helper}{device}{inputPreset}{TV}{uri}  = $tvUri;
         }
       }
@@ -1678,8 +1717,7 @@ sub ProcessCommandData ($$$) {
             foreach ( @{ $_ } ) {
               my $appName;
               my $appUri;
-              my $key;
-              foreach $key ( keys %{ $_ }) {
+              foreach my $key ( keys %{ $_ }) {
                 if ( $key eq "uri" ) {
                   $appUri = $_->{$key};
                 } elsif ( $key eq "title" ) {
@@ -1704,11 +1742,44 @@ sub ProcessCommandData ($$$) {
       foreach ( keys %{$hash->{helper}{device}{appPreset}} )  {
         if ($hash->{helper}{device}{appPreset}{$_}{uri} eq $cmd) {
           $appName = $_;
-          $appName =~ s/#/ /g;
+          $appName =~ s/\#/ /gxms;
           last;
         }
       }
       readingsSingleUpdate( $hash, "application", $appName, 1 ) if ($appName);
+    }
+
+    # getVolumeInformation
+    elsif ( $service eq 'getVolumeInformation') {
+      if ( ref($return) eq 'HASH' && ref($return->{result}) eq 'ARRAY') {
+        my $elements = $return->{result}[0];
+        if (ref($elements) eq 'ARRAY') {
+          my %speaker = ();
+          foreach my $target (@$elements) {
+            if (ref($target) eq 'HASH') {
+              %speaker = %$target if ($target->{'target'} eq 'speaker');
+              last;
+            }
+          }
+          %speaker = %{@$elements[0]} if (!%speaker && $elements > 0);
+          if (%speaker) {
+            readingsBeginUpdate($hash);
+            readingsBulkUpdateIfChanged( $hash, 'volume', $speaker{volume} );
+            readingsBulkUpdateIfChanged( $hash, 'mute', ($speaker{mute} ? "on" : "off") );
+            readingsEndUpdate( $hash, 1 );
+          }
+        }
+      }
+    }
+
+    # setAudioVolume
+    elsif ( $service eq 'setAudioVolume') {
+      # nothing to do
+    }
+
+    # setAudioMute
+    elsif ( $service eq 'setAudioMute') {
+      # nothing to do
     }
 
     # text
@@ -1726,13 +1797,13 @@ sub ProcessCommandData ($$$) {
         @$successor = ();
       } else {        
         readingsBeginUpdate($hash);
-        if ( $header =~ /auth=([A-Za-z0-9]+)/ ) {
+        if ( $header =~ /auth=([A-Za-z0-9]+)/xms ) {
           readingsBulkUpdate( $hash, "authCookie", $1 );
         }
-        if ( $header =~ /[Ee]xpires=([^;]+)/ ) {
+        if ( $header =~ /expires=([^;]+)/ixms ) {
           readingsBulkUpdate( $hash, "authExpires", $1 );
         }
-        if ( $header =~ /[Mm]ax-[Aa]ge=(\d+)/ ) {
+        if ( $header =~ /max-age=(\d+)/ixms ) {
           readingsBulkUpdateIfChanged( $hash, "authMaxAge", $1 );
         }
         readingsEndUpdate( $hash, 1 );
@@ -1749,7 +1820,7 @@ sub ProcessCommandData ($$$) {
 }
 
 #####################################
-sub ClearContentInformation ($) {
+sub ClearContentInformation {
 
     my ($hash)    = @_;
     my $name    = $hash->{NAME};
@@ -1758,7 +1829,7 @@ sub ClearContentInformation ($) {
 
     #remove outdated content information - replaces by "-"
     foreach ( keys %{ $hash->{READINGS} } ) {
-      readingsBulkUpdateIfChanged($hash, $_, "-") if ( $_ =~ /^ci_.*/ );
+      readingsBulkUpdateIfChanged($hash, $_, "-") if ( $_ =~ /^ci_.*/xms );
     }
 
     readingsBulkUpdateIfChanged( $hash, "channel", "-" );
@@ -1769,9 +1840,11 @@ sub ClearContentInformation ($) {
     readingsBulkUpdateIfChanged( $hash, "uri", "-" );
 
     readingsEndUpdate( $hash, 1 );
+
+    return;
 }
 
-sub FetchPresets($$) {
+sub FetchPresets {
   my ($hash,$successor)    = @_;
   my $name    = $hash->{NAME};
 
@@ -1788,9 +1861,11 @@ sub FetchPresets($$) {
             || !defined( $hash->{helper}{device}{appPreset} )
             || scalar( keys %{ $hash->{helper}{device}{appPreset} } ) == 0 );
   }
+
+  return;
 }
 
-sub LogSuccessors($@) {
+sub LogSuccessors {
   my ($hash,@successor) = @_;
   my $name = $hash->{NAME};
 
@@ -1802,11 +1877,13 @@ sub LogSuccessors($@) {
     $msg .= join(",", map { defined($_) ? $_ : '' } @succ_item);
   }
   Log3($name, 4, $msg) if (@successor > 0);
+
+  return;
 }
 
 #####################################
 # Callback from 95_remotecontrol for command makenotify.
-sub RCmakenotify($$) {
+sub RCmakenotify {
     my ( $nam, $ndev ) = @_;
     my $nname = "notify_$nam";
 
@@ -1819,7 +1896,7 @@ sub RCmakenotify($$) {
 # RC layouts
 
 # Sony TV with SVG
-sub RClayout_SVG() {
+sub RClayout_SVG {
     my @row;
 
     $row[0] = "SOURCE:rc_AV.svg,:rc_BLANK.svg,:rc_BLANK.svg,POWER:rc_POWER.svg";
@@ -1851,7 +1928,7 @@ sub RClayout_SVG() {
 }
 
 # Sony TV with PNG
-sub RClayout() {
+sub RClayout {
     my @row;
 
     $row[0] = "SOURCE,:blank,:blank,POWER:POWEROFF";
@@ -1983,7 +2060,7 @@ sub RClayout() {
 # 755   <command name="BrowserReload" type="url" value="http://192.168.2.43:80/cers/command/BrowserReload" />
 # 755   <command name="BrowserStop" type="url" value="http://192.168.2.43:80/cers/command/BrowserStop" />
 # 755   <command name="BrowserBookmarkList" type="url" value="http://192.168.2.43:80/cers/command/BrowserBookmarkList" />
-sub GetRemotecontrolCommand($) {
+sub GetRemotecontrolCommand {
     my ($command) = @_;
     my $commands = {
         'POWER'       => "AAAAAQAAAAEAAAAVAw==",
@@ -2061,7 +2138,7 @@ sub GetRemotecontrolCommand($) {
     }
 }
 
-sub GetModelYear($) {
+sub GetModelYear {
     my ($command) = @_;
     my $commands = {
         '1.0'       => "2011",
@@ -2081,7 +2158,7 @@ sub GetModelYear($) {
     }
 }
 
-sub GetIrccRequest($) {
+sub GetIrccRequest {
     my ($cmd) = @_;
     my $data = "<?xml version=\"1.0\"?>";
     $data .= "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">";
@@ -2095,7 +2172,7 @@ sub GetIrccRequest($) {
     return $data;
 }
 
-sub GetUpnpRequest($$) {
+sub GetUpnpRequest {
     my ($cmd,$value) = @_;
     my $data = "<?xml version=\"1.0\"?>";
     $data .= "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">";
@@ -2133,12 +2210,14 @@ sub GetUpnpRequest($$) {
     return $data;
 }
 
-sub CheckRegistration($$$$@) {
+sub CheckRegistration {
   my ( $hash, $service, $cmd, $param, @successor ) = @_;
   my $name = $hash->{NAME};
 
-  if (ReadingsVal($name, "authCookie", "") ne "" and
-      ReadingsTimestamp($name, "authCookie", "") =~ m/^(\d{4})-(\d{2})-(\d{2}) ([0-2]\d):([0-5]\d):([0-5]\d)$/) {
+  my $authCookie = ReadingsVal($name, "authCookie", "");
+  my $authCookieTS = ReadingsTimestamp($name, "authCookie", "");
+  if ($authCookie ne "" and
+      $authCookieTS =~ m/^(\d{4})-(\d{2})-(\d{2})\ ([0-2]\d):([0-5]\d):([0-5]\d)$/xms) {
 
     my $time = fhemTimeLocal($6, $5, $4, $3, $2 - 1, $1 - 1900);
     # max age defaults to 14 days
@@ -2158,22 +2237,46 @@ sub CheckRegistration($$$$@) {
         $msg .= " $i: ";
         $msg .= join(",", map { defined($_) ? $_ : '' } @succ_item);
       }
-      Log3($name, 4, "BOTVAC created".$msg);
+      Log3($name, 4, "BRAVIA $name: created".$msg);
 
       SendCommand( $hash, "register", "renew", undef, @successor );
 
       return 1;
+    } else {
+      Log3($name, 5, "BRAVIA $name: registration valid until $authCookieTS");
     }
+  } else {
+      Log3($name, 4, "BRAVIA $name: authCookie not valid '$authCookie $authCookieTS'");
   }
   return;
 }
 
-sub GetNormalizedName($) {
+sub CheckServiceAvailable {
+  my ($hash, $service, $cmd, $param, @successor) = @_;
+  my $name = $hash->{NAME};
+
+  if (!defined($hash->{helper}{services}) || join(',', @{$hash->{helper}{services}}) !~ /audio/xms) {
+    if ($service eq 'getVolumeInformation' && ReadingsVal($name, 'upnp', 'on') eq 'on') {
+      unshift(@successor, ['upnp', 'getMute']);
+      SendCommand($hash, 'upnp', 'getVolume', undef, @successor);
+      return;
+    } elsif ($service eq 'setAudioVolume') {
+      SendCommand($hash, 'upnp', "setVolume:$cmd", undef, @successor);
+      return;
+    } elsif ($service eq 'setAudioMute') {
+      SendCommand($hash, 'upnp', 'setMute:'.($cmd eq 'false' ? '0' : '1'), undef, @successor);
+      return;
+    }
+  }
+  return 1;
+}
+
+sub GetNormalizedName {
   my ( $name ) = @_;
-  $name =~ s/^\s+//;
-  $name =~ s/\s+$//;
-  $name =~ s/\s/#/g;
-  $name =~ s/,/./g;
+  $name =~ s/^\s+//xms;
+  $name =~ s/\s+$//xms;
+  $name =~ s/\s/#/gxms;
+  $name =~ s/,/./gxms;
   return $name;
 }
 
@@ -2256,6 +2359,9 @@ sub GetNormalizedName($) {
       <li><a name="requestFormat"></a><i>requestFormat</i><br>
         "xml" for xml based communication (models from 2011 and 2012)<br>
         "json" for communication with models from 2013 and newer</li>
+      <li><a name="requestReboot"></a><i>requestReboot</i><br>
+        Reboots the TV immediately.
+        This Feature is available on models from 2013 and newer.</li>
       <li><a name="remoteControl"></a><i>remoteControl</i><br>
         Sends command directly to TV.</li>
       <li><a name="statusRequest"></a><i>statusRequest</i><br>
@@ -2337,7 +2443,7 @@ sub GetNormalizedName($) {
     <ul>
       <li><a name="application"></a><i>application</i><br>
         Liste der Anwendungen.
-        Anwenungen sind ab Modelljahr 2013 verfügbar.</li>
+        Anwendungen sind ab Modelljahr 2013 verfügbar.</li>
       <li><a name="channel"></a><i>channel</i><br>
         Liste aller bekannten Kanäle. Das Modul merkt sich alle aufgerufenen Kanäle.
         Ab Modelljahr 2013 werden die Kanäle automatisch geladen
@@ -2375,6 +2481,9 @@ sub GetNormalizedName($) {
       <li><a name="requestFormat"></a><i>requestFormat</i><br>
         "xml" für xml-basierte Kommunikation 2011er/2012er Geräte<br>
         "json" für die Kommunikation seit der 2013er Generation</li>
+      <li><a name="requestReboot"></a><i>requestReboot</i><br>
+        Startet den TV direkt neu.
+        Diese Funktion ist ab Modelljahr 2013 verfügbar.</li>
       <li><a name="remoteControl"></a><i>remoteControl</i><br>
         Direktes Senden von Kommandos an den TV.</li>
       <li><a name="statusRequest"></a><i>statusRequest</i><br>

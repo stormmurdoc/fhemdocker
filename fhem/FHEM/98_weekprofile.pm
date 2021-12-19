@@ -1,8 +1,8 @@
 ##############################################
-# $Id: 98_weekprofile.pm 21086 2020-01-31 19:40:35Z Risiko $
+# $Id: 98_weekprofile.pm 25318 2021-12-07 20:01:44Z Risiko $
 #
 # Usage
-# 
+#
 # define <name> weekprofile [device]
 ############################################## 
 
@@ -12,7 +12,6 @@ use strict;
 use warnings;
 
 use JSON;         #libjson-perl
-use Data::Dumper;
 use Time::HiRes qw(gettimeofday);
 use Storable qw(dclone);
 
@@ -21,12 +20,16 @@ use vars qw($FW_ME);
 use vars qw($FW_wname);
 use vars qw($FW_subdir);
 use vars qw($init_done);
+use vars qw($readingFnAttributes);
+use vars qw(%attr);
+use vars qw(%FW_hiddenroom);
+
 
 my @shortDays = ("Mon","Tue","Wed","Thu","Fri","Sat","Sun");
 
 my %LAST_SEND;
 
-my @DEVLIST_SEND = ("MAX","CUL_HM","HMCCUDEV","weekprofile","dummyWT","WeekdayTimer");
+my @DEVLIST_SEND = ("MAX","CUL_HM","HMCCUDEV","HMCCUCHN","weekprofile","dummyWT","WeekdayTimer","MQTT2_DEVICE");
 
 my $CONFIG_VERSION = "1.1";
 
@@ -49,7 +52,8 @@ $DEV_READINGS{"Fri"}{"CUL_HM"} = "6_tempListFri";
 $DEV_READINGS{"Sat"}{"CUL_HM"} = "0_tempListSat";
 $DEV_READINGS{"Sun"}{"CUL_HM"} = "1_tempListSun";
 
-# HMCCUDEV HMIP
+# TYPE=HMCCUDEV or HMCCUCHN
+# ccutype=HmIP.*
 $DEV_READINGS{"Mon"}{"HMCCU_IP"} = "MONDAY";
 $DEV_READINGS{"Tue"}{"HMCCU_IP"} = "TUESDAY";
 $DEV_READINGS{"Wed"}{"HMCCU_IP"} = "WEDNESDAY";
@@ -58,7 +62,8 @@ $DEV_READINGS{"Fri"}{"HMCCU_IP"} = "FRIDAY";
 $DEV_READINGS{"Sat"}{"HMCCU_IP"} = "SATURDAY";
 $DEV_READINGS{"Sun"}{"HMCCU_IP"} = "SUNDAY";
 
-# HMCCUDEV HM
+# TYPE=HMCCUDEV or HMCCUCHN
+# ccutype = HM-.*
 $DEV_READINGS{"Mon"}{"HMCCU_HM"} = "MONDAY";
 $DEV_READINGS{"Tue"}{"HMCCU_HM"} = "TUESDAY";
 $DEV_READINGS{"Wed"}{"HMCCU_HM"} = "WEDNESDAY";
@@ -95,20 +100,25 @@ sub weekprofile_timeToMinutes($)
   return $hours * 60 + $minutes;
 }
 ############################################## 
-sub myAttrVal($$$)
-{
-	my ($me,$name,$def) = @_;
-	my $val = AttrVal($me, $name, $def);
-	
-	if (defined($val) && ($name eq 'tempON' || $name eq 'tempOFF')) { 
-	  $val = sprintf("%.1f", $val);
-	}
-	return $val;
+sub tempValue($) {
+  my ($in) = @_;
+  my $val = sprintf("%.1f", $in);
+  return $val;
 }
 ############################################## 
 sub weekprofile_getDeviceType($$;$)
 {
   my ($me,$device,$sndrcv) = @_;
+  
+  if (IsDummy($device)){
+    Log3($me, 4, "$me(getDeviceType): $device is dummy - ignored");
+    return undef;
+  }
+  
+  if (IsIgnored($device)){
+    Log3($me, 4, "$me(getDeviceType): $device is ignored");
+    return undef;
+  }
   
   $sndrcv = "RCV" if (!defined($sndrcv));
 
@@ -122,49 +132,61 @@ sub weekprofile_getDeviceType($$;$)
 
   my $devType = $devHash->{TYPE};
   $devType = $devHash->{wt_type} if ($devType =~ /dummyWT/); #special dummy fake WT for testing
-  Log3 $me, 5, "$me(getDeviceType): type: $devType";
+  Log3($me, 5, "$me(getDeviceType): type: $devType");
   
   if ($devType =~ /CUL_HM/){
     my $model = AttrVal($device,"model","");
     
+    my $readonly = AttrVal($device,"readOnly",0);
+    if ($readonly) {
+      Log3($me, 4, "$me(getDeviceType): $devHash->{NAME} is readonly - ignored");
+      return undef;
+    }
+    
     #models: HM-TC-IT-WM-W-EU, HM-CC-RT-DN, HM-CC-TC
     unless ($model =~ m/.*HM-[C|T]C-.*/) {
-      Log3 $me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model is not supported";
+      Log3($me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model is not supported");
       return undef;
     }
     
     if (!defined($devHash->{chanNo})) { #no channel device
-      Log3 $me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model has no chanNo";
+      Log3($me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model has no chanNo");
       return undef;
     }
     
     my $channel = $devHash->{chanNo};
     unless ($channel =~ /^\d+?$/) {
-      Log3 $me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model chanNo $channel is no number";
+      Log3($me, 4, "$me(getDeviceType): $devHash->{NAME}, model $model chanNo $channel is no number");
       return undef;
     }
     
     $channel += 0;
-    Log3 $me, 5, "$me(getDeviceType): $devHash->{NAME}, $model, $channel";
+    Log3($me, 5, "$me(getDeviceType): $devHash->{NAME}, $model, $channel");
     
     $type = "CUL_HM" if ( ($model =~ m/.*HM-CC-RT.*/) && ($channel == 4) );
     $type = "CUL_HM" if ( ($model =~ m/.*HM-TC.*/)    && ($channel == 2) );
-    $type = "CUL_HM" if ( ($model =~ m/.*HM-CC-TC.*/) && ($channel == 2) );
+    $type = "CUL_HM" if ( ($model =~ m/.*HM-CC-TC.*/) && ($channel == 2) );    
   }
   #avoid max shutter contact
   elsif ( ($devType =~ /MAX/) && ($devHash->{type} =~ /.*Thermostat.*/) ){
     $type = "MAX";
   }
-  elsif ( $devType =~ /HMCCUDEV/){
-	  my $model = $devHash->{ccutype};
-    if (!defined($model)) {
-      Log3 $me, 2, "$me(getDeviceType): ccutype not defined - take HM-xxx (HMCCU_HM)";
-      $model = "HM-xxx";
+  elsif ( $devType =~ /HMCCUDEV/ or $devType =~/HMCCUCHN/){
+    my $readonly = AttrVal($device,"readOnly",0);
+    if ($readonly) {
+      Log3($me, 4, "$me(getDeviceType): $devHash->{NAME} is readonly - ignored");
+      return undef;
     }
-    Log3 $me, 5, "$me(getDeviceType): $devHash->{NAME}, $model";
+    my $model = $devHash->{ccutype};
+    if (!defined($model)) {
+      Log3($me, 4, "$me(getDeviceType): ccutype not defined for device $device - take NAME");
+      $model = $devHash->{NAME};
+      return undef if (!defined($model));
+    }
+    Log3($me, 5, "$me(getDeviceType): $devHash->{NAME}, $model");
 	  $type = "HMCCU_IP" if ( $model =~ m/HmIP.*/ );
     $type = "HMCCU_HM" if ( $model =~ m/HM-.*/ );
-  }
+  }  
 
   return $type if ($sndrcv eq "RCV");
   
@@ -173,20 +195,30 @@ sub weekprofile_getDeviceType($$;$)
   }
   elsif ($devType =~ /WeekdayTimer/){
     my $def = $defs{$device}{DEF};
-    Log3 $me, 5, "$me(getDeviceType): def WDT $def";
+    Log3($me, 5, "$me(getDeviceType): def WDT $def");
     #if (index($def, $me) != -1) {
     if ($def =~ m/.*weekprofile.*/) {  
       $type = "WDT";
     }
     else {
-      Log3 $me, 4, "$me(getDeviceType): found WDT but not configured for weekprofile";
+      Log3($me, 4, "$me(getDeviceType): found WDT but not configured for weekprofile");
+    }
+  }
+  elsif ($devType eq 'MQTT2_DEVICE'){
+    my $attr = AttrVal($device,'weekprofile','');
+    Log3($me, 5, "$me(getDeviceType): attr MQTT2_DEVICE $attr");
+    if ($attr ne "") {  
+      $type = "MQTT2_DEVICE";
+    }
+    else {
+      Log3($me, 4, "$me(getDeviceType): found MQTT2_DEVICE but not configured for weekprofile");
     }
   }
   
   if (defined($type)) {
-    Log3 $me, 4, "$me(getDeviceType): $devHash->{NAME} is type $type";
+    Log3($me, 4, "$me(getDeviceType): $devHash->{NAME} is type $type");
   } else {
-    Log3 $me, 4, "$me(getDeviceType): $devHash->{NAME} is not supported";
+    Log3($me, 4, "$me(getDeviceType): $devHash->{NAME} is not supported");
   }
   return $type;
 }
@@ -201,7 +233,7 @@ sub weekprofile_get_prefix_HM($@)
   foreach (@prefix_lst) {
     my $reading = "$_"."$base_name";
     my $time = ReadingsVal($device, $reading, "");
-    Log3 $me, 5, "$me(weekprofile_get_prefix_HM): check: $reading $time";
+    Log3($me, 5, "$me(weekprofile_get_prefix_HM): check: $reading $time");
     if ($time ne "") {
       $prefix = $_;
       last;
@@ -221,11 +253,11 @@ sub weekprofile_readDayProfile($@)
   $type = weekprofile_getDeviceType($me,$device) if (!defined($type));
   return if (!defined($type));
 
-  Log3 $me, 5, "$me(readDayProfile): read from type $type";
+  Log3($me, 5, "$me(readDayProfile): read from type $type");
 
   my $reading = $DEV_READINGS{$day}{$type};
   
-  #Log3 $me, 5, "$me(ReadDayProfile): $reading";
+  #Log3($me, 5, "$me(ReadDayProfile): $reading");
   
   if($type eq "MAX") {
     @temps = split('/',ReadingsVal($device,"$reading-temp",""));
@@ -254,21 +286,21 @@ sub weekprofile_readDayProfile($@)
     my $lastTime = "";
     my $prefix = weekprofile_get_prefix_HM($device,"ENDTIME_$reading"."_1",$me);
     if (!defined($prefix)) {
-      Log3 $me, 2, "$me(readDayProfile): no readings for $reading found";
+      Log3($me, 2, "$me(readDayProfile): no readings for $reading found");
       return (\@times, \@temps);  
     }
-    Log3 $me, 5, "$me(readDayProfile): HM-Prefix is $prefix";
+    Log3($me, 5, "$me(readDayProfile): HM-Prefix is $prefix");
 
     for (my $i = 1; $i < 14; $i+=1){
       my $prfTime = ReadingsVal($device, "$prefix"."ENDTIME_$reading"."_$i", "");
       my $prfTemp = ReadingsVal($device, "$prefix"."TEMPERATURE_$reading"."_$i", "");
 
       if ($prfTime eq "" or $prfTemp eq ""){
-        Log3 $me, 2, "$me(readDayProfile): no readings for $reading found ($i)";
+        Log3($me, 2, "$me(readDayProfile): no readings for $reading found ($i)");
         return (\@times, \@temps);
       }
       else{
-        Log3 $me, 5, "$me(readDayProfile): $reading"."_$i $prfTime $prfTemp";
+        Log3($me, 5, "$me(readDayProfile): $reading"."_$i $prfTime $prfTemp");
       }
       
       $prfTime = weekprofile_minutesToTime($prfTime);
@@ -282,17 +314,18 @@ sub weekprofile_readDayProfile($@)
     }
   }
   else {
-    Log3 $me, 3, "$me(readDayProfile): unsupported device type $type";
+    Log3($me, 3, "$me(readDayProfile): unsupported device type $type");
   }
   
-  for(my $i = 0; $i < scalar(@temps); $i+=1){
-	  Log3 $me, 5, "$me(ReadDayProfile): temp $i $temps[$i]";
-    $temps[$i] =~s/[^\d.]//g; #only numbers
-    my $tempON = myAttrVal($me, "tempON", undef);
-    my $tempOFF = myAttrVal($me, "tempOFF", undef);
+  my $hash = $defs{$me};
   
-    $temps[$i] =~s/$tempOFF/off/g if (defined($tempOFF)); # temp off
-    $temps[$i] =~s/$tempON/on/g   if (defined($tempON));  # temp on
+  for(my $i = 0; $i < scalar(@temps); $i+=1) {
+    Log3($me, 5, "$me(ReadDayProfile): temp $i $temps[$i]");
+    my $tv = "\"".$temps[$i]."\"";
+    $tv = weekprofile_replaceKeywords($hash, $tv, 'toValue');
+    $tv =~s/\"//g;
+    $tv =~s/[^\d.]//g; #only numbers
+    $temps[$i] = tempValue($tv);
   }
   
   for(my $i = 0; $i < scalar(@times); $i+=1){
@@ -324,10 +357,10 @@ sub weekprofile_readDevProfile(@)
   }
   
   if ( ($logDaysCnt>0) && ($logDaysCnt<(@shortDays)) ) {
-    Log3 $me, 3, $logDaysWarning;
+    Log3($me, 3, $logDaysWarning);
   }  else {
     if ($logDaysCnt == (@shortDays)) {
-      Log3 $me, 3, "WARNING master device $device has no week profile - create default";
+      Log3($me, 3, "WARNING master device $device has no week profile - create default");
     }
   }
   
@@ -368,7 +401,12 @@ sub weekprofile_sendDevProfile(@)
   }
   elsif ($type eq "WDT") {
     my $cmd = "set $device weekprofile $me:$prf->{TOPIC}:$prf->{NAME}";
-    Log3 $me, 4, "$me(sendDevProfile): send to WDT $cmd";
+    Log3($me, 4, "$me(sendDevProfile): send to WDT $cmd");
+    return fhem("$cmd",1);
+  }
+  elsif ($type eq "MQTT2_DEVICE") {
+    my $cmd = "set $device weekprofile $me $prf->{TOPIC}:$prf->{NAME}";
+    Log3($me, 4, "$me(sendDevProfile): send to MQTT2_DEVICE $cmd");
     return fhem("$cmd",1);
   }
 
@@ -403,25 +441,25 @@ sub weekprofile_sendDevProfile(@)
   }
   
   if (scalar(@dayToTransfer) <=0) {
-    Log3 $me, 4, "$me(sendDevProfile): nothing to do";
+    Log3($me, 4, "$me(sendDevProfile): nothing to do");
     return undef;
   }
   
-  #make a copy because of replacements 
-  my $prfData= dclone($prf->{DATA});  
-  my $tempON = myAttrVal($me, "tempON", "30.5");
-  my $tempOFF = myAttrVal($me, "tempOFF", "4.5");
+  # make a copy to manipulate temps to keywords
+  my $prfData = dclone($prf->{DATA});
   
-  #replace variables with values  
-  foreach my $day (@dayToTransfer){
-    my $tmpCnt =  scalar(@{$prfData->{$day}->{"temp"}});
-    for (my $i = 0; $i < $tmpCnt; $i++) {
-        $prfData->{$day}->{"temp"}[$i] = $tempON  if ($prfData->{$day}->{"temp"}[$i] =~/on/i);
-      $prfData->{$day}->{"temp"}[$i] = $tempOFF if ($prfData->{$day}->{"temp"}[$i] =~/off/i);
-    }
+  # send keywords to device if attr 'sendKeywordsToDevices' is set
+  my $useKeywords = AttrVal($me, "sendKeywordsToDevices", 0);
+  if ($useKeywords) {
+    my $hash = $defs{$me};
+    my $json = JSON->new->allow_nonref;
+    my $json_text = undef;
+    eval { $json_text = $json->encode($prfData) };
+    $json_text = weekprofile_replaceKeywords($hash, $json_text, 'toKey');
+    eval { $prfData = $json->decode($json_text) };
   }
-    
-  my $cmd;
+  
+  my $cmd="";
   if($type eq "MAX") {
     $cmd = "set $device weekProfile ";
     foreach my $day (@dayToTransfer){
@@ -452,13 +490,14 @@ sub weekprofile_sendDevProfile(@)
       $k++;
     }
   } elsif ($type =~ /HMCCU.*/){ 
-    $cmd .= "set $device config" if ($type eq "HMCCU_HM");
+    $cmd .= "set $device config device" if ($type eq "HMCCU_HM");
     $cmd .= "set $device config 1" if ($type eq "HMCCU_IP");
     my $k=0;
     my $dayCnt = scalar(@dayToTransfer);
     my $prefix = weekprofile_get_prefix_HM($device,"ENDTIME_SUNDAY_1",$me);
+    $prefix = ""; # always no prefix by set #msg1113658 
     if (!defined($prefix)) {
-      Log3 $me, 3, "$me(sendDevProfile): no prefix found"; 
+      Log3($me, 3, "$me(sendDevProfile): no prefix found"); 
       $prefix = ""; 
     }
     foreach my $day (@dayToTransfer){
@@ -470,6 +509,7 @@ sub weekprofile_sendDevProfile(@)
       for (my $i = 0; $i < $tmpCnt; $i++) {
         $cmd .= " " . $dpTemp . "_" . ($i + 1) . "=" . $prfData->{$day}->{"temp"}[$i];
         $cmd .= " " . $dpTime . "_" . ($i + 1) . "=" . weekprofile_timeToMinutes($prfData->{$day}->{"time"}[$i]);
+        $cmd .= ":" if ($type eq "HMCCU_HM"); # ':' after time see #msg1191311
       }
       $k++;
     }
@@ -489,7 +529,7 @@ sub weekprofile_sendDevProfile(@)
         $last_profile_send = $datetimenow - $snd_delay; 
       } else {
         my $last_profile_send_fmt = FmtDateTime($last_profile_send);
-        Log3 $me, 4, "$me(sendDevProfile): last profile to device type $type wars or will be at ($last_profile_send_fmt)";
+        Log3($me, 4, "$me(sendDevProfile): last profile to device type $type wars or will be at ($last_profile_send_fmt)");
       }
 
       if ($last_profile_send <= $datetimenow - $snd_delay) {
@@ -501,16 +541,16 @@ sub weekprofile_sendDevProfile(@)
       my $last_profile_send_fmt = FmtDateTime($last_profile_send);
       my $sleepTime = $last_profile_send - $datetimenow;
       
-      Log3 $me, 4, "$me(sendDevProfile): profile data to $device ($type) will be sent $sleepTime seconds delayed at ($last_profile_send_fmt)";      
+      Log3($me, 4, "$me(sendDevProfile): profile data to $device ($type) will be sent $sleepTime seconds delayed at ($last_profile_send_fmt)");      
     
       $LAST_SEND{$type} = $last_profile_send;
 
       $cmd=$cmd.";trigger $me PROFILE_TRANSFERED $device";
-      Log3 $me, 4, "$me(sendDevProfile): sleep $sleepTime; $cmd";
+      Log3($me, 4, "$me(sendDevProfile): sleep $sleepTime; $cmd");
       $ret = fhem("sleep $sleepTime; $cmd",1);
     }
     else {
-      Log3 $me, 4, "$me(sendDevProfile): $cmd";
+      Log3($me, 4, "$me(sendDevProfile): $cmd");
       $ret = fhem($cmd,1);
       DoTrigger($me,"PROFILE_TRANSFERED $device",1);
     }
@@ -525,6 +565,9 @@ sub weekprofile_refreshSendDevList($)
   my $me = $hash->{NAME};
   
   splice(@{$hash->{SNDDEVLIST}});
+  
+  my $useTopics = AttrVal($me,"useTopics",0);
+  Log3($me, 5, "$me(weekprofile_refreshSendDevList): start");
   
   foreach my $d (keys %defs)   
   {
@@ -543,10 +586,15 @@ sub weekprofile_refreshSendDevList($)
     $dev->{NAME} = $defs{$d}{NAME};
     $dev->{ALIAS} = AttrVal($dev->{NAME},"alias",$dev->{NAME});
     
+    # add userattr weekprofile to device
+    # help of attr weekprofile will come from module weekprofile
+    addToDevAttrList($dev->{NAME},"weekprofile","weekprofile") if ($useTopics);
+    
     push @{$hash->{SNDDEVLIST}} , $dev;
+    Log3($me, 5, "$me(weekprofile_refreshSendDevList): add device $dev->{NAME}");
   }
   my $cnt = scalar(@{$hash->{SNDDEVLIST}});
-  Log3 $me, 5, "$me(weekprofile_refreshSendDevList): $cnt devices in list";
+  Log3($me, 5, "$me(weekprofile_refreshSendDevList): $cnt devices in list");
   
   return undef;
 }
@@ -585,11 +633,11 @@ sub weekprofile_assignDev($)
   my $prf = undef;
   if (defined($hash->{MASTERDEV})) {
     
-    Log3 $me, 5, "$me(assignDev): assign to device $hash->{MASTERDEV}->{NAME}";
+    Log3($me, 5, "$me(assignDev): assign to device $hash->{MASTERDEV}->{NAME}");
     
     my $type     = weekprofile_getDeviceType($me, $hash->{MASTERDEV}->{NAME});
     if (!defined($type)) {
-      Log3 $me, 2, "$me(assignDev): device $hash->{MASTERDEV}->{NAME} not supported or defined";
+      Log3($me, 2, "$me(assignDev): device $hash->{MASTERDEV}->{NAME} not supported or defined");
     } else {    
       $hash->{MASTERDEV}->{TYPE} = $type;
       
@@ -602,7 +650,7 @@ sub weekprofile_assignDev($)
       if(defined($prfDev)) {
         $prf->{DATA} = $prfDev;
       } else {
-        Log3 $me, 3, "WARNING master device $hash->{MASTERDEV}->{NAME} has no week profile - create default profile";
+        Log3($me, 3, "WARNING master device $hash->{MASTERDEV}->{NAME} has no week profile - create default profile");
         $prf->{DATA} = weekprofile_createDefaultProfile($hash); 
       }
       $hash->{STATE} = "assigned";
@@ -610,7 +658,7 @@ sub weekprofile_assignDev($)
   }
   
   if (!defined($prf)) {
-	Log3 $me, 5, "create default profile";
+      Log3($me, 5, "create default profile");
     my $prfDev = weekprofile_createDefaultProfile($hash);
     if(defined($prfDev)) {
       $prf = {};
@@ -678,8 +726,8 @@ sub weekprofile_Initialize($)
   $hash->{StateFn}  = "weekprofile_State";
   $hash->{NotifyFn} = "weekprofile_Notify";
   $hash->{AttrFn}   = "weekprofile_Attr";
-  $hash->{AttrList} = "useTopics:0,1 widgetTranslations widgetWeekdays widgetEditOnNewPage:0,1 widgetEditDaysInRow:1,2,3,4,5,6,7 \
-                       sendDelay tempON tempOFF configFile forceCompleteProfile:0,1 ".$readingFnAttributes;
+  $hash->{AttrList} = "useTopics:0,1 widgetTranslations widgetWeekdays widgetTempRange widgetEditOnNewPage:0,1 widgetEditDaysInRow:1,2,3,4,5,6,7 \
+                       sendDelay tempON tempOFF configFile forceCompleteProfile:0,1 tempMap sendKeywordsToDevices:0,1 ".$readingFnAttributes;
   
   $hash->{FW_summaryFn}  = "weekprofile_SummaryFn";
 
@@ -693,7 +741,7 @@ sub weekprofile_Define($$)
 
   if(@a < 1) {
     my $msg = "wrong syntax: define <name> weekprofile [device]";
-    Log3 undef, 2, $msg;
+    Log3(undef, 2, $msg);
     return $msg;
   }
 
@@ -715,6 +763,7 @@ sub weekprofile_Define($$)
   $hash->{PROFILES}   = \@profiles;
   $hash->{SNDDEVLIST} = \@sendDevList;
   $hash->{TOPICS}     = \@topics;
+  $hash->{TEMPMAP}    = {};
   
   #$attr{$me}{verbose} = 5;
   
@@ -734,6 +783,8 @@ sub sort_by_name
 ############################################## 
 sub dumpData($$$) 
 {
+	require Data::Dumper;
+	
 	my ($hash,$prefix,$data) = @_;
 	
 	my $me = $hash->{NAME};	 
@@ -741,9 +792,9 @@ sub dumpData($$$)
 	
 	$dmp =~ s/^\s+|\s+$//g; #trim whitespace both ends
 	if (AttrVal($me,"verbose",3) < 4) {
-		Log3 $me, 1, "$me$prefix - set verbose to 4 to see the data";
+		Log3($me, 1, "$me$prefix - set verbose to 4 to see the data");
 	} else {
-		Log3 $me, 4, "$me$prefix $dmp";
+		Log3($me, 4, "$me$prefix $dmp");
 	}
 }
 ############################################## 
@@ -762,14 +813,15 @@ sub weekprofile_Get($$@)
   $list.= 'profile_data:' if ($prfCnt > 0);
   foreach my $prf (sort sort_by_name @{$hash->{PROFILES}}){
     $list.= $prf->{TOPIC}.":" if ($useTopics);
-    $list.= $prf->{NAME}.","  if ($useTopics || (!$useTopics && ($prf->{TOPIC} eq 'default')));
+    $list.= $prf->{NAME}      if ($useTopics || (!$useTopics && ($prf->{TOPIC} eq 'default')));
+    $list.= ',';
   }
   $list = substr($list, 0, -1) if ($prfCnt > 0);
   
 
   #-----------------------------------------------------------------------------
   if($cmd eq "profile_data") {
-    return 'usage: profile_data <name>' if(@params < 1);
+    return 'usage: profile_data <name> [usekeywords]' if(@params < 1);
     return "no profile" if ($prfCnt <= 0);
     
     my ($topic, $name) = weekprofile_splitName($me, $params[0]);
@@ -784,6 +836,18 @@ sub weekprofile_Get($$@)
     eval { $json_text = $json->encode($prf->{DATA}) };
     dumpData($hash,"(Get): invalid profile data",$prf->{DATA}) if (!defined($json_text));
     
+    my $useKeywords = 1;
+    # 1 - return data with keywords
+    # 0 - depending on attr
+    # -1 - return data with values instead of keywords
+    Log3($me, 5, "$me(weekprofile_Get): params: @params");
+    if(@params >= 2) {
+      $useKeywords = AttrVal($me, "sendKeywordsToDevices", 1) if ($params[1] == 0);
+      $useKeywords = 0 if ($params[1] < 0);
+    }
+    my $direction = -1;
+    $direction = 1 if ($useKeywords <=0);
+    $json_text = weekprofile_replaceKeywords($hash, $json_text, $direction);
     return $json_text;
   } 
   #-----------------------------------------------------------------------------
@@ -854,8 +918,8 @@ sub weekprofile_Get($$@)
     }
     # dumpData($hash,"(Get): asso",$hash->{CL}) if defined($hash->{CL});
     my @not_asso = ();
-    my @json_arr = ();    
-	  my $retHTML = "<html><table><thead><tr>";
+    my @json_arr = ();
+    my $retHTML = "<html><table><thead><tr>";
     $retHTML .= "<th width='150'><b>Device</b></th><th width='150'><b>Profile</b></th></tr>";
     $retHTML .= "<th>&nbsp;</th><th></th></tr>";
     $retHTML .= "</thead><tbody>"; 
@@ -874,8 +938,8 @@ sub weekprofile_Get($$@)
       
       $entry->{PROFILE}->{NAME} = $prfName;
       $entry->{PROFILE}->{EXISTS} = defined($prf) + 0;
-      push @json_arr , $entry;       
-	    $retHTML .= "<tr><td style='text-align:left'>$dev->{NAME}</td><td style='text-align:center;$color'>$prfName</td></tr>";
+      push @json_arr , $entry;
+      $retHTML .= "<tr><td style='text-align:left'>$dev->{NAME}</td><td style='text-align:center;$color'>$prfName</td></tr>";
     }
     $retHTML .= "<tr><td colspan='2'><i>Not associated devices</i></td></tr>" if (scalar(@not_asso));
     foreach my $devname (@not_asso) {      
@@ -889,9 +953,11 @@ sub weekprofile_Get($$@)
       eval { $json_text = $json->encode(\@json_arr) };
       $ret = $json_text;
     }
-	  return $ret;
+    return $ret;
   }
   
+  # hidden functions
+  #-----------------------------------------------------------------------------
   if($cmd eq "sndDevList") {
     my $json = JSON->new->allow_nonref;
     my @sortDevList = sort {lc($a->{ALIAS}) cmp lc($b->{ALIAS})} @{$hash->{SNDDEVLIST}};
@@ -899,6 +965,12 @@ sub weekprofile_Get($$@)
     eval { $json_text = $json->encode(\@sortDevList) };
     dumpData($hash,"(Get): invalid device list",\@sortDevList) if (!defined($json_text));
     return $json_text;
+  }
+  
+  #-----------------------------------------------------------------------------
+  if($cmd eq "tempList") {
+    my $tempList = weekprofile_createTempList($hash);
+    return $tempList;
   }
   
   $list =~ s/ $//;
@@ -913,7 +985,7 @@ sub weekprofile_findPRF($$$$)
   
   if (!$topic) {    
     $topic = ReadingsVal($me, "active_topic", "default");
-    Log3 $me, 3, "$me(weekprofile_findPRF): use topic $topic";
+    Log3($me, 3, "$me(weekprofile_findPRF): use topic $topic");
   }
   $followRef  = '0'       if (!$followRef);
   
@@ -962,7 +1034,7 @@ sub weekprofile_splitName($$)
   return ($parts[0],$parts[1]) if (@parts == 2);
   
   my $topic = ReadingsVal($me, "active_topic", "default");
-  Log3 $me, 5, "$me(weekprofile_splitName): use topic $topic";    
+  Log3($me, 5, "$me(weekprofile_splitName): use topic $topic");    
   return ($topic,$in);
 }
 ############################################## 
@@ -988,9 +1060,11 @@ sub weekprofile_Set($$@)
     my $json = JSON->new->allow_nonref;
     my $data = undef;
 
+    $jsonData = weekprofile_replaceKeywords($hash, $jsonData, 'toValue');
+    
     eval { $data = $json->decode($jsonData); };
     if (!defined($data)) {
-      Log3 $me, 1, "$me(Set): Error parsing profile data.";
+      Log3($me, 1, "$me(Set): Error parsing profile data.");
       return "Error parsing profile data. No valid json format";
     };
     
@@ -1036,7 +1110,7 @@ sub weekprofile_Set($$@)
     
     my ($found,$idx) = weekprofile_findPRF($hash,$name,$topic,1);
     if (!defined($found)) {
-      Log3 $me, 1, "$me(Set): Error unknown profile $params[0]";
+      Log3($me, 1, "$me(Set): Error unknown profile $params[0]");
       return "Error unknown profile $params[0]";
     }
     
@@ -1044,7 +1118,7 @@ sub weekprofile_Set($$@)
     foreach my $device (@devices){
       my $ret = weekprofile_sendDevProfile($device,$found,$me);
       if ($ret) {
-        Log3 $me, 1, "$me(Set): $ret" if ($ret);
+        Log3($me, 1, "$me(Set): $ret") if ($ret);
         $err .= $ret . "\n";
       }
     }
@@ -1067,7 +1141,7 @@ sub weekprofile_Set($$@)
       $prfDest = $prf if ( ($prf->{NAME} eq $destName) && ($prf->{TOPIC} eq $destTopic) );
     }
     return "Error unknown profile $srcName" unless($prfSrc);
-    Log3 $me, 4, "$me(Set): override profile $destName" if ($prfDest);
+    Log3($me, 4, "$me(Set): override profile $destName") if ($prfDest);
     
     if ($prfDest){
         $prfDest->{DATA} = $prfSrc->{DATA};
@@ -1101,7 +1175,7 @@ sub weekprofile_Set($$@)
       $prfDest = $prf if ( ($prf->{NAME} eq $destName) && ($prf->{TOPIC} eq $destTopic) );
     }
     return "Error unknown profile $srcName" unless($prfSrc);
-    Log3 $me, 4, "$me(Set): override profile $destName" if ($prfDest);
+    Log3($me, 4, "$me(Set): override profile $destName") if ($prfDest);
     
     if ($prfDest){
       $prfDest->{DATA} = undef;
@@ -1152,16 +1226,16 @@ sub weekprofile_Set($$@)
       my $prfName = AttrVal($dev->{NAME},"weekprofile",undef);        
       next if (!defined($prfName));
       
-      Log3 $me, 5, "$me(Set): found device $dev->{NAME}";
+      Log3($me, 5, "$me(Set): found device $dev->{NAME}");
       
       my ($prf,$idx)  = weekprofile_findPRF($hash,$prfName,$topic,1);
       next if (!defined($prf));
       
-      Log3 $me, 4, "$me(Set): Send profile $topic:$prfName to $dev->{NAME}";
+      Log3($me, 4, "$me(Set): Send profile $topic:$prfName to $dev->{NAME}");
        
       my $ret = weekprofile_sendDevProfile($dev->{NAME},$prf,$me);
       if ($ret) {
-        Log3 $me, 1, "$me(Set): $ret" if ($ret);
+        Log3($me, 1, "$me(Set): $ret") if ($ret);
         $err .= $ret . "\n";
       }
     }
@@ -1175,7 +1249,7 @@ sub weekprofile_Set($$@)
   if ($cmd eq 'reread_master') {
 	  return "Error no master device assigned" if (!defined($hash->{MASTERDEV}));
 	  my $devName = $hash->{MASTERDEV}->{NAME};
-	  Log3 $me, 4, "$me(Set): reread master profile from $devName";
+	  Log3($me, 4, "$me(Set): reread master profile from $devName");
       my $prfDev = weekprofile_readDevProfile($hash->{MASTERDEV}->{NAME},$hash->{MASTERDEV}->{TYPE}, $me);
       if(defined($prfDev)) {
         $hash->{PROFILES}[0]->{DATA} = $prfDev;
@@ -1198,7 +1272,7 @@ sub weekprofile_Set($$@)
     my $device = $params[0];
     my $type = weekprofile_getDeviceType($me, $device);
     if (!defined($type)) {
-      Log3 $me, 2, "$me(Set): device $device not supported or defined";
+      Log3($me, 2, "$me(Set): device $device not supported or defined");
       return "Error device $device not supported or defined";
     }
     my ($topic, $name) = ('default', $device);
@@ -1213,11 +1287,11 @@ sub weekprofile_Set($$@)
     if(defined($devPrf)) {
       $prf->{DATA} = $devPrf;
     } else {
-      Log3 $me, 2, "device $device has no week profile";
+      Log3($me, 2, "device $device has no week profile");
       return "Error device $device has no week profile";  
     }
    
-    Log3 $me, 3, "profile $topic:$name from $device imported";
+    Log3($me, 3, "profile $topic:$name from $device imported");
     push @{$hash->{PROFILES}} , $prf;     
     weekprofile_updateReadings($hash);
     return undef;
@@ -1250,12 +1324,13 @@ sub weekprofile_Notify($$)
       next if(!defined($s));
       my ($what,$who) = split(' ',$s);
 
-      Log3 $me, 5, "$me(Notify): $devName, $what";
+      Log3($me, 5, "$me(Notify): $devName, $what");
            
       if ($what =~ m/^INITIALIZED$/ || $what =~ m/REREADCFG/) {
         delete $own->{PROFILES};
         weekprofile_refreshSendDevList($own);
         weekprofile_assignDev($own);
+        weekprofile_createTempMap($own);
         weekprofile_readProfilesFromFile($own);
         weekprofile_updateReadings($own);
       }
@@ -1278,7 +1353,7 @@ sub weekprofile_Notify($$)
       next if(!defined($s));
       my ($what,$who) = split(' ',$s);
   
-      Log3 $me, 5, "$me(Notify): $devName, $what";
+      Log3($me, 5, "$me(Notify): $devName, $what");
       
       if ($own->{MASTERDEV}->{NAME} eq 'MAX') {
         $readprf =1 if ($what=~m/weekprofile/); #reading weekprofile
@@ -1291,7 +1366,7 @@ sub weekprofile_Notify($$)
     }
     
     if ($readprf) {
-      Log3 $me, 4, "$me(Notify): reread master profile from $devName";
+      Log3($me, 4, "$me(Notify): reread master profile from $devName");
       my $prfDev = weekprofile_readDevProfile($own->{MASTERDEV}->{NAME},$own->{MASTERDEV}->{TYPE}, $me);
       if(defined($prfDev)) {
         $own->{PROFILES}[0]->{DATA} = $prfDev;
@@ -1306,32 +1381,56 @@ sub weekprofile_Attr($$$)
 {
   my ($cmd, $me, $attrName, $attrVal) = @_;
   
-  my $hash = $defs{$me};
+  my $hash = $defs{$me};  
   
   return if (!defined($attrVal));
   
-  Log3 $me, 5, "$me(weekprofile_Attr): $cmd, $attrName, $attrVal";
+  Log3($me, 5, "$me(weekprofile_Attr): $cmd, $attrName, $attrVal");
     
   $attr{$me}{$attrName} = $attrVal;
   weekprofile_writeProfilesToFile($hash) if ($attrName eq 'configFile');
   
-  if ($attrName eq 'tempON') {	  
-	  my $tempOFF = myAttrVal($me, "tempOFF", $attrVal);
-	  if ($tempOFF > $attrVal) {
-		  Log3 $me, 2, "$me(weekprofile_Attr): warning: tempON must be bigger than tempOFF";
-		 
-	  }
+  if ($attrName eq 'tempON'|| $attrName eq 'tempOFF') {
+      return "$attrName is deprecated and will be removed in a next version. Please use tempMap and\\or widgetTempRange";
   }
   
-  if ($attrName eq 'tempOFF') {
-	  my $tempON = myAttrVal($me, "tempON", $attrVal);
-	  if ($tempON < $attrVal) {
-		  Log3 $me, 2, "$me(weekprofile_Attr): warning: tempOFF must be smaller than tempON";
-	  }
+  if ($attrName eq 'tempMap') {
+      weekprofile_createTempMap($hash, $attrVal);
   }
-  
   return undef;
+}
+############################################## 
+sub weekprofile_createTempMap($;$) {
+    my ($hash, $attrMap) = @_;
+    my $me = $hash->{NAME};
+    
+    my $tempOn = AttrVal($me,"tempON", undef);
+    if (defined($tempOn)) {
+        $hash->{TEMPMAP}->{'on'} = tempValue($tempOn);
+        Log3($me, 2, "$me(weekprofile_createTempMap): tempON is deprecated, please remove it");
+    }
   
+    my $tempOff = AttrVal($me,"tempOFF", undef);
+    if (defined($tempOn)) {
+        $hash->{TEMPMAP}->{'off'} = tempValue($tempOff);
+        Log3($me, 2, "$me(weekprofile_createTempMap): tempOFF is deprecated, please remove it");
+    }
+    
+    my $tempMap = AttrVal($me,"tempMap", $attrMap);
+    return if (!defined($tempMap));
+    
+    Log3($me, 2, "$me(weekprofile_createTempMap): create map from $tempMap");
+    $tempMap .= ',';
+    
+    my @data = split(',',$tempMap);
+    foreach (@data) {
+        my @pair = split(':',$_);
+        if(@pair<2){
+          Log3($me, 1, "$me(weekprofile_Attr): incorrect data $_");
+          next;
+        }
+        $hash->{TEMPMAP}->{$pair[0]} = tempValue($pair[1]);
+    }
 }
 ############################################## 
 sub weekprofile_writeProfilesToFile(@)
@@ -1340,7 +1439,7 @@ sub weekprofile_writeProfilesToFile(@)
   my $me = $hash->{NAME};
   
   if (!defined($hash->{PROFILES})) {
-	  Log3 $me, 4, "$me(writeProfileToFile): no pofiles to save";
+	  Log3($me, 4, "$me(writeProfileToFile): no profiles to save");
 	  return;
   }
   
@@ -1348,25 +1447,102 @@ sub weekprofile_writeProfilesToFile(@)
   my $prfCnt = scalar(@{$hash->{PROFILES}});
   return if ($prfCnt <= $start);
 
-  my $filename = "./log/weekprofile-$me.cfg";
-  $filename = AttrVal($me,"configFile",$filename);
-
-  my $ret = open(my $fh, '>', $filename);
-  if (!$ret){
-    Log3 $me, 1, "$me(writeProfileToFile): Could not open file '$filename' $!";
-    return;
-  }
-  
-  print $fh "__version__=".$CONFIG_VERSION."\n";  
-  
-  Log3 $me, 5, "$me(writeProfileToFile): write profiles to $filename";
+  my @content;
+  my $idstring = "__version__=$CONFIG_VERSION";
+  push (@content, $idstring);
   my $json = JSON->new->allow_nonref;
   for (my $i = $start; $i < $prfCnt; $i++) {
-    print $fh "entry=".$json->encode($hash->{PROFILES}[$i])."\n";
-  }  
-  close $fh;
-  DoTrigger($me,"PROFILES_SAVED",1);
-  weekprofile_updateReadings($hash);
+    push (@content, "entry=".$json->encode($hash->{PROFILES}[$i]));
+  }
+  
+  my $dbused = configDBUsed();
+  my $filename = weekprofile_getDataFile($hash);
+  Log3($me, 5, "$me(writeProfileToFile): write profiles to $filename [DB: $dbused]");
+  
+  my $ret = FileWrite($filename,@content);
+  if ($ret){
+    Log3($me, 1, "$me(writeProfileToFile): write profiles to $filename [DB: $dbused] failed $ret");
+  } else {
+    DoTrigger($me,"PROFILES_SAVED",1);
+    weekprofile_updateReadings($hash);
+  }
+}
+##############################################
+sub weekprofile_getDataFile(@)
+{  
+  my ($hash) = @_;
+  my $me = $hash->{NAME};
+  my $filename = "%L/weekprofile-$me.cfg";
+  $filename = AttrVal($me,"configFile",$filename);
+  my @t = localtime(gettimeofday());
+  $filename = ResolveDateWildcards($filename,@t);
+  # compatibility to old weekprofile versions
+  # if no global logdir is set - use log
+  $filename =~s/%L/.\/log/g;
+  $hash->{CONFIGFILE} = $filename; # for configDB migration
+  return $filename;
+}
+############################################## 
+sub weekprofile_replaceKeywords(@)
+{
+  my ($hash, $data, $direction) = @_;
+  my $me = $hash->{NAME};
+  
+  return undef if (!defined($data));
+  
+  $direction = -1 if ($direction=~m/toKey/i);
+  $direction =  1 if ($direction=~m/toValue/i);
+  
+  Log3($me, 5, "$me(weekprofile_replaceKeywords): replacing keywords in $data");
+  foreach my $key (keys %{$hash->{TEMPMAP}}){
+    my $value = $hash->{TEMPMAP}->{$key};
+    #Log3($me, 5, "$me(weekprofile_replaceKeywords): $key $value");
+    $direction == 1 ? $data =~s/"$key"/"$value"/g : $data =~s/"$value"/"$key"/g;
+  }
+  Log3($me, 5, "$me(weekprofile_replaceKeywords): replaced result: $data");  
+  return $data;
+}
+##############################################
+sub weekprofile_createTempList($) {
+  my ($hash) = @_;
+  my $me = $hash->{NAME};
+  
+  my $min=5;
+  my $max=30;
+  
+  my @values = ();
+  my $defMin = 5;
+  my $defMax = 30;
+  my $defStep = 0.5;
+  
+  foreach my $key (keys %{$hash->{TEMPMAP}}){
+    my $value = $hash->{TEMPMAP}->{$key};
+    push @values, $value;
+  }
+  
+  if (scalar(@values)>0) {
+    require List::Util;
+    $defMin = List::Util::min(@values);
+    $defMax = List::Util::max(@values);
+  }
+  my $attrRange = AttrVal($me, "widgetTempRange", "$defMin:$defMax:$defStep");
+  my @rangV = split(':',$attrRange);
+  Log3($me, 5, "$me(weekprofile_createTempList): range $attrRange, @rangV");  
+  
+  if (scalar(@rangV) >= 2) {
+    $defMin = $rangV[0];
+    $defMax = $rangV[1];
+  }
+  if (scalar(@rangV) == 3) {
+    $defStep = $rangV[2];
+  }
+  my @tempList = ();
+  for (my $temp = $defMin; $temp <= $defMax; $temp+=$defStep){
+    push @tempList, "\"".tempValue($temp)."\"";
+  }
+  my $strList = weekprofile_replaceKeywords($hash, join(',', @tempList), 'toKey');
+  $strList =~s/\"//g;
+  return $strList;
 }
 ############################################## 
 sub weekprofile_readProfilesFromFile(@)
@@ -1376,46 +1552,48 @@ sub weekprofile_readProfilesFromFile(@)
   
   my $useTopics = AttrVal($me,"useTopics",0);
 
-  my $filename = "./log/weekprofile-$me.cfg";
-  $filename = AttrVal($me,"configFile",$filename);
+  my $filename = weekprofile_getDataFile($hash);
+  Log3($me, 5, "$me(readProfilesFromFile): read profiles from $filename");
   
-  unless (-e $filename) {
-     Log3 $me, 5, "$me(readProfilesFromFile): file do not exist '$filename'";
-     return;
-  }
-  
-  #my $ret = open(my $fh, '<:encoding(UTF-8)', $filename);
-  my $ret = open(my $fh, '<', $filename);
-  if (!$ret){
-    Log3 $me, 1, "$me(readProfilesFromFile): Could not open file '$filename' $!";
+  my ($ret, @content) = FileRead($filename);
+  if ($ret) {
+    if (configDBUsed()){
+      Log3($me, 1, "$me(readProfilesFromFile): please import your config file $filename into configDB!");
+    } else {
+      if ($ret =~ m/.*Can't open.*/) {
+        defined($hash->{MASTERDEV}) ? Log3($me, 4, "$me(readProfilesFromFile): $ret") : Log3($me, 3, "$me(readProfilesFromFile): $ret - save profil(s) at least one time");
+      } else {
+        Log3($me, 1, "$me(readProfilesFromFile): $ret");
+      }
+    }
     return;
   }
-  
-  Log3 $me, 5, "$me(readProfilesFromFile): read profiles from $filename";
-  
+
   my $json = JSON->new->allow_nonref;  
   my $rowCnt = 0;
   my $version = undef;
-  while (my $row = <$fh>) {
+  foreach (@content) {
+    my $row = $_;
     chomp $row;    
-    Log3 $me, 5, "$me(readProfilesFromFile): data row $row";
+    Log3($me, 5, "$me(readProfilesFromFile): data row $row");
     my @data = split('=',$row);
     if(@data<2){
-      Log3 $me, 1, "$me(readProfilesFromFile): incorrect data row";
+      Log3($me, 1, "$me(readProfilesFromFile): incorrect data row");
       next;
     }
     
     if ($rowCnt == 0 && $data[0]=~/__version__/) {
       $version=$data[1] * 1;
-      Log3 $me, 5, "$me(readProfilesFromFile): detect version $version";
+      Log3($me, 5, "$me(readProfilesFromFile): detect version $version");
       next;
     }
     
     if (!$version || $version < 1.1) {
       my $prfData=undef;
-      eval { $prfData = $json->decode($data[1]); };
+      my $strData = weekprofile_replaceKeywords($hash,$data[1],'toValue');
+      eval { $prfData = $json->decode($strData); };
       if (!defined($prfData)) {
-        Log3 $me, 1, "$me(readProfilesFromFile): Error parsing profile data $data[1]";
+        Log3($me, 1, "$me(readProfilesFromFile): Error parsing profile data $data[1]");
         next;
       };
           
@@ -1433,9 +1611,10 @@ sub weekprofile_readProfilesFromFile(@)
     } #----------------------------------------------------- 1.1
     elsif ($version = 1.1) {
       my $prfNew=undef;
-      eval { $prfNew = $json->decode($data[1]); };
+      my $strData = weekprofile_replaceKeywords($hash,$data[1],'toValue');
+      eval { $prfNew = $json->decode($strData); };
       if (!defined($prfNew)) {
-        Log3 $me, 1, "$me(readProfilesFromFile): Error parsing profile data $data[1]";
+        Log3($me, 1, "$me(readProfilesFromFile): Error parsing profile data $data[1]");
         next;
       };
       
@@ -1448,12 +1627,10 @@ sub weekprofile_readProfilesFromFile(@)
       }
       $rowCnt++;
     } else {
-      Log3 $me, 1, "$me(readProfilesFromFile): Error unknown version $version";
-      close $fh;
+      Log3($me, 1, "$me(readProfilesFromFile): Error unknown version $version");
       return;
     }
-  }  
-  close $fh;
+  }
 }
 
 ############################################## 
@@ -1471,8 +1648,6 @@ sub weekprofile_SummaryFn()
   my $editNewpage = AttrVal($d, "widgetEditOnNewPage", 0);
   my $useTopics = AttrVal($d, "useTopics", 0);
   my $editDaysInRow = AttrVal($d, "widgetEditDaysInRow", undef);
-  my $tempON = AttrVal($d, "tempON", undef);
-  my $tempOFF = AttrVal($d, "tempOFF", undef);
   
   my $editIcon = FW_iconName($iconName) ? FW_makeImage($iconName,$iconName,"icon") : "";
   $editIcon = "<a name=\"$d.edit\" onclick=\"weekprofile_DoEditWeek('$d','$editNewpage')\" href=\"javascript:void(0)\">$editIcon</a>";
@@ -1486,8 +1661,6 @@ sub weekprofile_SummaryFn()
   $args .= ",USETOPICS:$useTopics";
   $args .= ",MASTERDEV:$masterDev"    if (defined($masterDev));
   $args .= ",DAYINROW:$editDaysInRow" if (defined($editDaysInRow));
-  $args .= ",TEMP_ON:$tempON"         if (defined($tempON));
-  $args .= ",TEMP_OFF:$tempOFF"       if (defined($tempOFF));
   
   my $curr = "";
   if (@{$hash->{PROFILES}} > 0)
@@ -1528,7 +1701,7 @@ sub weekprofile_editOnNewpage(@)
   my $editDaysInRow = AttrVal($device, "widgetEditDaysInRow", undef);
   $editDaysInRow = $daysInRow if (defined($daysInRow));
   
-  my $args = "weekprofile,MODE:EDIT,JMPBACK:1";  
+  my $args = "weekprofile,MODE:EDIT,JMPBACK:1";
   $args .= ",DAYINROW:$editDaysInRow" if (defined($editDaysInRow));
   
   my $html;
@@ -1590,27 +1763,38 @@ sub weekprofile_getEditLNK_MasterDev($$)
 }
 1;
 
+__END__
+
 =pod
+=encoding utf8
 =item summary    administration of weekprofiles
 =item summary_DE Verwaltung von Wochenprofilen
 
 =item helper
 =begin html
 
-<a name="weekprofile"></a>
+<a id="weekprofile"></a>
 <h3>weekprofile</h3>
 <ul>
   With this module you can manage and edit different weekprofiles. You can send the profiles to different devices.<br>
   Currently the following devices will by supported:<br>
   <li>MAX</li>
   <li>other weekprofile modules</li>
-  <li>Homatic channel _Clima or _Climate</li>
+  <li>Homematic via HM_CUL and channel _Clima or _Climate</li>
+  <li>Homematic via HMCCUDEV, HMCCUCHN)</li>
+  <br>
+  Additionally, also the following module types can be used as logical intermediates<br> 
+  <li>WeekdayTimer</li>
+  <li>MQTT2_DEVICE</li>
   
+  <br>
   In the normal case the module is assoziated with a master device.
   So a profile 'master' will be created automatically. This profile corrensponds to the current active
   profile on the master device.
   You can also use this module without a master device. In this case a default profile will be created.
-  <br>
+  <br><br>
+  Note: WeekdayTimer and MQTT2_DEVICE TYPE devices can not be used as 'master'.
+  <br><br>
   An other use case is the usage of categories 'Topics'.
   To enable the feature the attribute 'useTopics' have to be set.
   Topics are e.q. winter, summer, holidays, party, and so on.
@@ -1619,6 +1803,10 @@ sub weekprofile_getEditLNK_MasterDev($$)
   With 'restore_topic' the defined profile in the attribute will be transfered to the thermostat.
   So it is possible to change the topic easily and all thermostats will be updated with the correndponding profile.
   <br><br>
+  <b>Hint:</b> 
+  weekprofile supports configdb and configdb migrate since svn: 21314.<br>
+  You have to import the profile\config file into configdb manually if you update from an earlier version.
+  <br><br>
   <b>Attention:</b> 
   To transfer a profile to a device it needs a lot of Credits. 
   This is not taken into account from this module. So it could be happend that the profile in the module 
@@ -1626,13 +1814,14 @@ sub weekprofile_getEditLNK_MasterDev($$)
   <br>
   If the maste device is Homatic HM-TC-IT-WM-W-EU then only the first profile (R_P1_...) will be used!
   <br>
-  <b>For this module libjson-perl have to be installed</b>
+  <b>For this module <i>libjson-perl</i> have to be installed</b>
   <br><br>
+  <a id="weekprofile-events"></a>
   <b>Events:</b><br>
   Currently the following event will be created:<br>
   <li>PROFILE_TRANSFERED: if a profile or a part of a profile (changes) is send to a device</li>
   <li>PROFILES_SAVED: the profile are stored in the config file (also if there are no changes)</li>
-  <a name="weekprofiledefine"></a>
+  <a id="weekprofile-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; weekprofile [master device]</code><br>
@@ -1647,66 +1836,79 @@ sub weekprofile_getEditLNK_MasterDev($$)
     Without a master device a 'default' profile will be created
   </ul>
   
-  <a name="weekprofileset"></a>
+  <a id="weekprofile-set"></a>
   <b>Set</b>
   <ul>
+    <a id="weekprofile-set-profile_data"></a>
     <li>profile_data<br>
        <code>set &lt;name&gt; profile_data &lt;profilename&gt; &lt;json data&gt; </code><br>
        The profile 'profilename' will be changed. The data have to be in json format.
     </li>
+    <a id="weekprofile-set-send_to_device"></a>
     <li>send_to_device<br>
       <code>set &lt;name&gt; send_to_device &lt;profilename&gt; [devices] </code><br>
       The profile 'profilename' will be transfered to one or more the devices. Without the parameter device the profile 
       will be transferd to the master device. 'devices' is a comma seperated list of device names
     </li>
+    <a id="weekprofile-set-copy_profile"></a>
     <li>copy_profile<br>
       <code>set &lt;name&gt; copy_profile &lt;source&gt; &lt;destination&gt; </code><br>
       Copy from source to destination. The destination will be overwritten
     </li>
+    <a id="weekprofile-set-remove_profile"></a>
     <li>remove_profile<br>
       <code>set &lt;name&gt; remove_profile &lt;profilename&gt; </code><br>
       Delete profile 'profilename'.
     </li>
+    <a id="weekprofile-set-reference_profile"></a>
     <li>reference_profile<br>
       <code>set &lt;name&gt; reference_profile &lt;source&gt; &lt;destination&gt; </code><br>
       Create a reference from destination to source. The destination will be overwritten if it exits.
     </li>
+    <a id="weekprofile-set-restore_topic"></a>
     <li>restore_topic<br>
       <code>set &lt;name&gt; restore_topic &lt;topic&gt;</code><br>
       All weekprofiles from the topic will be transfered to the correcponding devices.
       Therefore a user attribute 'weekprofile' with the weekprofile name <b>without the topic name</b> have to exist in the device.
     </li>
+    <a id="weekprofile-set-reread_master"></a>
     <li>reread_master<br>
-		Refresh (reread) the master profile from the master device.
+      Refresh (reread) the master profile from the master device.
     </li>
+    <a id="weekprofile-set-import_profile"></a>
     <li>import_profile<br>
     <code>set &lt;name&gt; import_profile &lt;device&gt; &lt;[profilename]&gt;</code><br>
-		Importing a profile from a supported device 
+        Importing a profile from a supported device 
     </li>
   </ul>
   
-  <a name="weekprofileget"></a>
+  <a id="weekprofile-get"></a>
   <b>Get</b>
   <ul>
+    <a id="weekprofile-get-profile_data"></a>
     <li>profile_data<br>
        <code>get &lt;name&gt; profile_data &lt;profilename&gt; </code><br>
        Get the profile data from 'profilename' in json-Format
     </li>
+    <a id="weekprofile-get-profile_names"></a>
     <li>profile_names<br>
       <code>set &lt;name&gt; profile_names [topicname]</code><br>
       Get a comma seperated list of weekprofile profile names from the topic 'topicname'
       If topicname is not set, 'default' will be used
       If topicname is '*', all weekprofile profile names are returned.
     </li>
+    <a id="weekprofile-get-profile_references"></a>
     <li>profile_references [name]<br>
       If name is '*', a comma seperated list of all references in the following syntax
       <code>ref_topic:ref_profile>dest_topic:dest_profile</code>
       are returned
       If name is 'topicname:profilename', '0' or the reference name is returned.
     </li>
+    <a id="weekprofile-get-topic_names"></a>
     <li>topic_names<br>
      Return a comma seperated list of topic names.
     </li>
+    <a id="weekprofile-get-associations"></a>
     <li>associations [ReturnType (0|1)]<br>
     Returns a list of supported devices with the associated profile.<br>
     ReturnType 0: HTML table</br>
@@ -1714,7 +1916,7 @@ sub weekprofile_getEditLNK_MasterDev($$)
     </li>
   </ul>
   
-  <a name="weekprofilereadings"></a>
+  <a id="weekprofile-readings"></a>
   <p><b>Readings</b></p>
   <ul>
     <li>active_topic<br>
@@ -1728,73 +1930,112 @@ sub weekprofile_getEditLNK_MasterDev($$)
     </li>
   </ul>
   
-  <a name="weekprofileattr"></a>
+  <a id="weekprofile-attr"></a>
   <b>Attributes</b>
   <ul>
+    <a id="weekprofile-attr-widgetTranslations"></a>
     <li>widgetTranslations<br>
     Comma seperated list of texts translations <german>:<translation>
     <code>attr name widgetTranslations Abbrechen:Cancel,Speichern:Save</code> 
     </li>
+    <a id="weekprofile-attr-widgetWeekdays"></a>
     <li>widgetWeekdays<br>
       Comma seperated list of week days starting at Monday
       <code>attr name widgetWeekdays Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday</code>
     </li>
+    <a id="weekprofile-attr-widgetEditOnNewPage"></a>
     <li>widgetEditOnNewPage<br>
       Editing the profile on a new html page if it is set to '1'
     </li>
+    <a id="weekprofile-attr-widgetEditDaysInRow"></a>
     <li>widgetEditDaysInRow<br>
     Count of visible days in on row during Edit. Default 2.<br>
     </li>
+    <a id="weekprofile-attr-widgetTempRange"></a>
+    <li>widgetTempRange<br>
+    Set the temperature range of the dropdown list in the FHEM widget
+    Syntax: min:max:step e.g. 5:30:0.5
+    </li>
+    <a id="weekprofile-attr-tempMap"></a>
+    <li>tempMap<br>
+    Temperature key value pair
+    Syntax: <key_1>:<value 1>,<key_2>:<value 2> e.g. off:5.0,on:30.0
+    </li>
+    <a id="weekprofile-attr-tempON"></a>
+    <li>tempON<br>
+    deprecated - please use tempMap
+    </li>
+    <a id="weekprofile-attr-tempOFF"></a>
+    <li>tempOFF<br>
+    deprecated - please use tempMap
+    </li>
+    <a id="weekprofile-attr-sendKeywordsToDevices"></a>
+    <li>sendKeywordsToDevices<br>
+    Send temperatur keywords instead of temparture values to device
+    Default: 0
+    </li>
+    <a id="weekprofile-attr-configFile"></a>
     <li>configFile<br>
       Path and filename of the configuration file where the profiles will be stored
       Default: ./log/weekprofile-<name>.cfg
     </li>
+    <a id="weekprofile-attr-icon"></a>
     <li>icon<br>
       icon for edit<br>
       Default: edit_settings
     </li>
+    <a id="weekprofile-attr-useTopics"></a>
     <li>useTopics<br>
       Enable topics.<br>
       Default: 0
     </li>
-    <li>tempON<br>
-      Temperature for 'on'. e.g. 30
-    </li>
-    <li>tempOFF<br>
-      Temperature for 'off'. e.g. 4
-    </li>
+    <a id="weekprofile-attr-sendDelay"></a>
     <li>sendDelay<br>
     Default: 0
     Delay in seconds between sending profile data the same type of device.
     This is usefull to avoid messages like "queue is full, dropping packet" by HM devices
     </li>
+    <a id="weekprofile-attr-forceCompleteProfile"></a>
     <li>forceCompleteProfile<br>
     Default: 0
     Force to send the complete profile to the device instead of only the changes.
     Possibility to resend a complete week profile
     </li>
+    <a id="weekprofile-attr-weekprofile"></a>
+    <li>weekprofile<br>    
+    This attribute can be a userattr of supported modules of weekprofile to receive a specific profile with the
+    defined name at the <i>restore_topic</i> command. See topics for further information    
+    </li>
+    
   </ul>
-  
 </ul>
 =end html
 
 =begin html_DE
 
-<a name="weekprofile"></a>
+<a id="weekprofile"></a>
 <h3>weekprofile</h3>
 <ul>
-  Beschreibung im Wiki: http://www.fhemwiki.de/wiki/Weekprofile
+  Beschreibung im Wiki: http://www.fhemwiki.de/wiki/Weekprofile<br><br> 
   
   Mit dem Modul 'weekprofile' können mehrere Wochenprofile verwaltet und an unterschiedliche Geräte 
   übertragen werden. Aktuell wird folgende Hardware unterstützt:
   <li>alle MAX Thermostate</li>
   <li>andere weekprofile Module</li>
-  <li>Homatic (Kanal _Clima bzw. _Climate)</li>
-  
+  <li>Homematic via CUL_HM (Kanal _Clima bzw. _Climate)</li>
+  <li>Homematic via HMCCUDEV und HMCCUCHN</li>
+  <br>
+  Weiter können die folgenden Modul-Typen als logische Zwischenschicht eingesetzt werden:<br> 
+  <li>WeekdayTimer</li>
+  <li>MQTT2_DEVICE (zusätzlicher Code erforderlich)</li>
+    
+  <br>
   Im Standardfall wird das Modul mit einem Geräte = 'Master-Gerät' assoziiert,
   um das Wochenprofil vom Gerät grafisch bearbeiten zu können und andere Profile auf das Gerät zu übertragen.
   Wird kein 'Master-Gerät' angegeben, wird erstmalig ein Default-Profil angelegt.
-  <br>
+  <br><br>Hinweis: Geräte des Typs WeekdayTimer und MQTT2_DEVICE können nicht als 'Master-Gerät' verwendet werden.
+  <br><br>
+
   Ein weiterer Anwendungsfall ist die Verwendung von Rubriken\Kategorien 'Topics'.
   Hier sollte kein 'Master-Gerät' angegeben werden. Dieses Feature muss erst über das Attribut 'useTopics' aktiviert werden.
   Topics sind z.B. Winter, Sommer, Urlaub, Party, etc.  
@@ -1803,6 +2044,10 @@ sub weekprofile_getEditLNK_MasterDev($$)
   Mittels 'restore_topic' wird dann das angebene Wochenprofil der Topic an das Thermostat übertragen.
   Somit kann man einfach zwischen den Topics wechseln und die Thermostate bekommen das passende Wochenprofil.
   <br><br>
+  <b>Hinweis:</b> 
+  weekprofile unterstützt configdb and configdb migrate seit SVN-Version: 21314.<br>
+  Wenn von einer früheren Version geupdatet wird, muss die Profiel-\Konfigurationsdatei manuell in configDB importiert werden.
+  <br><br>
   <b>Achtung:</b> Das Übertragen von Wochenprofilen erfordet eine Menge an Credits. 
   Dies wird vom Modul nicht berücksichtigt. So kann es sein, dass nach dem 
   Setzen\Aktualisieren eines Profils das Profil im Modul nicht mit dem Profil im Gerät 
@@ -1810,13 +2055,14 @@ sub weekprofile_getEditLNK_MasterDev($$)
   <br>
   Beim Homatic HM-TC-IT-WM-W-EU wird nur das 1. Profil (R_P1_...) genommen!
   <br>
-  <b>Für das Module wird libjson-perl benötigt</b>
+  <b>Für das Modul wird <i>libjson-perl</i> benötigt</b>
   <br><br>
+  <a id="weekprofile-events"></a>
   <b>Events:</b><br>
   Aktuell werden folgende Events erzeugt:<br>
   <li>PROFILE_TRANSFERED: wenn ein Profil oder Teile davon zu einem Gerät gesended wurden</li>
   <li>PROFILES_SAVED: wenn Profile in die Konfigurationsdatei gespeichert wurden (auch wenn es keine Änderung gab!)</li>
-  <a name="weekprofiledefine"></a>
+  <a id="weekprofile-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; weekprofile [master device]</code><br>
@@ -1831,56 +2077,67 @@ sub weekprofile_getEditLNK_MasterDev($$)
     Wird kein 'Master-Geräte' angegeben, wird ein 'default' Profil angelegt.
   </ul>
   
-  <a name="weekprofileset"></a>
+  <a id="weekprofile-set"></a>
   <b>Set</b>
   <ul>
+    <a id="weekprofile-set-profile_data"></a>
     <li>profile_data<br>
        <code>set &lt;name&gt; profile_data &lt;profilname&gt; &lt;json data&gt; </code><br>
        Es wird das Profil 'profilname' geändert. Die Profildaten müssen im json-Format übergeben werden.
     </li>
+    <a id="weekprofile-set-send_to_device"></a>
     <li>send_to_device<br>
       <code>set &lt;name&gt; send_to_device &lt;profilname&gt; [devices] </code><br>
       Das Profil wird an ein oder mehrere Geräte übertragen. Wird kein Gerät angegeben, wird das 'Master-Gerät' verwendet.
       'Devices' ist eine kommagetrennte Auflistung von Geräten
     </li>
+    <a id="weekprofile-set-copy_profile"></a>
     <li>copy_profile<br>
       <code>set &lt;name&gt; copy_profile &lt;quelle&gt; &lt;ziel&gt; </code><br>
       Kopiert das Profil 'quelle' auf 'ziel'. 'ziel' wird überschrieben oder neu angelegt.
     </li>
+    <a id="weekprofile-set-remove_profile"></a>
     <li>remove_profile<br>
       <code>set &lt;name&gt; remove_profile &lt;profilname&gt; </code><br>
       Das Profil 'profilname' wird gelöscht.
     </li>
+    <a id="weekprofile-set-reference_profile"></a>
     <li>reference_profile<br>
       <code>set &lt;name&gt; reference_profile &lt;quelle&gt; &lt;ziel&gt; </code><br>
       Referenziert das Profil 'ziel'auf 'quelle'. 'ziel' wird überschrieben oder neu angelegt.
     </li>
+    <a id="weekprofile-set-restore_topic"></a>
     <li>restore_topic<br>
       <code>set &lt;name&gt; restore_topic &lt;topic&gt;</code><br>
       Alle Wochenpläne in der Topic werden zu den entsprechenden Geräten übertragen.
       Dazu muss im Gerät ein Userattribut 'weekprofile' mit dem Namen des Wochenplans <b>ohne</b> Topic gesetzt sein.
     </li>
+    <a id="weekprofile-set-reread_master"></a>
     <li>reread_master<br>
-		Aktualisiert das master profile indem das 'Master-Geräte' neu ausgelesen wird.
+    Aktualisiert das master profile indem das 'Master-Geräte' neu ausgelesen wird.
     </li>
+    <a id="weekprofile-set-import_profile"></a>
     <li>import_profile<br>
     <code>set &lt;name&gt; import_profile &lt;device&gt; &lt;[profilename]&gt;</code><br>
-		Profil von einem Gerät importieren. 
+    Profil von einem Gerät importieren. 
     </li>
   </ul>
   
-  <a name="weekprofileget"></a>
+  <a id="weekprofile-get"></a>
   <b>Get</b>
   <ul>
+    <a id="weekprofile-get-profile_data"></a>
     <li>profile_data<br>
        <code>get &lt;name&gt; profile_data &lt;profilname&gt; </code><br>
        Liefert die Profildaten von 'profilname' im json-Format
     </li>
+    <a id="weekprofile-get-profile_names"></a>
     <li>profile_names<br>
       <code>set &lt;name&gt; profile_names [topic_name]</code><br>
       Liefert alle Profilnamen getrennt durch ',' einer Topic 'topic_name'
       Ist 'topic_name' gleich '*' werden alle Profilnamen zurück gegeben.
     </li>
+    <a id="weekprofile-get-profile_references"></a>
     <li>profile_references [name]<br>
       Liefert eine Liste von Referenzen der Form <br>
       <code>
@@ -1888,6 +2145,7 @@ sub weekprofile_getEditLNK_MasterDev($$)
       </code>
       Ist name 'topicname:profilename' wird  '0' der Name der Referenz zurück gegeben.
     </li>
+    <a id="weekprofile-get-associations"></a>
     <li>associations [Rückgabetyp (0|1)]<br>
       Gibt eine Liste der unterstützten Geräte mit dem verbundenen\zugeordnetem Profilnamen zurück.<br>
       Rückgabetyp 0: HTML Tabelle</br>
@@ -1895,7 +2153,7 @@ sub weekprofile_getEditLNK_MasterDev($$)
     </li>
   </ul>
   
-  <a name="weekprofilereadings"></a>
+  <a id="weekprofile-readings"></a>
   <p><b>Readings</b></p>
   <ul>
     <li>active_topic<br>
@@ -1909,53 +2167,84 @@ sub weekprofile_getEditLNK_MasterDev($$)
     </li>
   </ul>
   
-  <a name="weekprofileattr"></a>
+  <a id="weekprofile-attr"></a>
   <b>Attribute</b>
   <ul>
+    <a id="weekprofile-attr-widgetTranslations"></a>
     <li>widgetTranslations<br>
-    Liste von Übersetzungen der Form <german>:<Übersetzung> getrennt durch ',' um Texte im Widget zu übersetzen.
+    Liste von Übersetzungen der Form <german>:<Übersetzung> getrennt durch ',' um Texte im Widget zu Übersetzen.
     <code>attr name widgetTranslations Abbrechen:Abbr,Speichern:Save</code> 
     </li>
+    <a id="weekprofile-attr-widgetWeekdays"></a>
     <li>widgetWeekdays<br>
       Liste von Wochentagen getrennt durch ',' welche im Widget angzeigt werden. 
       Beginnend bei Montag. z.B.
       <code>attr name widgetWeekdays Montag,Dienstag,Mittwoch,Donnerstag,Freitag,Samstag,Sonntag</code>
     </li>
+    <a id="weekprofile-attr-widgetEditDaysInRow"></a>
     <li>widgetEditDaysInRow<br>
     Anzahl in der in einer Reihe dargestellten Tage während der Bearbeitung. Default 2.<br>
     </li>
+    <a id="weekprofile-attr-widgetEditOnNewPage"></a>
     <li>widgetEditOnNewPage<br>
       Wenn gesetzt ('1'), dann wird die Bearbeitung auf einer separaten\neuen Webseite gestartet.
     </li>
-     <li>configFile<br>
+    <a id="weekprofile-attr-widgetTempRange"></a>
+    <li>widgetTempRange<br>
+    Bereich der Temperatur Dropdown-Box im FHEM widget
+    Syntax: min:max:step z.B. 5:30:0.5
+    </li>
+    <a id="weekprofile-attr-tempMap"></a>
+    <li>tempMap<br>
+    Temperatur Schlüssel-Werte-Paare
+    Syntax: <schlüsselwort_1>:<wert_1>,<schlüsselwort_2>:<wert_2><br>
+    z.B. off:5.0,on:30.0
+    </li>
+    <a id="weekprofile-attr-tempOn"></a>
+    <li>tempOn<br>
+    Veraltet - bitte tempMap benutzen
+    </li>
+    <a id="weekprofile-attr-tempOff"></a>
+    <li>tempOff<br>
+    Veraltet - bitte tempMap benutzen
+    </li>
+    <a id="weekprofile-attr-sendKeywordsToDevices"></a>
+    <li>sendKeywordsToDevices<br>
+    Sende Temperatur-Schlüsselwort zum Gerät anstatt der Werte
+    Default: 0
+    </li>
+    <a id="weekprofile-attr-configFile"></a>
+    <li>configFile<br>
       Pfad und Dateiname wo die Profile gespeichert werden sollen.
       Default: ./log/weekprofile-<name>.cfg
     </li>
+    <a id="weekprofile-attr-icon"></a>
     <li>icon<br>
       Änders des Icons zum Bearbeiten
       Default: edit_settings
     </li>
+    <a id="weekprofile-attr-useTopics"></a>
     <li>useTopics<br>
       Verwendung von Topic aktivieren.
     </li>
-    <li>tempON<br>
-      Temperature für 'on'. z.B. 30
-    </li>
-    <li>tempOFF<br>
-      Temperature für 'off'. z.B. 4
-    </li>
+    <a id="weekprofile-attr-sendDelay"></a>
     <li>sendDelay<br>
     Default: 0
     Verzögerungszweit in Sekunden zwischen dem Senden von Profildaten an ein Thermostat gleichen Typs.
     Hilfreich zur Vermeidung von Meldungen wie "queue is full, dropping packet".
     </li>
+    <a id="weekprofile-attr-forceCompleteProfile"></a>
     <li>forceCompleteProfile<br>
     Default: 0
     Ezwingt das Senden eines komplettes Wochenprofiles anstatt der Änderungen
     Es besteht somit die Möglichkeit eines erneuten Senden der Daten an das Thermostats
     </li>
+    <a id="weekprofile-attr-weekprofile"></a>
+    <li>weekprofile<br>
+    Kann ein userattr eines unterstützten Moduls von weekprofile sein, um ein spezifisches Profil mit dem angegeben Namen
+    beim Befehl <i>restore_topic</i> zu empfangen. Siehe auch 'Topics'.    
+    </li>
   </ul>
-  
 </ul>
 =end html_DE
 

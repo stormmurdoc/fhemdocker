@@ -25,7 +25,7 @@
 #
 # Discussed in FHEM Forum: https://forum.fhem.de/index.php/topic,91847.0.html
 #
-# $Id: 70_ZoneMinder.pm 20463 2019-11-06 14:11:20Z delmar $
+# $Id: 70_ZoneMinder.pm 24925 2021-09-06 09:52:53Z delmar $
 #
 ##############################################################################
 
@@ -34,7 +34,6 @@ package main;
 use strict;
 use warnings;
 use HttpUtils;
-use Crypt::MySQL qw(password41);
 use DevIo;
 use Digest::MD5 qw(md5 md5_hex md5_base64);
 
@@ -94,14 +93,40 @@ sub ZoneMinder_Define {
 #  Log3 $name, 3, "ZoneMinder ($name) - Define done ... module=$module, zmHost=$zmHost";
 
   DevIo_CloseDev($hash) if (DevIo_IsOpen($hash));
-  DevIo_OpenDev($hash, 0, undef);
+  DevIo_OpenDev($hash, 0, 'ZoneMinder_Trigger_init', 'ZoneMinder_Trigger_callback');
 
   my $triggerPortState = $hash->{STATE};
-  ZoneMinder_updateState( $hash, $triggerPortState, 'n/a' );
 
-  ZoneMinder_afterInitialized($hash);
+  if (!$init_done) {
+    InternalTimer(gettimeofday()+5, "ZoneMinder_afterInitialized", $hash, 0);
+  }
+  else {
+    ZoneMinder_afterInitialized($hash);
+  }
 
   return undef;
+}
+
+sub ZoneMinder_Trigger_init {
+  my ( $hash ) = @_;
+
+  ZoneMinder_updateState( $hash, 'opened', undef );
+
+  return 0; #0 means successful connection
+}
+
+sub ZoneMinder_Trigger_callback {
+  my ( $hash, $error ) = @_;
+  my $name = $hash->{NAME};
+
+  if ( defined ($error) ) {
+    Log3 $name, 0, "ZoneMinder ($name) - Error while connecting to trigger port: $error";
+    ZoneMinder_updateState( $hash, 'error', undef );
+  } else {
+    Log3 $name, 3, "ZoneMinder ($name) - Trigger port connected";
+    ZoneMinder_updateState( $hash, 'opened', undef );
+  }
+
 }
 
 sub ZoneMinder_updateState {
@@ -214,7 +239,7 @@ sub ZoneMinder_Get_API_Login_URL {
     $result = "$zmWebUrl/index.php?username=$username&password=$password&action=login&view=console";
   } elsif ( $apiVersion eq 'post132' ) {
     my $zmApiUrl = ZoneMinder_getZmApiUrl($hash);
-    $result = "$zmApiUrl/host/login.json?user=$username&pass=$password";
+    $result = "$zmApiUrl/host/login.json?user=$username&pass=$password&stateful=1";
   }
 
   return $result;
@@ -695,6 +720,12 @@ sub ZoneMinder_calcAuthHash {
   my ($hash) = @_;
   my $name = $hash->{NAME};
 
+  eval 'use Crypt::MySQL qw(password41)';
+  if($@) {
+    Log3 $name, 0, "ZoneMinder ($name) - ERROR: Crypt::MySQL required for auth-hash support in ZoneMinder 1.30. Please install Crypt::MySQL (or upgrade to ZoneMinder 1.32+)";
+    return $name;
+  }
+
   Log3 $name, 4, "ZoneMinder ($name) - calling calcAuthHash";
 
   my ($sec,$min,$curHour,$dayOfMonth,$curMonth,$curYear,$wday,$yday,$isdst) = localtime();
@@ -807,7 +838,7 @@ sub ZoneMinder_Ready {
 
   ZoneMinder_updateState( $hash, 'disappeared', undef );
 
-  return DevIo_OpenDev($hash, 1, undef ); #if success, $err is undef
+  return DevIo_OpenDev($hash, 1, 'ZoneMinder_Trigger_init', 'ZoneMinder_Trigger_callback' ); #if success, $err is undef
 
 }
 

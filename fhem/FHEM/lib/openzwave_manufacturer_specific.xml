@@ -274,6 +274,9 @@
   <Manufacturer id="025D" name="Avadesign Technology Co."></Manufacturer>
   <Manufacturer id="0155" name="Avadesign Technology Co. Ltd"></Manufacturer>
   <Manufacturer id="0146" name="Axesstel Inc"></Manufacturer>
+  <Manufacturer id="0364" name="Axis">
+    <Product config="Axis/T8341.xml" id="0001" name="AXIS T8341 PIR Motion Sensor" type="0002"/>
+  </Manufacturer>
   <Manufacturer id="0018" name="Balboa Inst."></Manufacturer>
   <Manufacturer id="0236" name="Bandi Comm Tech Inc."></Manufacturer>
   <Manufacturer id="0204" name="Beijing Sino-American Boyi Software Development Co. Ltd"></Manufacturer>
@@ -513,6 +516,9 @@
     <Product config="eurotronic/eur_spiritz.xml" id="0001" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0002" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
     <Product config="eurotronic/eur_spiritz.xml" id="0003" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
+    <Product config="eurotronic/eur_spiritz.xml" id="0004" name="EUR_SPIRITZ Wall Radiator Thermostat" type="0003"/>
+    <Product config="eurotronic/eur_temphumin.xml" id="0001" name="Temperature and Humidity Sensor" type="0004"/>
+    <Product config="eurotronic/eur_airquality.xml" id="0001" name="Air Quality Sensor" type="0005"/>
   </Manufacturer>
   <Manufacturer id="0128" name="Eneco">
     <Product id="0000" name="ED2.0 Meter Adapter" type="0000"/>
@@ -634,7 +640,9 @@
     <Product config="fibaro/fgs212.xml" id="4002" name="FGS212 Switch 3kW" type="0402"/>
     <Product config="fibaro/fgs213.xml" id="1000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="2000" name="FGS213 Switch" type="0403"/>
+    <Product config="fibaro/fgs213.xml" id="3000" name="FGS213 Switch" type="0403"/>
     <Product config="fibaro/fgs213.xml" id="4000" name="FGS213 Switch" type="0403"/>
+    <Product config="fibaro/fgs214.xml" id="4000" name="FGS214 Single Relay Switch" type="0404"/>
     <Product config="fibaro/fgs221.xml" id="0104" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0105" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
     <Product config="fibaro/fgs221.xml" id="0106" name="FGS221 Double Relay Switch 2x1.5kW" type="0200"/>
@@ -649,9 +657,11 @@
     <Product config="fibaro/fgs223.xml" id="2000" name="FGS223 Double Relay" type="0203"/>
     <Product config="fibaro/fgs223.xml" id="3000" name="FGS223 Double Relay" type="0203"/>
     <Product config="fibaro/fgs223.xml" id="4000" name="FGS223 Double Relay" type="0203"/>
+    <Product config="fibaro/fgs224.xml" id="1000" name="FGS224 Double Smart Module" type="0204"/>
     <Product config="fibaro/fgr223.xml" id="1000" name="FGR223 Roller Shutter Controller 3" type="0303"/>
     <Product config="fibaro/fgwpe.xml" id="1000" name="FGWPE/F Wall Plug" type="0600"/>
     <Product config="fibaro/fgwpe.xml" id="1000" name="FGWPE/F Wall Plug" type="0200"/>
+    <Product config="fibaro/fgwoe.xml" id="1000" name="FGWOE/F Walli Outlet" type="1f01"/>
     <Product config="fibaro/fgwpfzw5.xml" id="1001" name="FGWPE/F Wall Plug Gen5" type="0602"/>
     <Product config="fibaro/fgwpfzw5.xml" id="1003" name="FGWPE/F Wall Plug Gen5" type="0602"/>
     <Product config="fibaro/fgms.xml" id="1001" name="FGMS001 Motion Sensor" type="0800"/>
@@ -694,6 +704,8 @@
     <Product config="fibaro/fgwds221.xml" id="1000" name="FGWDS221 Walli Double Switch" type="1B01"/>
     <Product config="fibaro/fgwd111.xml" id="1000" name="FGWD111 Walli Dimmer" type="1C01"/>
     <Product config="fibaro/fgwr111.xml" id="1000" name="FGWR111 Walli Roller Shutter" type="1d01"/>
+    <Product config="fibaro/fgrgbw442.xml" id="1000" name="FGRGBW-442" type="0902"/>
+    <Product config="fibaro/fgrgbw442.xml" id="2000" name="FGRGBW-442" type="0902"/>
   </Manufacturer>
   <Manufacturer id="0295" name="fifthplay nv"></Manufacturer>
   <Manufacturer id="0138" name="First Alert (BRK Brands Inc)">
@@ -843,6 +855,7 @@
     <Product config="heltun/he-zw-therm-fl2.xml" id="0001" name="HE-ZW-THERM-FL2 Heating Thermostat" type="0003"/>
     <Product config="heltun/he-zw-sw-5a-1.xml" id="0003" name="HE-ZW-SW-5A-1 Touch Panel Switch" type="0003"/>
     <Product config="heltun/he-zw-therm-fc1.xml" id="0002" name="HE-ZW-THERM-FC1 Fan Coil Thermostat" type="0003"/>
+    <Product config="heltun/HE-RS01.xml" id="0009" type="0004" name="RS01" />
   </Manufacturer>
   <Manufacturer id="020F" name="Herald Datanetics Limited"></Manufacturer>
   <Manufacturer id="0017" name="HiTech Automation"></Manufacturer>
@@ -1104,7 +1117,6 @@
   <Manufacturer id="015f" name="McoHome Technology Co Ltd">
     <Product id="0001" name="Mini Energy Dimmer" type="0001"/>
     <Product id="0001" name="Mini Energy Switch" type="0002"/>
-	<Product id="5102" name="MH7 Water/Electrical Heating Thermostat" type="0702" forumNr="no-statistics"/>
     <Product config="mcohome/mhp210.xml" id="1302" name="MH-P210 Mini Energy Dimmer" type="210a"/>
     <Product config="mcohome/mhp220.xml" id="1352" name="MH-P220 Micro Dimmer" type="220a"/>
     <Product config="mcohome/mhp220.xml" id="5101" name="MH-P220 Micro Dimmer" type="220a"/>
@@ -1228,7 +1240,7 @@
     <Product config="philio/pan03.xml" id="000f" name="PAN03 Switch Module with meter 3 KW X1" type="0001"/>
     <Product config="philio/pan11.xml" id="0011" name="PAN11 Smart Energy Plug In Switch" type="0001"/>
     <Product config="philio/pan04.xml" id="0012" name="PAN04-1 Double Relay Switch 2x1.5kW with Power Measurement" type="0001"/>
-    <Product id="0013" name="PAN06-1 In Wall Dual Relay(1 Way) Switch Module" type="0001" forumNr="no-statistics"/>
+    <Product config="philio/pan06.xml" id="0013" name="PAN06-1 In Wall Dual Relay(1 Way) Switch Module" type="0001"/>
     <Product config="philio/pan08.xml" id="0015" name="PAN08-1 In Wall Roller Shutter Controller" type="0001"/>
     <Product config="philio/pan16.xml" id="0029" name="PAN16 Smart energy plug in switch" type="0001"/>
     <Product config="philio/psm02.xml" id="0002" name="PSM02-1 Slim Multi-Sensor" type="0002"/>
@@ -1271,6 +1283,7 @@
     <Product config="popp/zweather.xml" id="0400" name="ZWeather" type="0100"/>
     <Product config="popp/123601.xml" id="0001" name="123601 Plug-in Switch" type="1100"/>
     <Product config="popp/123580.xml" id="0002" name="123580 Plug-in Dimmer" type="1100"/>
+    <Product config="popp/701202.xml" id="0014" name="701202 Mold Detector" type="0004"/>
   </Manufacturer>
   <Manufacturer id="0064" name="Popp / Duwi (Reitz-Group.de)">
     <Product config="duwi/zw-edan-300.xml" id="0000" name="ZW EDAN 300 Flush Mounted Dimmer" type="0001"/>
@@ -1477,6 +1490,7 @@
     <Product config="shenzen_neo/ls02ch.xml" id="108b" name="Wall Switch (2 channels)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="008c" name="Wall Switch (1 channel)" type="0003"/>
     <Product config="shenzen_neo/ls01ch.xml" id="108c" name="Wall Switch (1 channel)" type="0003"/>
+    <Product config="shenzen_neo/shutter.xml" id="102c" name="NEO Coolcam Roller Shutter" type="0200"/>
   </Manufacturer>
   <Manufacturer id="032C" name="Shenzhen Saykey Technology"></Manufacturer>
   <Manufacturer id="036C" name="Shenzhen Sen5 Technology"></Manufacturer>
@@ -1521,6 +1535,7 @@
     <Product config="steinel/rs-led-d2.xml" id="1a74" name="RS LED D2" type="0001"/>
     <Product config="steinel/xled-home-2.xml" id="1a73" name="XLED HOME 2" type="0001"/>
     <Product config="steinel/l810-led-ihf.xml" id="1a75" name="L810 LED iHF" type="0001"/>
+    <Product config="steinel/MotionSwitch.xml" id="19fb" name="MotionSwitch LED" type="0002" forumNr="111295"/>
   </Manufacturer>
   <Manufacturer id="0239" name="Stelpro">
     <Product config="stelpro/stzw402.xml" id="0001" name="STZW402+ Electronic Thermostat" type="0001"/>
@@ -1547,6 +1562,11 @@
   <Manufacturer id="0089" name="Team Precision PCL"></Manufacturer>
   <Manufacturer id="0240" name="Technicolor"></Manufacturer>
   <Manufacturer id="000A" name="Techniku"></Manufacturer>
+  <Manufacturer id="0299" name="TechniSat">
+    <Product config="technisat/03009499.xml" id="1a90" name="Single-Switch" type="0002"/>
+    <Product config="technisat/03009496.xml" id="1a93" name="Shutter" type="0005"/>
+    <Product config="technisat/03009497.xml" id="1a92" name="Dimmer" type="0004"/>
+  </Manufacturer>
   <Manufacturer id="012F" name="Tecom"></Manufacturer>
   <Manufacturer id="0012" name="Tell It Online">
     <Product config="icare/zw-66.xml" id="0001" name="Switchkeeper Plug-in Appliance Module" type="0001"/>
@@ -1615,6 +1635,7 @@
   <Manufacturer id="0330" name="Sunricher">
     <Product config="sunricher/srzv9001t4dimeu.xml" id="a10d" name="Touch Panel Wall Controller - ZSC-01D" type="0003"/>
     <Product config="sunricher/srzv9001k8.xml" id="a305" name="Wall Controller - SR-ZV9001" type="0300"/>
+    <Product config="sunricher/zv9101fa.xml" id="d002" name="Dimmer ZV-9101FA" type="0200"/>
     <Product config="sunricher/zv9101.xml" id="d005" name="Dimmer ZV-9101" type="0200"/>
     <Product config="sunricher/srzv9101sachpeu.xml" id="d00c" name="Dimmer ZV9040" type="0200"/>
     <Product config="sunricher/srzv9003t4rgbweu.xml" id="a107" name="Z-Wave Wall Controller - SR-ZV9003T4-RGBW-EU" type="0300"/>
@@ -1810,6 +1831,7 @@
     <Product config="heiman/HS1CG-Z.xml" id="1000" name="Combustible Gas Sensor HS1CG-Z" type="8003"/>
     <Product config="heiman/HS1WL-Z.xml" id="1000" name="Water Leakage Sensor HS1WL-Z" type="8004"/>
     <Product config="heiman/HS1CA-Z.xml" id="1000" name="CO Sensor HS1CA-Z" type="8005"/>
+    <Product config="zipato/ne-nas-ab02z.xml" id="1083" name="Indoor Siren" type="0003"/>
   </Manufacturer>
   <Manufacturer id="0120" name="Zonoff"></Manufacturer>
   <Manufacturer id="027a" name="Zooz">

@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 92_FileLog.pm 20826 2019-12-25 19:06:07Z rudolfkoenig $
+# $Id: 92_FileLog.pm 24967 2021-09-13 16:09:40Z rudolfkoenig $
 package main;
 
 use strict;
@@ -38,6 +38,7 @@ FileLog_Initialize($)
   #$hash->{DeleteFn} = "FileLog_Delete";
   $hash->{NotifyFn} = "FileLog_Log";
   $hash->{AttrFn}   = "FileLog_Attr";
+  $hash->{LogFn}    = "FileLog_DirectLog";
   # logtype is used by the frontend
   no warnings 'qw';
   my @attrList = qw(
@@ -72,12 +73,6 @@ FileLog_Initialize($)
   InternalTimer(time()+0.1, sub() {      # Forum #39792
     map { HandleArchiving($defs{$_},1) } devspec2array("TYPE=FileLog");
     FileLog_dailySwitch($hash);          # Forum #42415
-    map {
-      FileLog_initEMI($defs{$_}, "filelog-event-min-interval", undef,1);
-      FileLog_initEMI($defs{$_}, "addLog", undef, 1);
-      my $mi = $defs{$_}{addLogMinInterval};
-      InternalTimer(time()+$mi, "FileLog_addLog", $defs{$_}, 0) if($mi);
-    } devspec2array("TYPE=FileLog");
   }, $hash, 0);
 }
 
@@ -190,6 +185,7 @@ FileLog_Define($@)
   my @t = localtime;
   my $f = ResolveDateWildcards($a[2], @t);
   if(!$hash->{READONLY}) {
+    restoreDir_mkDir($f=~m,^/,? "":".", $f, 1);
     $fh = new IO::File ">>$f";
     return "Can't open $f: $!" if(!defined($fh));
   }
@@ -200,7 +196,14 @@ FileLog_Define($@)
   $hash->{logfile} = $a[2];
   $hash->{currentlogfile} = $f;
   $hash->{STATE} = "active";
-  InternalTimer(0, sub(){  notifyRegexpChanged($hash, $a[3]); }, $hash);
+
+  InternalTimer(0, sub(){ 
+    notifyRegexpChanged($hash, $a[3]); 
+    FileLog_initEMI($hash, "filelog-event-min-interval", undef,1);
+    FileLog_initEMI($hash, "addLog", undef, 1);
+    my $mi = $hash->{addLogMinInterval};
+    InternalTimer(time()+$mi, "FileLog_addLog", $hash, 0) if($mi);
+  }, $hash);
 
   return undef;
 }
@@ -250,6 +253,25 @@ FileLog_Switch($)
     return 1;
   }
   return 0;
+}
+
+sub
+FileLog_LogTailWork($$$$)
+{
+  my ($log, $ln, $tn, $written) = @_;
+  my $fh = $log->{FH};
+  if($fh) {
+    $fh->flush;
+    # Skip sync, it costs too much HD strain, esp. on SSD
+    # $fh->sync if !($^O eq 'MSWin32'); #not implemented in Windows
+  }
+  my $owr = ReadingsVal($ln, "linesInTheFile", 0);
+  my $eot = AttrVal($ln, "eventOnThreshold", 0);
+  if($eot && ($owr+$written) % $eot == 0) {
+    readingsSingleUpdate($log, "linesInTheFile", $owr+$written, 1);
+  } else {
+    setReadingsVal($log, "linesInTheFile", $owr+$written, $tn);
+  }
 }
 
 #####################################
@@ -322,21 +344,19 @@ FileLog_Log($$)
     }
   }
   return "" if(!$written);
-
-  if($fh) {
-    $fh->flush;
-    # Skip sync, it costs too much HD strain, esp. on SSD
-    # $fh->sync if !($^O eq 'MSWin32'); #not implemented in Windows
-  }
-  my $owr = ReadingsVal($ln, "linesInTheFile", 0);
-  my $eot = AttrVal($ln, "eventOnThreshold", 0);
-  if($eot && ($owr+$written) % $eot == 0) {
-    readingsSingleUpdate($log, "linesInTheFile", $owr+$written, 1);
-  } else {
-    setReadingsVal($log, "linesInTheFile", $owr+$written, $tn);
-  }
-
+  FileLog_LogTailWork($log, $ln, $tn, $written);
   return "";
+}
+
+#####################################
+sub
+FileLog_DirectLog($$)
+{
+  my ($log, $txt) = @_;
+  FileLog_Switch($log);
+  my $fh = $log->{FH};
+  print $fh $txt,"\n";
+  FileLog_LogTailWork($log, $log->{NAME}, TimeNow(), 1);
 }
 
 ###################################
@@ -397,11 +417,12 @@ FileLog_Set($@)
   my ($hash, @a) = @_;
   my $me = $hash->{NAME};
 
-  return undef if( $hash->{REGEXP} eq 'fakelog' );
-
   return "no set argument specified" if(int(@a) < 2);
   my %sets = (reopen=>0, clear=>0, absorb=>1, addRegexpPart=>2, 
               removeRegexpPart=>1);
+  %sets = (clear=>0)                               # 95351
+                if($hash->{REGEXP} eq 'fakelog' || # deprecated
+                   $hash->{REGEXP} eq $me);        # 122373
   
   my $cmd = $a[1];
   if(!defined($sets{$cmd})) {
@@ -418,7 +439,7 @@ FileLog_Set($@)
     if(!FileLog_Switch($hash)) { # No rename, reopen anyway
       my $fh = $hash->{FH};
       my $cn = $hash->{currentlogfile};
-      $fh->close();
+      $fh->close() if($fh);
       if($cmd eq "clear") {
         $fh = new IO::File(">$cn");
         setReadingsVal($hash, "linesInTheFile", 0, TimeNow());
@@ -539,7 +560,8 @@ FileLog_fhemwebFn($$$$)
   }
   $ret .= "</table>";
   return $ret if($pageHash);
-  return $ret if( $defs{$d}{REGEXP} eq 'fakelog' );
+  return $ret if($defs{$d}{REGEXP} eq 'fakelog'); # deprecated
+  return $ret if($defs{$d}{REGEXP} eq $d);
 
   # DETAIL only from here on
   my $hash = $defs{$d};
@@ -817,8 +839,11 @@ FileLog_Get($@)
   }
   Log3 $name, 4, "$name get: Input file $inf, from:$from  to:$to";
 
-  my $ifh = new IO::File $inf if($inf);
+  my $ifh;
+  $ifh = new IO::File $inf if($inf);
   FileLog_seekTo($inf, $ifh, $hash, $from, $reformatFn) if($ifh);
+
+  $to .= "z"; # return the 23:59:59 line too (Forum #118858)
 
   # Return the the plain file data, $outf is ignored
   if(!@a) {
@@ -959,7 +984,7 @@ RESCAN:
 
       }
 
-      next if(!defined($val) || $val !~ m/^-?[.\d]+$/o);
+      next if(!defined($val) || $val !~ m/^-?[.0-9]+(e[-+0-9]+)?$/i);
       if($val < $min[$i]) {
         $min[$i] = $val;
         $mind[$i] = $dte;
@@ -1145,7 +1170,7 @@ FileLog_seekTo($$$$$)
       last;
     }
     if($reformatFn) { no strict; $data = &$reformatFn($data); use strict; }
-    if($data !~ m/^\d\d\d\d-\d\d-\d\d_\d\d:\d\d:\d\d /o) {
+    if($data !~ m/^\d\d\d\d-\d\d-\d\d_\d\d:\d\d:\d\d[ .]/o) {
       $next = seekBackOneLine($fh, $fh->tell);
       next;
     }
@@ -1206,7 +1231,7 @@ FileLog_sampleDataFn($$$$$)
   my $colregs = join(",", sort keys %h);
   my $example = join("<br>", grep /.+/,map { $h{$_} } sort keys %h);
 
-  $colnums = join(",", 3..$colnums);
+  $colnums = join(",", 2..$colnums);
 
   my %tickh;
   FileLog_addTics($conf->{ytics}, \%tickh);
@@ -1742,7 +1767,7 @@ FileLog_regexpFn($$)
         Dieses Attribut enth&auml;lt eine durch Kommata getrennte Liste von
         "devspec:readings:maxInterval" Tripel. readings kann ein regexp sein.
         Falls nach maxInterval (Sekunden) kein passendes Event eingetroffen ist,
-        der letzte Wert wird zum Logfile hinzugefuegt.
+        wird der letzte Wert zum Logfile hinzugefuegt.
         </li><br>
 
     <a name="archivedir"></a>

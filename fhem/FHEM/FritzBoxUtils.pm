@@ -1,5 +1,5 @@
 ##############################################
-# $Id: FritzBoxUtils.pm 16691 2018-05-05 17:11:26Z rudolfkoenig $
+# $Id: FritzBoxUtils.pm 23727 2021-02-12 20:31:37Z rudolfkoenig $
 package main;
 
 use strict;
@@ -24,7 +24,7 @@ FB_doCheckPW($$$)
 {
   my ($host, $user, $pw) = @_;
   my $data = GetFileFromURL(FB_host2URL($host)."login_sid.lua",undef,undef,1);
-  return undef if(!$data);
+  return if(!$data);
 
   my $chl="";
   $chl = $1 if($data =~ /<Challenge>(\w+)<\/Challenge>/i);
@@ -37,8 +37,9 @@ FB_doCheckPW($$$)
               "getpage=../html/login_sid.xml" );
     $data = join("&", map {join("=", map {urlEncode($_)} split("=",$_,2))} @d);
     $data = GetFileFromURL(FB_host2URL($host)."cgi-bin/webcm", undef, $data, 1);
-    my $sid = $1 if($data =~ /<SID>(\w+)<\/SID>/i);
-    $sid = undef if($sid =~ m/^0*$/);
+    my $sid;
+    $sid = $1 if($data =~ /<SID>(\w+)<\/SID>/i);
+    $sid = undef if(defined($sid) && $sid =~ m/^0*$/);
     return $sid;
 
   } else {                            # FritzOS >= 5.50
@@ -48,8 +49,10 @@ FB_doCheckPW($$$)
     $url .= "?username=$user" if($user);
 
     $data = GetFileFromURL($url, undef, $data, 1);
-    my $sid = $1 if($data =~ /<SID>(\w+)<\/SID>/i);
-    $sid = undef if($sid =~ m/^0*$/);
+    return if(!$data);
+    my $sid;
+    $sid = $1 if($data =~ /<SID>(\w+)<\/SID>/i);
+    return if(defined($sid) && $sid =~ m/^0*$/);
     return $sid;
   }
 }

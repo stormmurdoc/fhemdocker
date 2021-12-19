@@ -1,5 +1,5 @@
 ################################################################
-# $Id: 98_update.pm 20778 2019-12-18 17:46:44Z rudolfkoenig $
+# $Id: 98_update.pm 24983 2021-09-16 17:15:44Z rudolfkoenig $
 
 package main;
 use strict;
@@ -301,7 +301,8 @@ doUpdate($$$$)
   }
 
   my $canJoin;
-  my $cmod = AttrVal('global', 'commandref', 'full');
+  my $cmod = AttrVal('global', 'commandref', 
+                        $featurelevel >= 6.1 ? 'modular' : 'full');
   my $cj = "$root/contrib/commandref_".
                 ($cmod eq "full" ? "join":"modular").".pl";
   if(-f $cj &&

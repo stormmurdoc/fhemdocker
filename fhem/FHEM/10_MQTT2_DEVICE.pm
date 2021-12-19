@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 10_MQTT2_DEVICE.pm 21168 2020-02-10 15:48:13Z rudolfkoenig $
+# $Id: 10_MQTT2_DEVICE.pm 24861 2021-08-20 09:04:35Z rudolfkoenig $
 package main;
 
 use strict;
@@ -40,6 +40,7 @@ MQTT2_DEVICE_Initialize($)
     imageLink
     jsonMap:textField-long
     model
+    periodicCmd
     readingList:textField-long
     setExtensionsEvent:1,0
     setList:textField-long
@@ -115,6 +116,21 @@ MQTT2_DEVICE_checkSubscr()
 
 #############################
 sub
+MQTT2_DEVICE_getRegexpHash($$$)
+{
+  my ($step, $cid, $topic) = @_;
+
+  return $modules{MQTT2_DEVICE}{defptr}{"re:$cid"}
+    if($step == 1); # regexp for cid:topic:msg
+  return $modules{MQTT2_DEVICE}{defptr}{"re"}
+    if($step == 2); # regExp for topic:msg
+  return $modules{MQTT2_DEVICE}{defptr}{"re:$cid:$topic"}
+    if($step == 3); # regExp for msg, for specific cid:topic
+  return $modules{MQTT2_DEVICE}{defptr}{"re:*:$topic"}
+    if($step == 4); # regExp for msg, for specific topic
+}
+
+sub
 MQTT2_DEVICE_Parse($$)
 {
   my ($iodev, $msg) = @_;
@@ -138,9 +154,13 @@ MQTT2_DEVICE_Parse($$)
   }
 
   my ($cid, $topic, $value) = split("\0", $msg, 3);
-  for my $step (1,2) {
-    next if($step == 1 && !$modules{MQTT2_DEVICE}{defptr}{"re:$cid"});
-    my $dp = $modules{MQTT2_DEVICE}{defptr}{$step==1 ? "re:$cid" : "re"};
+  $cid = $iodev->{NAME} if($cid eq "");        # empty cid, #122525
+  return "" if(!defined($topic));
+  for my $step (1,2,3,4) {
+
+    my $dp = MQTT2_DEVICE_getRegexpHash($step, $cid, $topic);
+    next if(!$dp);
+
     foreach my $re (keys %{$dp}) {
       my $reAll = $re;
       $reAll =~ s/\$DEVICETOPIC/\.\*/g;
@@ -157,7 +177,6 @@ MQTT2_DEVICE_Parse($$)
                   "$cid:$topic:$value" =~ m/^$reRepl$/s));
         next if(IsDisabled($dev));
 
-        my @retData;
         Log3 $dev, 4, "MQTT2_DEVICE_Parse: $dev $topic => $code";
 
         if($code =~ m/^{.*}$/s) {
@@ -168,9 +187,8 @@ MQTT2_DEVICE_Parse($$)
           if($ret && ref $ret eq "HASH") {
             readingsBeginUpdate($hash);
             foreach my $k (keys %{$ret}) {
-              readingsBulkUpdate($hash, $k, $ret->{$k});
+              readingsBulkUpdate($hash, makeReadingName($k), $ret->{$k});
               my $msg = ($ret->{$k} ? $ret->{$k} : "");
-              push(@retData, "$k $msg");
               checkForGet($hash, $k, $ret->{$k});
             }
             readingsEndUpdate($hash, 1);
@@ -178,7 +196,6 @@ MQTT2_DEVICE_Parse($$)
 
         } else {
           readingsSingleUpdate($hash, $code, $value, 1);
-          push(@retData, "$code $value");
           checkForGet($hash, $code, $value);
         }
 
@@ -190,7 +207,7 @@ MQTT2_DEVICE_Parse($$)
   #################################################
   # IODevs autocreate and/or expand readingList
   if($autocreate ne "no" && !%fnd) {
-    return "" if($cid && $cid =~ m/mosqpub.*/);
+    return "" if($cid && $cid =~ m/^(mosqpub|mosq_)/); # mosquitto_pub default
 
     ################## bridge stuff
     my $newCid = $cid;
@@ -219,7 +236,7 @@ MQTT2_DEVICE_Parse($$)
       my $cidArr = $modules{MQTT2_DEVICE}{defptr}{cid}{$newCid};
       return if(!$cidArr);
       my $add;
-      if(length($value) < 10000 && $value =~ m/^\s*{.*}\s*$/s) {
+      if(length($value) < 10000 && $value =~ m/^\s*[{[].*[}\]]\s*$/s) {
         my $ret = json2nameValue($value);
         if(keys %{$ret}) {
           $topic =~ m,.*/([^/]+),;
@@ -248,15 +265,15 @@ MQTT2_DEVICE_Parse($$)
         $add = makeReadingName($add); # Convert non-valid characters to _
       }
 
-      $topic =~ s,([\^\$\[\]()\.\\]),\\$1,g;
-      $topic =~ s,\s,.,g;
+      my $reTopic = $topic;
+      $reTopic =~ s#([^A-Z0-9_/-])#"\\x".sprintf("%02x",ord($1))#ige;
 
       for my $ch (@{$cidArr}) {
         my $nn = $ch->{NAME};
         next if(!AttrVal($nn, "autocreate", 1)); # device autocreate
         my $rl = AttrVal($nn, "readingList", "");
         $rl .= "\n" if($rl);
-        my $regex = ($cid eq $newCid ? "$cid:" : "").$topic.":.*";
+        my $regex = ($cid eq $newCid ? "$cid:" : "").$reTopic.":.*";
         CommandAttr(undef, "$nn readingList $rl$regex $add")
                 if(index($rl, $regex) == -1);   # Forum #84372
         setReadingsVal($defs{$nn}, "associatedWith", $parentBridge, TimeNow())
@@ -310,7 +327,7 @@ MQTT2_buildCmd($$$)
   my ($hash, $a, $cmd) = @_;
 
   shift @{$a};
-  if($cmd =~ m/^{.*}$/) {
+  if($cmd =~ m/^{.*}\s*$/) {
     $cmd = EvalSpecials($cmd,
       ("%EVENT"       => join(" ",@{$a}),
        "%NAME"        => $hash->{NAME},
@@ -420,6 +437,7 @@ MQTT2_DEVICE_Attr($$)
 
   if($attrName eq "devicetopic") {
     $hash->{DEVICETOPIC} = ($type eq "del" ? $hash->{NAME} : $param);
+    MQTT2_DEVICE_addReading($dev, AttrVal($dev, "readingList", ""));
     return undef;
   }
 
@@ -440,7 +458,7 @@ MQTT2_DEVICE_Attr($$)
       return "$dev attr $attrName: more parameters needed" if(!$par2);
 
       if($atype eq "reading") {
-        if($par2 =~ m/^{.*}$/) {
+        if($par2 =~ m/^{.*}\s*$/) {
           my $ret = perlSyntaxCheck($par2, 
                 ("%TOPIC"=>1, "%EVENT"=>"0 1 2 3 4 5 6 7 8 9",
                  "%NAME"=>$dev, "%CID"=>"clientId",
@@ -474,8 +492,8 @@ MQTT2_DEVICE_Attr($$)
       my ($par1, $par2) = split(" ", $el, 2);
       next if(!$par1);
       return "$dev attr $attrName: more parameters needed" if(!$par2);
-      eval { "Hallo" =~ m/^$par1$/ };
-      return "$dev $attrName regexp error: $@" if($@);
+      my $errMsg = CheckRegexp($par1, "bridgeRegexp attribute for $dev");
+      return $errMsg if($errMsg);
     }
     if($init_done) {
       my $name = $hash->{NAME};
@@ -496,7 +514,50 @@ MQTT2_DEVICE_Attr($$)
     }
   }
 
+  if($attrName eq "periodicCmd") {
+    if($type eq "set") {
+      if($init_done) {
+        my ($gets,undef) = MQTT2_getCmdHash(AttrVal($dev, "getList", ""));
+        my ($sets,undef) = MQTT2_getCmdHash(AttrVal($dev, "setList", ""));
+        for my $np (split(" ", $param)) {
+          return "$np ist not of the form cmd:period" if($np !~ m/(.*):(.*)/);
+          return "$1 is neither a get nor a set command"
+                if(!$gets->{$1} && !$sets->{$1});
+          return "$2 (from $np) is not an integer" if($2 !~ m/^\d+$/);
+        }
+      }
+      RemoveInternalTimer($hash);
+      $hash->{periodicCounter} = 0 if(!$hash->{periodicCounter});
+      InternalTimer(time()+60, "MQTT2_DEVICE_periodic", $hash, 0);
+    } else {
+      RemoveInternalTimer($hash);
+    }
+  }
+
   return undef;
+}
+
+sub
+MQTT2_DEVICE_periodic()
+{
+  my ($hash) = @_;
+  my $name = $hash->{NAME};
+  my $param = AttrVal($name, "periodicCmd", "");
+  return if(!$param);
+  my ($gets,undef) = MQTT2_getCmdHash(AttrVal($name, "getList", ""));
+  my $cnt = ++$hash->{periodicCounter};
+  for my $np (split(" ", $param)) {
+    next if($np !~ m/(.*):(.*)/ || $cnt % int($2));
+    my $cmd = $1;
+    my $ret;
+    if($gets->{$cmd}) {
+      $ret = MQTT2_DEVICE_Get($hash, $name, $cmd);
+    } else {
+      $ret = MQTT2_DEVICE_Set($hash, $name, $cmd);
+    }
+    Log3 $hash, 3, "$name periodicCmd $cmd: $ret" if($ret);
+  }
+  InternalTimer(time()+60, "MQTT2_DEVICE_periodic", $hash, 0);
 }
 
 sub
@@ -518,18 +579,19 @@ sub
 MQTT2_DEVICE_delReading($)
 {
   my ($name) = @_;
-  my $cid = $defs{$name}{CID};
+  my $cid = $defs{$name} ? $defs{$name}{CID} : undef;
   $cid = "" if(!defined($cid));
-  for my $step (1,2) {
-    next if($step == 1 && !$modules{MQTT2_DEVICE}{defptr}{"re:$cid"});
-    my $dp = $modules{MQTT2_DEVICE}{defptr}{$step==1 ? "re:$cid" : "re"};
+  for my $key1 (sort keys %{$modules{MQTT2_DEVICE}{defptr}}) {
+    next if($key1 !~ m/^re/);
+    my $dp = $modules{MQTT2_DEVICE}{defptr}{$key1};
     foreach my $re (keys %{$dp}) {
-      foreach my $key (keys %{$dp->{$re}}) {
-        if($key =~ m/^$name,/) {
-          delete($dp->{$re}{$key});
-          delete($dp->{$re}) if(!int(keys %{$dp->{$re}}));
-        }
+      foreach my $key2 (keys %{$dp->{$re}}) {
+        delete($dp->{$re}{$key2}) if($key2 =~ m/^$name,/);
       }
+      delete($dp->{$re}) if(!int(keys %{$dp->{$re}}));
+    }
+    if(!int(keys %{$modules{MQTT2_DEVICE}{defptr}{$key1}}) && $key1 ne "re") {
+      delete($modules{MQTT2_DEVICE}{defptr}{$key1});
     }
   }
 }
@@ -540,15 +602,27 @@ MQTT2_DEVICE_addReading($$)
   my ($name, $param) = @_;
   MQTT2_DEVICE_delReading($name);
   my $cid = $defs{$name}{CID};
+  my $dt = $defs{$name}{DEVICETOPIC};
   foreach my $line (split("\n", $param)) {
+    next if($line eq "");
     my ($re,$code) = split(" ", $line,2);
-    return "Bad line >$line< for $name" if(!defined($re) || !defined($code));
-    eval { "Hallo" =~ m/^$re$/ };
-    return "Bad regexp: $@" if($@);
+    return "ERROR: empty code in line >$line< for $name" if(!defined($code));
+    my $errMsg = CheckRegexp($re, "readingList attribute for $name");
+    return $errMsg if($errMsg);
+
+    $re =~ s/\$DEVICETOPIC/$dt/g;
     if($cid && $re =~ m/^$cid:/) {
-      $modules{MQTT2_DEVICE}{defptr}{"re:$cid"}{$re}{"$name,$code"} = 1;
+      if($re =~ m/^$cid:([^\\\?.*\[\](|)]+):\.\*$/) { # cid:topic:.*
+        $modules{MQTT2_DEVICE}{defptr}{"re:$cid:$1"}{$re}{"$name,$code"} = 1;
+      } else {
+        $modules{MQTT2_DEVICE}{defptr}{"re:$cid"}{$re}{"$name,$code"} = 1;
+      }
     } else {
-      $modules{MQTT2_DEVICE}{defptr}{re}{$re}{"$name,$code"} = 1;
+      if($re =~ m/^([^:\\\?.*\[\](|)]+):\.\*$/) { # nothing smelling like regexp
+        $modules{MQTT2_DEVICE}{defptr}{"re:*:$1"}{$re}{"$name,$code"} = 1;
+      } else {
+        $modules{MQTT2_DEVICE}{defptr}{re}{$re}{"$name,$code"} = 1;
+      }
     }
   }
   return undef;
@@ -594,6 +668,8 @@ MQTT2_DEVICE_Undef($$)
     $modules{MQTT2_DEVICE}{defptr}{cid}{$hash->{CID}} = \@nh;
   }
   MQTT2_DEVICE_setBridgeRegexp();
+  RemoveInternalTimer($hash->{asyncGet}) if($hash->{asyncGet});
+  RemoveInternalTimer($hash) if($hash->{periodicCounter});
   return undef;
 }
 
@@ -649,7 +725,7 @@ MQTT2_DEVICE_nlData($)
   #my $pref = "https://koenkk.github.io/zigbee2mqtt/images/devices/";
   my $pref = "https://www.zigbee2mqtt.io/images/devices/";
 
-  # Needed for the image links
+  # Needed for the image links {
   my $dv = ReadingsVal($d, ".devices", ReadingsVal($d, "devices", ""));
   $dv =~ s@ieeeAddr":"([^"]+)"[^}]+model":"([^"]+)"@
             my $ieeeAddr = $1;
@@ -810,7 +886,7 @@ zigbee2mqtt_devStateIcon255($;$$)
 =item summary_DE &uuml;ber den MQTT2_SERVER oder MQTT2_CLIENT kommunizierende Ger&auml;te
 =begin html
 
-<a name="MQTT2_DEVICE"></a>
+<a id="MQTT2_DEVICE"></a>
 <h3>MQTT2_DEVICE</h3>
 <ul>
   MQTT2_DEVICE is used to represent single devices connected to the
@@ -818,7 +894,7 @@ zigbee2mqtt_devStateIcon255($;$$)
   connecting MQTT devices to FHEM.
   <br> <br>
 
-  <a name="MQTT2_DEVICEdefine"></a>
+  <a id="MQTT2_DEVICE-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; MQTT2_DEVICE</code>
@@ -828,32 +904,32 @@ zigbee2mqtt_devStateIcon255($;$$)
   </ul>
   <br>
 
-  <a name="MQTT2_DEVICEset"></a>
+  <a id="MQTT2_DEVICE-set"></a>
   <b>Set</b>
   <ul>
     see the setList attribute documentation below.
   </ul>
   <br>
 
-  <a name="MQTT2_DEVICEget"></a>
+  <a id="MQTT2_DEVICE-get"></a>
   <b>Get</b>
   <ul>
     see the getList attribute documentation below.
   </ul>
   <br>
 
-  <a name="MQTT2_DEVICEattr"></a>
+  <a id="MQTT2_DEVICE-attr"></a>
   <b>Attributes</b>
   <ul>
 
-    <a name="autocreate"></a>
+    <a id="MQTT2_DEVICE-attr-autocreate"></a>
     <li>autocreate {0|1}<br>
       if set to 0, disables extending the readingList, when the IODev
       autocreate is also set. Default is 1, i.e. new topics will be
       automatically added to the readingList. 
       </li>
 
-    <a name="bridgeRegexp"></a>
+    <a id="MQTT2_DEVICE-attr-bridgeRegexp"></a>
     <li>bridgeRegexp &lt;regexp&gt; newClientId ...<br>
       Used to automatically redirect some types of topics to different
       MQTT2_DEVICE instances. The regexp is checked against the
@@ -883,14 +959,14 @@ zigbee2mqtt_devStateIcon255($;$$)
       </ul>
       </li><br>
 
-    <a name="devicetopic"></a>
+    <a id="MQTT2_DEVICE-attr-devicetopic"></a>
     <li>devicetopic value<br>
       replace $DEVICETOPIC in the topic part of readingList, setList and
       getList with value. if not set, $DEVICETOPIC will be replaced with the
       name of the device.
       </li><br>
 
-    <a name="devPos"></a>
+    <a id="MQTT2_DEVICE-attr-devPos"></a>
     <li>devPos value<br>
       used internally by the "Show neighbor map" visualizer in FHEMWEB.
       This function is active if the graphviz and devices readings are set,
@@ -900,17 +976,18 @@ zigbee2mqtt_devStateIcon255($;$$)
     <li><a href="#disable">disable</a><br>
         <a href="#disabledForIntervals">disabledForIntervals</a></li><br>
 
-    <a name="getList"></a>
-    <li>getList cmd [topic|perl-Expression] ...<br>
-      When the FHEM command cmd is issued, publish the topic, wait for the
-      answer (the specified reading), and show it in the user interface.
-      Multiple triples can be specified, each of them separated by newline, the
-      newline does not have to be entered in the FHEMWEB frontend.<br>
+    <a id="MQTT2_DEVICE-attr-getList"></a>
+    <li>getList cmd reading [topic|perl-Expression] ...<br>
+      When the FHEM command cmd is issued, publish the topic (and optional
+      message, which is separated by space from the topic), wait for the answer
+      which must contain the specified reading, and show the result in the user
+      interface.<br>
+      Multiple triples can be specified, each of them separated by newline.
       Example:<br>
       <code>
         &nbsp;&nbsp;attr dev getList\<br>
         &nbsp;&nbsp;&nbsp;&nbsp;temp temperature myDev/cmd/getstatus\<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;hum  hum  myDev/cmd/getStatus
+        &nbsp;&nbsp;&nbsp;&nbsp;hum humReading myDev/cmd/getHumidity now
       </code><br>
       This example defines 2 get commands (temp and hum), which both publish
       the same topic, but wait for different readings to be set.<br>
@@ -930,13 +1007,13 @@ zigbee2mqtt_devStateIcon255($;$$)
       </li><br>
 
 
-    <a name="imageLink"></a>
+    <a id="MQTT2_DEVICE-attr-imageLink"></a>
     <li>imageLink href<br>
       sets the image to be shown. The "Show neighbor map" function initializes
       the value automatically.
       </li><br>
 
-    <a name="jsonMap"></a>
+    <a id="MQTT2_DEVICE-attr-jsonMap"></a>
     <li>jsonMap oldReading1:newReading1 oldReading2:newReading2...<br>
       space or newline separated list of oldReading:newReading pairs.<br>
       Used in the automatically generated readingList json2nameValue function
@@ -949,7 +1026,15 @@ zigbee2mqtt_devStateIcon255($;$$)
       oldReading.
       </li><br>
 
-    <a name="readingList"></a>
+    <a id="MQTT2_DEVICE-attr-periodicCmd"></a>
+    <li>periodicCmd &lt;cmd1&gt;:&lt;period1&gt; &lt;cmd2&gt;:&lt;period2&gt;...
+      <br>
+      periodically execute the get or set command. The command will not take
+      any arguments, create a new command without argument, if necessary.
+      period is measured in minutes, and it must be an integer.
+      </li><br>
+
+    <a id="MQTT2_DEVICE-attr-readingList"></a>
     <li>readingList &lt;regexp&gt; [readingName|perl-Expression] ...
       <br>
       If the regexp matches topic:message or cid:topic:message either set
@@ -986,11 +1071,12 @@ zigbee2mqtt_devStateIcon255($;$$)
       </ul>
       </li><br>
 
-    <li><a name="setExtensionsEvent">setExtensionsEvent</a><br>
+    <a id="MQTT2_DEVICE-attr-setExtensionsEvent"></a>
+    <li>setExtensionsEvent<br>
       If set, the event will contain the command implemented by SetExtensions
       (e.g. on-for-timer 10), else the executed command (e.g. on).</li><br>
 
-    <a name="setList"></a>
+    <a id="MQTT2_DEVICE-attr-setList"></a>
     <li>setList cmd [topic|perl-Expression] ...<br>
       When the FHEM command cmd is issued, publish the topic.
       Multiple tuples can be specified, each of them separated by newline, the
@@ -1006,18 +1092,19 @@ zigbee2mqtt_devStateIcon255($;$$)
       Notes:
       <ul>
         <li>arguments to the set command will be appended to the message
-          published (not for the perl expression)</li>
+          published (this is not valid not for the perl expression)</li>
         <li>the command arguments are available as $EVENT, $EVTPART0, etc., 
           the name of the device as $NAME, both in the perl expression and the
           "normal" topic variant.</li>
         <li>the perl expression must return a string containing the topic and
-          the message separated by a space.</li>
+          the message separated by a space. If it returns "", undef or 0, no
+          MQTT message will be sent.</li>
         <li>SetExtensions is activated</li>
         <li>if the topic name ends with :r, then the retain flag is set</li>
       </ul>
       </li><br>
 
-    <a name="setStateList"></a>
+    <a id="MQTT2_DEVICE-attr-setStateList"></a>
     <li>setStateList command command ...<br>
       This attribute is used to get more detailed feedback when switching
       devices.  I.e. when the command on is contained in the list, state will

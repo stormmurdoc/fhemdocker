@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 99_Utils.pm 21112 2020-02-04 10:02:12Z rudolfkoenig $
+# $Id: 99_Utils.pm 24128 2021-04-02 16:29:11Z rudolfkoenig $
 package main;
 
 use strict;
@@ -16,19 +16,16 @@ time_str2num($)
 {
   my ($str) = @_;
   my @a;
-  if($str) {
-    @a = split("[T: -]", $str);
-    return mktime($a[5],$a[4],$a[3],$a[2],$a[1]-1,$a[0]-1900,0,0,-1);
-  } else {
-    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
-    return mktime($sec, $min, $hour, $mday, $mon, $year, 0, 0, -1);
-  }
+  return time() if(!$str);
+  @a = split("[T: -]", $str); # 31652, 110545, 
+  return mktime($a[5],$a[4],$a[3],$a[2],$a[1]-1,$a[0]-1900,0,0,-1);
 }
 
 sub
-min($@)
+min(@)
 {
   my ($min, @vars) = @_; 
+  return $min if(!defined($min));
   for (@vars) {
     $min = $_ if $_ lt $min;
   }           
@@ -36,9 +33,10 @@ min($@)
 }
 
 sub
-max($@)
+max(@)
 {
   my ($max, @vars) = @_; 
+  return $max if(!defined($max));
   for (@vars) {
     $max = $_ if $_ gt $max;
   }           
@@ -286,8 +284,10 @@ Svn_GetFile($$;$)
       print FH $_[2];
       close(FH);
       Log 1, "SVN download of $from to $to finished";
-      &$finishFn if($finishFn);
-      Log 1, $@ if($@);
+      if($finishFn) {
+        eval { &$finishFn; };
+        Log 1, $@ if($@);
+      }
     }});
   return "Download started, check the FHEM-log";
 }

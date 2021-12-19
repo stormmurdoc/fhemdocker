@@ -195,7 +195,7 @@ source override values set in the configuration file.
 <a name="command"></a>
 <h3>FHEM command types</h3>
 <ul>
-There are three types of commands: "fhem" commands (described in this
+There are three types of commands: "FHEM" commands (described in this
 document), shell commands (they must be enclosed in double quotes ") and perl
 expressions (enclosed in curly brackets {}). shell commands or perl expressions
 are needed for complex <a href="#at">at</a> or <a href="#notify">notify</a>
@@ -251,6 +251,8 @@ href="#notify">notify</a> FHEM commands.<br>
 A line ending with \ will be concatenated with the next one, so long lines
 (e.g. multiple perl commands) can be split in multiple lines. Some web fronteds
 (e.g. webpgm2) make editing of multiline commands transparent for you (i.e. there is no need for \) .<br>
+Note: mixing command types (FHEM/shell/perl) on one line is not supported, even
+if it might work in some cases.
 <br>
 </ul>
 <!-- command end - diese Zeile nicht entfernen! -->
@@ -517,7 +519,7 @@ attribute list if you want to know if a device supports these attributes.  <br>
     <p>
 
     <a name="event-aggregator"></a>
-    <li>event-aggregator</li>
+    <li>event-aggregator
     The primary uses of this attribute are to calculate (time-weighted) averages of 
     readings over time periods and to throttle the update rate of readings and thus 
     the amount of data written to the logs.<p>
@@ -537,7 +539,7 @@ attribute list if you want to know if a device supports these attributes.  <br>
     <tr><td>max</td><td>the largest value encountered</td></tr>
     <tr><td>mean</td><td>the arithmetic mean of all values</td></tr>
     <tr><td>sd</td><td>the standard deviation from the mean</td></tr>
-    <tr><td>median</td><td>the median of all values (requires holdTime and function none)</td></tr>
+    <tr><td>median</td><td>the median of all values (requires holdTime and method none)</td></tr>
     <tr><td>integral</td><td>the arithmetic sum (if not time-weighted) or integral area (if time-weighted) of all values</td></tr>
     <tr><td>n</td><td>number of samples</td></tr>
     <tr><td>t</td><td>timestamp of the last value</td></tr>
@@ -677,12 +679,34 @@ The following local attributes are used by a wider range of devices:
         for this type of device. The attribute IODev needs to be used only if
         you attached more than one physical device capable of receiving signals
         for this logical device.</li><br>
-    <li>Special: attribute disable can be toggled<br/>
-        Attribute "disable" can be toggled by issuing the following command:<br/>
-        <br/>
-        <code>attr &lt;device&gt; disable toggle</code><br/>
-        <br/>
-        Attribute "disable" must be offered by the corresponding module</li>
+
+    <a name="disable"></a>
+    <li>disable<br>
+        Disables the corresponding device. Note: it can be toggled by issuing the following command:<br/>
+        <br>
+        <code>attr &lt;device&gt; disable toggle</code>
+        </li><br>
+
+    <a name="disabledForIntervals"></a>
+    <li>disabledForIntervals HH:MM-HH:MM HH:MM-HH:MM ...<br>
+        Space separated list of HH:MM or D@HH:MM tupels. If the current time is
+        between the two time specifications, the current device is disabled.
+        Instead of HH:MM you can also specify HH or HH:MM:SS. D is the day of
+        the week, with 0 indicating Sunday and 3 indicating Wednesday.
+        Specifying the day for the "from" part does _not_ specify it for the
+        "to" part, i.e.  1@00-24 will disable from monday to the end of the
+        week, but not on sunday (as 1@00 is greater than any time on sunday).
+        To specify an interval spawning midnight, you have to specify two
+        intervals, e.g.:
+        <ul>
+          23:00-24:00 00:00-01:00
+        </ul>
+        If parts of the attribute value are enclosed in {}, they are evaluated:
+        <ul>
+          {sunset_abs()}-24 {sunrise_abs()}-08
+        </ul>
+        </li><br>
+
 </ul>
 <!-- attributes end - diese Zeile nicht entfernen! -->
 
@@ -692,7 +716,7 @@ The following local attributes are used by a wider range of devices:
 <a name="attr"></a>
 <h3>attr</h3>
 <ul>
-  <code>attr [-a] [-r] &lt;devspec&gt; &lt;attrname&gt; [&lt;value&gt;]</code>
+  <code>attr [-a|-r|-silent] &lt;devspec&gt; &lt;attrname&gt; [&lt;value&gt;]</code>
   <br>
 
   <br>Set an attribute for a device defined by <a href="#define">define</a>.
@@ -710,6 +734,7 @@ The following local attributes are used by a wider range of devices:
   space will be added automatically to the old value before appending the
   new.<br>
   With the -r option one can remove a part of an attribute value.<br>
+  With the -silent option the command is not recorded in the "save -?" list.<br>
   <br>
 
   Examples:
@@ -770,6 +795,9 @@ The following local attributes are used by a wider range of devices:
       be loaded. Used by fhem.cfg.demo, as using the RSS example requires the
       installation of several uncommon perl modules. 
       </li><br>
+    <li>-silent<br>
+      Do no enter the command in the "save ?" list.
+      </li><br>
   </ul>
 
 </ul>
@@ -778,8 +806,8 @@ The following local attributes are used by a wider range of devices:
 <a name="defmod"></a>
 <h3>defmod</h3>
 <ul>
-  <code>defmod [-temporary] &lt;name&gt; &lt;type&gt; &lt;type-specific&gt;</code><br>
-  <br>
+  <code>defmod [option] &lt;name&gt; &lt;type&gt; &lt;type-specific&gt;</code>
+  <br><br>
   Define a device or modify it, if it already exists. E.g. to switch off a lamp
   10 Minutes after the last message from the motion detector, you may use
   <ul><code>
@@ -787,7 +815,8 @@ The following local attributes are used by a wider range of devices:
   </code></ul>
   Using define here for the mdOff will generate an error if the motion detector
   triggers within the 10 minutes after the first event, as the mdOff at
-  definition still exists.
+  definition still exists.<br>
+  For the options see the define documentation.
   <br>
 </ul>
 <!-- defmod end -->
@@ -814,12 +843,14 @@ The following local attributes are used by a wider range of devices:
 <a name="deleteattr"></a>
 <h3>deleteattr</h3>
 <ul>
-  <code>deleteattr &lt;devspec&gt; [&lt;attrname&gt;]</code> <br>
+  <code>deleteattr [-silent] &lt;devspec&gt; [&lt;attrname&gt;]</code> <br>
   <br>
   Delete either a single attribute (see the <a href="#attr">attr</a> command)
   or all attributes for a device (if no &lt;attrname&gt; is defined).
   See the <a href="#devspec">Device specification</a> section for details on
   &lt;devspec&gt;.<br>
+  &lt;attrname&gt; is in fact a regexp, complemented with ^ and $ as usual, so
+  a range of attributes can be deleted with one command.<br>
   After deleting the attribute, the global event "DELETEATTR" will be generated.
   <br>
 
@@ -835,11 +866,13 @@ The following local attributes are used by a wider range of devices:
 <a name="deletereading"></a>
 <h3>deletereading</h3>
 <ul>
-  <code>deletereading &lt;devspec&gt; &lt;readingname&gt;</code> <br>
+  <code>deletereading &lt;devspec&gt; &lt;readingname&gt;
+        [&lt;older-than-seconds&gt;]</code> <br>
   <br>
   Delete the reading &lt;readingname&gt; 
-  for a device. &lt;readingname&gt; is a perl regular expression that must match the whole name of the reading.
-  Use with greatest care! FHEM might crash if you delete vital readings of a device.
+  for a device. &lt;readingname&gt; is a perl regular expression that must
+  match the whole name of the reading.  Use with greatest care! FHEM might
+  crash if you delete vital readings of a device.
   See the <a href="#devspec">Device specification</a> section for details on
   &lt;devspec&gt;.<br>
   <br>
@@ -1018,7 +1051,7 @@ The following local attributes are used by a wider range of devices:
 <a name="modify"></a>
 <h3>modify</h3>
 <ul>
-  <code>modify &lt;name&gt; &lt;type-dependent-options&gt;</code>
+  <code>modify [-silent] &lt;name&gt; &lt;type-dependent-options&gt;</code>
   <br><br>
 
   Used to modify some definitions. Useful for changing some <a
@@ -1026,8 +1059,9 @@ The following local attributes are used by a wider range of devices:
   one argument to an at type definition, only the time part will be changed. In
   case of a notify type definition, only the regex part will be changed.  All
   other values (state, attributes, etc) will remain intact.
-  After modify, the global event "MODIFIED" will be generated.
-  <br><br>
+  After modify, the global event "MODIFIED" will be generated.<br>
+  With the -silent option the command is not recorded in the "save -?" list.<br>
+  <br>
   Example:
   <ul>
     <code>define lampon at 19:00 set lamp on</code><br>
@@ -1277,12 +1311,14 @@ The following local attributes are used by a wider range of devices:
 <a name="setreading"></a>
 <h3>setreading</h3>
 <ul>
-  <code>setreading &lt;devspec&gt; &lt;reading&gt; &lt;value&gt;</code>
+  <code>setreading &lt;devspec&gt; [YYYY-MM-DD HH:MM:SS] &lt;reading&gt;
+        &lt;value&gt;</code>
   <br><br>
   Set the reading &lt;reading&gt; for the device <code>&lt;name&gt;</code> to
   &lt;value&gt; without sending out commands to the device, but triggering
   events and eventMap/stateFormat transformations as usual. See the set
-  command documentation for replacement description.
+  command documentation for replacement description.<br>
+  If the timespec is omitted (default) the current time will be used.
   <br><br>
   Examples:
   <ul>
@@ -1374,7 +1410,7 @@ The following local attributes are used by a wider range of devices:
   &lt;regex&gt;. The delay can be given<ul>
   <li>in seconds, with millisecond accuracy, as you can specify decimal places,
   </li>
-  <li>as a timespec (HH:MM or HH::MM::SS or {perlfunc})</li>
+  <li>as a timespec (HH:MM or HH:MM:SS or {perlfunc})</li>
   <li>or as a regex (devicename or devicename:event)</li></ul><br>
 
   A sleep with an &lt;id&gt; will replace a sleep with the same &lt;id&gt;
@@ -1430,6 +1466,15 @@ The following local attributes are used by a wider range of devices:
 
   <b>Get</b><ul>N/A</ul><br>
 
+  <b>Internals</b>
+  <ul>
+  <a name="init_errors"></a>
+    <li>init_errors<br>
+      contains configuration errors and security issues collected at FHEM
+      startup.
+    </li><br>
+  </ul><br>
+
   <b>Attributes</b>
   <ul>
     <a name="altitude"></a>
@@ -1458,7 +1503,8 @@ The following local attributes are used by a wider range of devices:
     <li>autosave<br>
         enable some modules to automatically trigger save after a configuration
         change, e.g. after a new device was created. Default is 1 (true), you
-        can deactivate this feature by setting the value to 0.
+        can deactivate this feature by setting the value to 0. Configration
+        errors at startup automatically deactivate this value.
     </li>
 
     <a name="backupcmd"></a>
@@ -1507,7 +1553,8 @@ The following local attributes are used by a wider range of devices:
     <a name="blockingCallMax"></a>
     <li>blockingCallMax<br>
         Limit the number of parallel running processes started by the
-        BlockingCall FHEM helper routine. Useful on limited hardware.
+        BlockingCall FHEM helper routine. Useful on limited hardware, default
+        is 32. If the limit is reached, further calls are delayed.
     </li><br>
 
     <a name="configfile"></a>
@@ -1524,6 +1571,20 @@ The following local attributes are used by a wider range of devices:
         at the beginning, and the module documentation is loaded from FHEM
         dynamically.
     </li><br>
+
+    <a name="globaldisableFeatures"></a>
+    <li>disableFeatures <values><br>
+        comma separated list of values. Currently following values are
+        recognized:
+        <ul>
+          <li>attrTemplate: to avoid loading the AttrTemplates (which currently
+            consumes about 1MB of memory and needs some seconds to load on a
+            slow hardware)</li>
+          <li>securityCheck: to avoid checking if each Server port is secured
+            by password. May make sense to avoid warnings, if you know it
+            better.</li><br>
+        </ul>
+        </li>
 
     <a name="dnsHostsFile"></a>
     <li>dnsHostsFile<br>
@@ -1651,9 +1712,8 @@ The following local attributes are used by a wider range of devices:
     <li>motd<br>
         Message Of The Day. Displayed on the homescreen of the FHEMWEB package,
         or directly after the telnet logon, before displaying the fhem> prompt.
-        SecurityCheck is setting motd if it is not defined upon startup, to
-        avoid this set the motd value to none.  motd is also used to show
-        collected error messages upon FHEM start.
+        In addition, the content of the internal value init_errors will be
+        displayed. To avoid displaying messages set its value to none.
     </li><br>
 
     <a name="mseclog"></a>
@@ -1667,6 +1727,13 @@ The following local attributes are used by a wider range of devices:
         some Fritzbox installations, and it will be set automatically for
         Windows.
     </li><br>
+
+    <a id="perlSyntaxCheck"></a>
+    <li>perlSyntaxCheck<br>
+        by setting the <b>global</b> attribute perlSyntaxCheck, a syntax check
+        will be executed upon definition or modification, if the command is
+        perl and FHEM is already started.
+        </li><br>
 
     <a name="pidfilename"></a>
     <li>pidfilename<br>
@@ -1727,7 +1794,7 @@ The following local attributes are used by a wider range of devices:
         attributes for all devices. Without specifying them you will not be
         able to set them (in order to prevent typos).<br>
         userattr can also specified for other devices, in this case
-        these additinal attribute names are only valid for this device.
+        these additional attribute names are only valid for this device.
     </li><br>
 
     <a name="dupTimeout"></a>
@@ -1778,6 +1845,7 @@ The following local attributes are used by a wider range of devices:
     undefined device.</li>
     <li>MODIFIED &lt;defspec&gt;</br> after a device modification.</li>
     <li>UPDATE</br> after an update is completed.</li>
+    <li>CANNOT_FORK</br>if BlockingCall encounters this problem.</li>
   </ul>
 
 
@@ -1853,7 +1921,7 @@ The following local attributes are used by a wider range of devices:
     </ul>
     $we is equivalent to calling IsWe(), which optionally takes the arguments
     "today", "yesterday", "tomorrow", MM-DD or YYYY-MM-DD. Note: for everything
-    else "today" is assumed without an error message.
+    else the state reading is evaluated, and no error message is issued.
     </li><br>
 
   <li>
@@ -1865,30 +1933,31 @@ The following local attributes are used by a wider range of devices:
     <br>
     <ul>
       <li>Value(&lt;devicename&gt;)<br>
-        returns the state of the device (the string you see in paranthesis in
+        Returns the state of the device (the string you see in parenthesis in
         the output of the list command).
         </li><br>
       <li>OldValue(&lt;devicename&gt;)
       <li>OldTimestamp(&lt;devicename&gt;)<br>
-        returns the old value/timestamp of the device.
+        Returns the old value/timestamp of the device.
         </li><br>
       <li>
         ReadingsVal(&lt;devicename&gt;,&lt;reading&gt;,&lt;defaultvalue&gt;)<br>
-        Return the reading (the value in the Readings section of "list device")
+        Returns the reading (the value in the Readings section of "list device")
         </li><br>
       <li>
         ReadingsNum(&lt;devicename&gt;,&lt;reading&gt;,
                     &lt;defaultvalue&gt;,&lt;round&gt;)<br>
-        Return the first number from a reading value.
-        Round id to &lt;round&gt; devimal places (optional parameter).
+        Returns the first number from a reading value.
+        Round it to &lt;round&gt; decimal places (optional parameter). If &lt;round&gt; exeeds the length of
+          the factional part, 0's will be padded.
         </li><br>
       <li>ReadingsTimestamp(&lt;devicename&gt;,&lt;reading&gt;,&lt;
         defaultvalue&gt;)<br>
-        returns the timestamp of the reading.
+        Returns the timestamp of a reading.
         </li><br>
       <li>ReadingsAge(&lt;devicename&gt;,&lt;reading&gt;,&lt;defaultvalue&gt;)
         <br>
-        returns the age of the reading in seconds.
+        Returns the age of a reading in seconds.
         </li><br>
 
       <li>
@@ -1906,7 +1975,7 @@ The following local attributes are used by a wider range of devices:
 
       <li>
         AttrVal(&lt;devicename&gt;,&lt;attribute&gt;,&lt;defaultvalue&gt;)<br>
-        Return the attribute of the device
+        Returns the attribute of a device
         <br><br>
         { Value("wz") }<br>
         { OldValue("wz") }<br>
@@ -1931,7 +2000,8 @@ The following local attributes are used by a wider range of devices:
         InternalNum(&lt;devicename&gt;,&lt;property&gt;,
                     &lt;defaultvalue&gt;,&lt;round&gt;)<br>
         Return the first number from an internal value.
-        Round id to &lt;round&gt; devimal places (optional parameter).
+        Round it to &lt;round&gt; decimal places (optional parameter). If &lt;round&gt; exeeds the length of
+        the factional part, 0's will be padded.
         </li><br>
       </ul>
       </li><br>

@@ -27,7 +27,18 @@
 #
 ################################################################
 
-# $Id: 42_SYSMON.pm 17227 2018-08-29 19:58:18Z hexenmeister $
+# $Id: 42_SYSMON.pm 24758 2021-07-16 13:54:47Z hexenmeister $
+
+# TODO:
+#fyi:
+#The path of
+#/sys/class/power_supply/{ac,usb,battery}
+#on a cubietruck, using armbian (Debian Stretch), Kernel 4.14.18-sunxi moved to
+#/sys/class/power_supply/axp20x-{ac,usb,battery} .
+#This makes the 42-SYSMON:power_* functions stop working here.
+#regards,
+#llutz
+
 
 package main;
 
@@ -42,7 +53,7 @@ use Data::Dumper;
 my $missingModulRemote;
 eval "use Net::Telnet;1" or $missingModulRemote .= "Net::Telnet ";
 
-my $VERSION = "2.3.4";
+my $VERSION = "2.3.5";
 
 use constant {
   PERL_VERSION    => "perl_version",
@@ -1085,16 +1096,16 @@ sub SYSMON_updateReadings($$) {
   }
     
   # Nicht mehr benoetigte Readings loeschen
-  my $omap = SYSMON_getObsoleteReadingsMap($hash);
-  
+  #my $omap = SYSMON_getObsoleteReadingsMap($hash);
+  #
   # UserFn Keys entfernen
-  foreach my $aName (@a_keys) {
-    delete($omap->{$aName});
-  }
-  foreach my $aName (keys %{$omap}) {
-    #  SYSMON_Log($hash, 5, ">>>>>>>>>>>>>>>>>>>> ".$aName."->".Dumper($defs{$name}{READINGS}{$aName}));
-      delete $defs{$name}{READINGS}{$aName};
-  }
+  #foreach my $aName (@a_keys) {
+  #  delete($omap->{$aName});
+  #}
+  #foreach my $aName (keys %{$omap}) {
+  #  #  SYSMON_Log($hash, 5, ">>>>>>>>>>>>>>>>>>>> ".$aName."->".Dumper($defs{$name}{READINGS}{$aName}));
+  #    delete $defs{$name}{READINGS}{$aName};
+  #}
 
   readingsEndUpdate($hash,defined($hash->{LOCAL}) ? 0 : 1);    
 }
@@ -1613,6 +1624,12 @@ SYSMON_getUptime($$)
   my $uptime_str = SYSMON_execute($hash, "cat /proc/uptime");
   if(defined($uptime_str)) {
     my ($uptime, $idle) = split(/\s+/, trim($uptime_str));
+    unless (defined ($idle)) {
+      # Hack/Sonderlocke: https://forum.fhem.de/index.php/topic,118067.msg1126192.html#msg1126192
+      my $dotpos = index($uptime,'.');
+      $idle = substr($uptime, $dotpos+3, length($uptime)-$dotpos+3);
+      $uptime = substr($uptime, 0, $dotpos+3);
+    }
     #postfux use idle from /proc/stat instead
     my $stat_str = SYSMON_execute($hash, "cat /proc/stat|grep 'cpu '");
     my($tName, $neuCPUuser, $neuCPUnice, $neuCPUsystem, $neuCPUidle, $neuCPUiowait, $neuCPUirq, $neuCPUsoftirq) = split(/\s+/, trim($stat_str));
@@ -2205,6 +2222,11 @@ SYSMON_getCPUProcStat_intern($$$)
   my ($hash, $map, $entry) = @_;
   
   my($tName, $neuCPUuser, $neuCPUnice, $neuCPUsystem, $neuCPUidle, $neuCPUiowait, $neuCPUirq, $neuCPUsoftirq) = split(/\s+/, trim($entry));
+  unless (defined $neuCPUuser) {
+    #  ingnore when not recognized
+    return $map;
+  }
+
   my $pName = "stat_".$tName;
   $map->{$pName}=$neuCPUuser." ".$neuCPUnice." ".$neuCPUsystem." ".$neuCPUidle." ".$neuCPUiowait." ".$neuCPUirq." ".$neuCPUsoftirq;
   

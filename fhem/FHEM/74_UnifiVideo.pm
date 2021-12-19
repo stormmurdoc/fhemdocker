@@ -1,4 +1,4 @@
-# $Id: 74_UnifiVideo.pm 19679 2019-06-21 14:14:29Z justme1968 $
+# $Id: 74_UnifiVideo.pm 23887 2021-03-04 08:57:07Z justme1968 $
 
 package main;
 
@@ -31,6 +31,7 @@ UnifiVideo_Initialize($)
   $hash->{GetFn}    = "UnifiVideo_Get";
   $hash->{AttrFn}   = "UnifiVideo_Attr";
   $hash->{AttrList} = "disable filePath apiKey ".
+                      "logfile ".
                       "sshUser ".
                       $readingFnAttributes;
 
@@ -119,7 +120,8 @@ UnifiVideo_2html($;$$)
   $width = 200 if( !$width );
   my $name = $hash->{NAME};
 
-  my @cams = split(',', $cams) if( defined($cams) );
+  my @cams;
+     @cams = split(',', $cams) if( defined($cams) );
 
   my $apiKey = AttrVal($name, 'apiKey', undef);
   return undef if( !$apiKey );
@@ -154,7 +156,7 @@ UnifiVideo_2html($;$$)
     next if( $entry->{state} eq 'DISCONNECTED' );
     if( defined($cams) ) {
       foreach my $cam (@cams) {
-        if( ( $cam =~ m/[0-9]+/ && int($cam) == $i )
+        if( ( $cam =~ m/^[0-9]+$/ && int($cam) == $i )
             || $entry->{_id} eq $cam
             || $entry->{name} =~ m/$cam/ ) {
           $html .= "\n" if( $html );
@@ -201,7 +203,7 @@ UnifiVideo_Set($$@)
     foreach my $entry (@{$json->{data}}) {
       next if( $entry->{deleted} );
       next if( $entry->{state} eq 'DISCONNECTED' );
-      if( ( $cam =~ m/[0-9]+/ && int($cam) == $i )
+      if( ( $cam =~ m/^[0-9]+$/ && int($cam) == $i )
           || $entry->{_id} eq $cam
           || $entry->{name} =~ m/$cam/ ) {
         $cam = $entry->{_id};
@@ -637,7 +639,7 @@ UnifiVideo_Attr($$$)
   <ul>
     <li>JSON has to be installed on the FHEM host.</li>
     <li>create nvr api key: admin-&gt;my account-&gt;api access</li>
-    <li><code>define <name> webLink htmlCode {UnifiVideo_2html('&lt;nvr&gt;','&lt;cam&gt;[,&lt;cam2&gt;,..]'[,&lt;width&gt;])}</code></li>
+    <li><code>define &lt;name&gt; webLink htmlCode {UnifiVideo_2html('&lt;nvr&gt;','&lt;cam&gt;[,&lt;cam2&gt;,..]'[,&lt;width&gt;])}</code></li>
   </ul><br>
 
   <a name="UnifiVideo_Set"></a>
@@ -645,7 +647,7 @@ UnifiVideo_Attr($$$)
   <ul>
     <li>snapshot cam=&lt;cam&gt; width=&lt;width&gt; fileName=&lt;fileName&gt;<br>
       takes a snapshot from &lt;cam&gt; with optional &lt;width&gt; and stores it with the optional &lt;fileName&gt;<br>
-      &lt;cam&gt; can be the number of the cammera, its id or a regex that is matched against the name.
+      &lt;cam&gt; can be the number of the camera, its id or a regex that is matched against the name.
       </li>
     <li>reconnect<br>
       </li>

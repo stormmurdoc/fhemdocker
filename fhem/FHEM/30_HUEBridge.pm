@@ -1,5 +1,5 @@
 
-# $Id: 30_HUEBridge.pm 21136 2020-02-07 09:20:50Z justme1968 $
+# $Id: 30_HUEBridge.pm 24296 2021-04-21 08:30:11Z justme1968 $
 
 # "Hue Personal Wireless Lighting" is a trademark owned by Koninklijke Philips Electronics N.V.,
 # see www.meethue.com for more information.
@@ -410,12 +410,13 @@ sub HUEBridge_fillBridgeInfo($$)
 
   $hash->{name} = $config->{name};
   $hash->{modelid} = $config->{modelid};
+  $hash->{bridgeid} = $config->{bridgeid};
   $hash->{swversion} = $config->{swversion};
   $hash->{apiversion} = $config->{apiversion};
 
   if( defined($config->{websocketport}) ) {
     $hash->{websocketport} = $config->{websocketport};
-    HUEBridge_openWebsocket($hash);
+    HUEBridge_openWebsocket($hash) if( !defined($hash->{CD}) );
   }
 
   if( $hash->{apiversion} ) {
@@ -469,7 +470,8 @@ HUEBridge_OpenDev($)
       return;
     }
 
-  $hash->{mac} = $result->{'mac'};
+  $hash->{mac} = $result->{mac};
+  #$hash->{bridgeid} = $result->{bridgeid};
 
   readingsSingleUpdate($hash, 'state', 'connected', 1 );
   HUEBridge_GetUpdate($hash);
@@ -644,9 +646,9 @@ HUEBridge_Set($@)
     return "starting update";
 
   } elsif($cmd eq 'autocreate') {
-    return "usage: autocreate" if( @args != 0 );
+    return "usage: autocreate [sensors]" if( $arg && $arg ne 'sensors' );
 
-    return HUEBridge_Autocreate($hash,1);
+    return HUEBridge_Autocreate($hash,1,$arg);
 
   } elsif($cmd eq 'autodetect') {
     return "usage: autodetect" if( @args != 0 );
@@ -799,7 +801,7 @@ HUEBridge_Set($@)
 
   } elsif($cmd eq 'createrule' || $cmd eq 'updaterule') {
     return "usage: createrule <name> <conditions&actions json>" if( $cmd eq 'createrule' && @args < 2 );
-    return "usage: updaterule <id> <conditions&actions json>" if( $cmd eq 'updaterule' && @args != 2 );
+    return "usage: updaterule <id> <conditions&actions json>" if( $cmd eq 'updaterule' && @args < 2 );
 
     $args[@args-1] = '
 {  "name":"Wall Switch Rule",
@@ -809,7 +811,7 @@ HUEBridge_Set($@)
    "actions":[
         {"address":"/groups/0/action","method":"PUT", "body":{"scene":"S3"}}
 ]}' if( 0 || !$args[@args-1] );
-    my $json = $args[@args-1];
+    my $json = join( ' ', @args[1..@args-1]);
     my $obj = eval { JSON->new->utf8(0)->decode($json) };
     if( $@ ) {
       Log3 $name, 2, "$name: json error: $@ in $json";
@@ -830,10 +832,10 @@ HUEBridge_Set($@)
     return undef;
 
   } elsif($cmd eq 'updateschedule') {
-    return "usage: updateschedule <id> <attributes json>" if( @args != 2 );
+    return "usage: $cmd <id> <attributes json>" if( @args < 2 );
     return "$arg is not a hue schedule number" if( $arg !~ m/^\d+$/ );
 
-    my $json = $args[@args-1];
+    my $json = join( ' ', @args[1..@args-1]);
     my $obj = eval { JSON->new->utf8(0)->decode($json) };
     if( $@ ) {
       Log3 $name, 2, "$name: json error: $@ in $json";
@@ -1021,7 +1023,7 @@ HUEBridge_Set($@)
       $list .= " scene";
     }
     $list .= " swupdate:noArg" if( defined($hash->{updatestate}) && $hash->{updatestate} =~ '^2' );
-    $list .= " reaterule updaterule updateschedule enableschedule disableschedule deleterule createsensor deletesensor configsensor setsensor updatesensor deletewhitelist touchlink:noArg checkforupdate:noArg autodetect:noArg autocreate:noArg statusRequest:noArg";
+    $list .= " createrule updaterule updateschedule enableschedule disableschedule deleterule createsensor deletesensor configsensor setsensor updatesensor deletewhitelist touchlink:noArg checkforupdate:noArg autodetect:noArg autocreate:noArg statusRequest:noArg";
 
     return "Unknown argument $cmd, choose one of $list";
   }
@@ -1046,8 +1048,8 @@ HUEBridge_Get($@)
     my $ret = "";
     foreach my $key ( sort {$a<=>$b} keys %{$result} ) {
       my $code = $name ."-". $key;
-      my $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
-      $fhem_name = "" if( !$fhem_name );
+      my $fhem_name = '';
+         $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
       $ret .= sprintf( "%2i  %-25s %-15s %-25s", $key, $result->{$key}{name}, $fhem_name, $result->{$key}{type} );
       $ret .= sprintf( "capabilities: %s", encode_json($result->{$key}{capabilities}) ) if( $arg && $arg eq 'detail' && defined($result->{$key}{capabilities}) );
       $ret .= sprintf( "\n%2s  %-25s %-15s %-25s      config: %s", "", "", "", "", encode_json($result->{$key}{config}) ) if( $arg && $arg eq 'detail' && defined($result->{$key}{config}) );
@@ -1069,7 +1071,8 @@ HUEBridge_Get($@)
     my $ret = "";
     foreach my $key ( sort {$a<=>$b} keys %{$result} ) {
       my $code = $name ."-G". $key;
-      my $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
+      my $fhem_name = '';
+         $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
       $fhem_name = "" if( !$fhem_name );
       $result->{$key}{type} = '' if( !defined($result->{$key}{type}) );     #deCONZ fix
       $result->{$key}{class} = '' if( !defined($result->{$key}{class}) );   #deCONZ fix
@@ -1170,7 +1173,8 @@ HUEBridge_Get($@)
     my $ret = "";
     foreach my $key ( sort {$a<=>$b} keys %{$result} ) {
       my $code = $name ."-S". $key;
-      my $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
+      my $fhem_name = '';
+         $fhem_name = $modules{HUEDevice}{defptr}{$code}->{NAME} if( defined($modules{HUEDevice}{defptr}{$code}) );
       $fhem_name = "" if( !$fhem_name );
       $ret .= sprintf( "%2i: %-15s %-15s %-20s", $key, $result->{$key}{name}, $fhem_name, $result->{$key}{type} );
       $ret .= sprintf( " %s", encode_json($result->{$key}{state}) ) if( $arg && $arg eq 'detail' );
@@ -1313,7 +1317,8 @@ HUEBridge_updateGroups($$)
     foreach my $light ( split(',', $chash->{lights}) ) {
       next if( !$light );
       next if( !defined($modules{HUEDevice}{defptr}{"$name-$light"}) );
-      my $current = $modules{HUEDevice}{defptr}{"$name-$light"}{helper};
+      my $lhash = $modules{HUEDevice}{defptr}{"$name-$light"};
+      my $current = $lhash->{helper};
       next if( !$current );
       #next if( !$current->{on} );
       next if( $current->{helper}{devtype} );
@@ -1365,7 +1370,12 @@ HUEBridge_updateGroups($$)
       $readings{sat} += $current->{sat} if( defined($current->{sat}) );
 
       $readings{on} |= ($current->{on}?'1':'0');
-      $readings{reachable} |= ($current->{reachable}?'1':'0');
+
+      if( AttrVal($lhash->{NAME}, 'ignoreReachable', 0) ) {
+        $readings{reachable} |= 1;
+      } else {
+        $readings{reachable} |= ($current->{reachable}?'1':'0');
+      }
 
       if( !defined($readings{alert}) ) {
         $readings{alert} = $current->{alert};
@@ -1384,6 +1394,10 @@ HUEBridge_updateGroups($$)
       }
 
       ++$count;
+    }
+
+    if( AttrVal($name, 'ignoreReachable', 0) ) {
+      delete $readings{reachable};
     }
 
     if( defined($hue) && $readings{colormode} && $readings{colormode} ne "ct" ) {
@@ -1500,9 +1514,9 @@ HUEBridge_Parse($$)
 }
 
 sub
-HUEBridge_Autocreate($;$)
+HUEBridge_Autocreate($;$$)
 {
-  my ($hash,$force)= @_;
+  my ($hash,$force,$sensors)= @_;
   my $name = $hash->{NAME};
 
   if( !$force ) {
@@ -1564,7 +1578,7 @@ HUEBridge_Autocreate($;$)
 
     my $cmdret= CommandDefine(undef,$define);
     if($cmdret) {
-      Log3 $name, 1, "$name: Autocreate: An error occurred while creating device for id '$id': $cmdret";
+      Log3 $name, 1, "$name: Autocreate: An error occurred while creating group for id '$id': $cmdret";
     } else {
       $cmdret= CommandAttr(undef,"$devname alias ".$result->{$id}{name});
       $cmdret= CommandAttr(undef,"$devname room HUEDevice");
@@ -1575,6 +1589,40 @@ HUEBridge_Autocreate($;$)
       $defs{$devname}{helper}{fromAutocreate} = 1 ;
 
       $autocreated++;
+    }
+  }
+
+  if( $sensors || $hash->{websocket} ) {
+    $result =  HUEBridge_Call($hash,undef, 'sensors', undef);
+    foreach my $key ( keys %{$result} ) {
+      my $id= $key;
+
+      my $code = $name ."-S". $id;
+      if( defined($modules{HUEDevice}{defptr}{$code}) ) {
+        Log3 $name, 5, "$name: id '$id' already defined as '$modules{HUEDevice}{defptr}{$code}->{NAME}'";
+        next;
+      }
+
+      my $devname= "HUESensor" . $id;
+      $devname = $name ."_". $devname if( $hash->{helper}{count} );
+      my $define= "$devname HUEDevice sensor $id IODev=$name";
+
+      Log3 $name, 4, "$name: create new sensor '$devname' for address '$id'";
+
+      my $cmdret= CommandDefine(undef,$define);
+      if($cmdret) {
+        Log3 $name, 1, "$name: Autocreate: An error occurred while creating sensor for id '$id': $cmdret";
+      } else {
+        $cmdret= CommandAttr(undef,"$devname alias ".$result->{$id}{name});
+        $cmdret= CommandAttr(undef,"$devname room HUEDevice");
+        $cmdret= CommandAttr(undef,"$devname group HUESensor");
+        $cmdret= CommandAttr(undef,"$devname IODev $name");
+
+        HUEDeviceSetIcon($devname);
+        $defs{$devname}{helper}{fromAutocreate} = 1 ;
+
+        $autocreated++;
+      }
     }
   }
 
@@ -2163,7 +2211,7 @@ HUEBridge_Attr($$$)
   The actual hue bulbs, living colors or living whites devices are defined as <a href="#HUEDevice">HUEDevice</a> devices.
 
   <br><br>
-  All newly found devices and groups are autocreated at startup and added to the room HUEDevice.
+  All newly found lights and groups are autocreated at startup and added to the room HUEDevice.
 
   <br><br>
   Notes:
@@ -2220,8 +2268,8 @@ HUEBridge_Attr($$$)
   <a name="HUEBridge_Set"></a>
   <b>Set</b>
   <ul>
-    <li>autocreate<br>
-      Create fhem devices for all bridge devices.</li>
+    <li>autocreate [sensors]<br>
+      Create fhem devices for all light and group devices. sensors are autocreated only if sensors parameter is given.</li>
     <li>autodetect<br>
       Initiate the detection of new ZigBee devices. After aproximately one minute any newly detected
       devices can be listed with <code>get &lt;bridge&gt; devices</code> and the corresponding fhem devices

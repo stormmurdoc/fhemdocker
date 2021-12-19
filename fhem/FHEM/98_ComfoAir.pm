@@ -1,10 +1,9 @@
-##############################################
-# $Id: 98_ComfoAir.pm 14232 2017-05-09 19:10:28Z StefanStrobel $
+##########################################################################
+# $Id: 98_ComfoAir.pm 24283 2021-04-19 17:29:06Z StefanStrobel $
 #
 # fhem Modul für ComfoAir Lüftungsanlagen von Zehnder mit 
 # serieller Schnittstelle (RS232) sowie dazu kompatible Anlagen wie 
-# Storkair WHR 930, Storkair 950
-# Paul Santos 370 DC, Paul Santos 570 DC
+# Storkair WHR 930, Storkair 950, Paul Santos 370 DC, Paul Santos 570 DC
 # Wernig G90-380, Wernig G90-550
 #
 # Dieses Modul basiert auf der Protokollanalyse von SeeSolutions:
@@ -28,46 +27,94 @@
 #     along with fhem.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-#   Changelog:
-#
 #   2014-04-18  initial version
-#   2014-05-17  added more protocol commands, changed logging settings
-#   2014-05-25  added hide- attributes
-#   2014-07-07  corrected handling of 0xD2 Message (protocol is different than documented)
-#   2014-07-24  added max queue length checking and attribute
-#   2016-01-25  Reading Namen mit Umlauten korrigiert
-#   2016-04-06  Testmode Protokollbefehle hinzugefügt
-#   2016-11-13  korrektur bei set / get / readanswer. Set liefert bei Erfolg undef statt Text
-#   2017-02-12  Doku ergänzt
-#   2017-05-09  Text-Kodierung für summary korrigiert
+
 #
-#
-# Todo / Ideas:
+# todo:
+# - tests for interval timer and queue timer 
+# - Timeout-Timer as feature in utils
 #
 
-package main;
+package ComfoAir;
 
 use strict;
 use warnings;
-use Time::HiRes qw( time );
+use GPUtils     qw(:all);
+use Time::HiRes qw(gettimeofday time);    
+use DevIo;
+use FHEM::HTTPMOD::Utils  qw(:all);
 
-sub ComfoAir_Initialize($);
-sub ComfoAir_Define($$);
-sub ComfoAir_Undef($$);
-sub ComfoAir_Set($@);
-sub ComfoAir_Get($@);
-sub ComfoAir_Read($);
-sub ComfoAir_Ready($);
-sub ComfoAir_ReadAnswer($$$);
-sub ComfoAir_GetUpdate($$);
-sub ComfoAir_Send($$$;$$);
-sub ComfoAir_ParseFrames($);
-sub ComfoAir_InterpretFrame($$);
-sub ComfoAir_HandleSendQueue($);
-sub ComfoAir_SendAck($);
-sub ComfoAir_TimeoutSend($);
+use Exporter ('import');
+our @EXPORT_OK = qw();
+our %EXPORT_TAGS = (all => [@EXPORT_OK]);
 
-my $ComfoAir_Version = '1.51 - 9.5.2017';
+BEGIN {
+    GP_Import( qw(
+        fhem
+        CommandAttr
+        CommandDeleteAttr
+        addToDevAttrList
+        AttrVal
+        ReadingsVal
+        ReadingsTimestamp
+        readingsSingleUpdate
+        readingsBeginUpdate
+        readingsBulkUpdate
+        readingsEndUpdate
+        InternalVal
+        makeReadingName
+        Log3
+        RemoveInternalTimer
+        InternalTimer
+        deviceEvents
+        EvalSpecials
+        AnalyzePerlCommand
+        CheckRegexp
+        IsDisabled
+
+        gettimeofday
+        FmtDateTime
+        GetTimeSpec
+        fhemTimeLocal
+        time_str2num
+        min
+        max
+        minNum
+        maxNum
+        abstime2rel
+        defInfo
+        trim
+        ltrim
+        rtrim
+        UntoggleDirect
+        UntoggleIndirect
+        IsInt
+        fhemNc
+        round
+        sortTopicNum
+        Svn_GetFile
+        WriteFile
+
+        DevIo_OpenDev
+        DevIo_SimpleWrite
+        DevIo_SimpleRead
+        DevIo_CloseDev
+        SetExtensions
+        HttpUtils_NonblockingGet
+
+        featurelevel
+        defs
+        modules
+        attr
+        init_done
+    ));
+
+    GP_Export( qw(
+        Initialize
+    ));
+};
+
+my $Module_Version = '2.03 - 13.4.2021';
 
 # %parseInfo:
 # replyCode => msgHashRef
@@ -85,12 +132,12 @@ my %parseInfo = (
                   request => "0001", 
                 },                              
                                
-    "001A"  =>  { unpack   => "C",
+    "001a"  =>  { unpack   => "C",
                   name     => "Test-Modus-Aus",
                   request => "0019", 
                 },  
                  
-    "FF09"  =>  { unpack   => "C",   
+    "ff09"  =>  { unpack   => "C",   
                   name     => "Klappen setzen",     
                   readings => [ { name => "Bypass",
                                   map => "1:offen, 0:geschlossen, 3:stop",
@@ -239,25 +286,22 @@ my %getHash;        # helper to reference the msgHash in parseInfo for each name
 my %requestHash;    # helper to reference each msgHash for each request Set
 my %cmdHash;        # helper to map from send cmd code to msgHash of Reply
     
-my %ComfoAir_AddSets = (
+my %AddSets = (
   "SendRawData"     => ""
 );
     
 
 #####################################
-sub
-ComfoAir_Initialize($)
-{
-    my ($hash) = @_;
+sub Initialize {
+    my $hash = shift;
 
-    require "$attr{global}{modpath}/FHEM/DevIo.pm";
-
-    $hash->{ReadFn}  = "ComfoAir_Read";
-    $hash->{ReadyFn} = "ComfoAir_Ready";
-    $hash->{DefFn}   = "ComfoAir_Define";
-    $hash->{UndefFn} = "ComfoAir_Undef";
-    $hash->{SetFn}   = "ComfoAir_Set";
-    $hash->{GetFn}   = "ComfoAir_Get";
+    $hash->{ReadFn}  = \&ComfoAir::ReadFn;
+    $hash->{ReadyFn} = \&ComfoAir::ReadyFn;
+    $hash->{DefFn}   = \&ComfoAir::DefineFn;
+    $hash->{UndefFn} = \&ComfoAir::UndefFn;
+    $hash->{SetFn}   = \&ComfoAir::SetFn;
+    $hash->{GetFn}   = \&ComfoAir::GetFn;
+    $hash->{AttrFn}  = \&ComfoAir::AttrFn;
   
     @setList  = ();
     @getList  = ();
@@ -307,7 +351,8 @@ ComfoAir_Initialize($)
                     my $hl = $readingHashRef->{map};                # create hint list from map
                     $hl =~ s/([^ ,\$]+):([^ ,\$]+,?) ?/$2/g;
                     $readingHashRef->{setopt} = $reading . ":$hl";
-                } else {
+                } 
+                else {
                     $readingHashRef->{setopt} = $reading;           # keine besonderen Optionen, nur den Namen für setopt verwenden.
                 }
                 if (defined($readingHashRef->{hint})){              # hints explizit definiert? (überschreibt evt. schon abgeleitete hints)
@@ -320,101 +365,116 @@ ComfoAir_Initialize($)
         }
     }
     $hash->{AttrList}= "do_not_notify:1,0 " . 
-        "queueDelay " .
-        "timeout " .
-        "queueMax " . 
-        #"minSendDelay " .
+        'queueDelay ' .
+        'timeout ' .
+        'queueMax ' . 
+        'alignTime' .
         join (" ", @pollList) . " " .                               # Def der zyklisch abzufragenden Nachrichten
-        $readingFnAttributes;
+        $main::readingFnAttributes;
+    return;
 }
 
 
 #####################################
-sub
-ComfoAir_Define($$)
-{
-    my ($hash, $def) = @_;
-    my @a = split("[ \t][ \t]*", $def);
+sub DefineFn {
+    my $hash = shift;                           # reference to the Fhem device hash 
+    my $def  = shift;                           # definition string
+    my @a    = split( /[ \t]+/, $def );         # the above string split at space or tab
     my ($name, $ComfoAir, $dev, $interval) = @a;
     return "wrong syntax: define <name> ComfoAir [devicename|none] [interval]"
         if(@a < 3);
         
     $hash->{BUSY}   = 0;    
-    $hash->{EXPECT} = "";
-    $hash->{ModuleVersion}   = $ComfoAir_Version;
+    $hash->{EXPECT} = '';
+    $hash->{ModuleVersion}   = $Module_Version;
     
-    if (!defined($interval)) {
-        $hash->{INTERVAL} = 0; 
-        Log 1, "$name: interval is 0 or not defined - not sending requests - just listening!";
-    } else {
-        $hash->{INTERVAL} = $interval;
-    }
     DevIo_CloseDev($hash);
-
-    if($dev eq "none") {
-        Log 1, "$name: device is none, commands will be echoed only";
-        return undef;
-    }
     $hash->{DeviceName} = $dev;
-    my $ret = DevIo_OpenDev($hash, 0, 0);
-
-    InternalTimer(gettimeofday()+1, "ComfoAir_GetUpdate", $hash, 0)       # erste Abfrage von Werten nach 1 Sekunde (zumindest in Queue stellen)
-        if ($hash->{INTERVAL});
-    return $ret;
+    if($dev ne "none") {
+        DevIo_OpenDev($hash, 0, 0);
+    }
+    if (!$interval) {
+        $hash->{Interval} = 0; 
+        Log3 $name, 3, "$name: interval is 0 or not specified - not sending requests - just listening!";
+    } 
+    else {
+        $hash->{Interval} = $interval;
+        UpdateTimer($hash, \&ComfoAir::GetUpdate, 'start');
+    }
+    Log3 $name, 3, "$name: Defined with device $dev" . ($interval ? ", interval $interval" : '');
+    return;
 }
 
 
 #####################################
-sub
-ComfoAir_Undef($$)
-{
+sub UndefFn {
     my ($hash, $arg) = @_;
     my $name = $hash->{NAME};
     DevIo_CloseDev($hash); 
     RemoveInternalTimer ("timeout:".$name);
-    RemoveInternalTimer ("queue:".$name); 
-    RemoveInternalTimer ($hash);
-    return undef;
+    StopQueueTimer($hash, {silent => 1});     
+    UpdateTimer($hash, \&ComfoAir::GetUpdate, 'stop');
+    return;
 }
 
 
-#####################################
-sub
-ComfoAir_Get($@)
-{
-    my ($hash, @a) = @_;
-    return "\"get ComfoAir\" needs at least one argument" if(@a < 2);
-
-    my $name = $hash->{NAME};
-    my $getName = $a[1];
+#########################################################################
+# Attr command 
+# if validation fails, return something so CommandAttr in fhem.pl doesn't assign a value to $attr
+sub AttrFn {
+    my $cmd   = shift;                  # 'set' or 'del'
+    my $name  = shift;                  # the Fhem device name
+    my $aName = shift;                  # attribute name
+    my $aVal  = shift // '';            # attribute value
+    my $hash  = $defs{$name};           # reference to the Fhem device hash
     
-    if (defined($getHash{$getName})) {
-        # get Option für Reading aus parseInfo -> generische Verarbeitung
-        my $msgHash = $getHash{$getName}{msgHash};  # Hash für die Nachricht aus parseInfo
-        Log3 $name, 3, "$name: Request found in getHash created from parseInfo data";
-        if ($msgHash->{request}) {
-            ComfoAir_Send($hash, $msgHash->{request}, "", $msgHash->{replyCode}, 1);
-            my ($err, $result) = ComfoAir_ReadAnswer($hash, $getName, $msgHash->{replyCode});
-            return $err if ($err);
-            return $result;
-        } else {
-            return "Protocol doesn't provide a command to get $getName";
+    Log3 $name, 5, "$name: attr $name $aName $aVal";
+    if ($cmd eq 'set') {        
+        if ($aName eq 'alignTime') {
+            my ($alErr, $alHr, $alMin, $alSec, undef) = GetTimeSpec($aVal);
+            return "Invalid Format $aVal in $aName : $alErr" if ($alErr);
+            my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
+            $hash->{'.TimeAlign'} = fhemTimeLocal($alSec, $alMin, $alHr, $mday, $mon, $year);
+            UpdateTimer($hash, \&ComfoAir::GetUpdate, 'start');      # change timer for alignment
+        } 
+    } 
+    elsif ($cmd eq 'del') {                             # Deletion of Attributes
+        #Log3 $name, 5, "$name: del attribute $aName";
+        if ($aName eq 'alignTime') {
+            delete $hash->{'.TimeAlign'};
         }
-    } else {
-        # undefiniertes Get
-        Log3 $name, 5, "$name: Get $getName not found, return list @getList ";
-        return "Unknown argument $a[1], choose one of @getList ";
     }
-
-    return undef;
+    return;
 }
 
 
+#####################################
+sub GetFn {
+    my @getValArr = @_;                     # rest is optional values
+    my $hash      = shift @getValArr;       # reference to device hash
+    my $name      = shift @getValArr;       # device name
+    my $getName   = shift @getValArr;       # get option name
+    my $getVal    = join(' ', @getValArr);  # optional value after get name
+
+    return "\"get ComfoAir\" needs at least one argument" if(!$getName);
+    if (!defined($getHash{$getName})) {     # undefined Get
+        Log3 $name, 5, "$name: Get $getName not found, return list @getList ";
+        return "Unknown argument $getName, choose one of @getList ";
+    }
+    my $msgHash = $getHash{$getName}{msgHash};  # Hash für die Nachricht aus parseInfo
+    Log3 $name, 5, "$name: Request found in getHash created from parseInfo data";
+    if (!$msgHash->{request}) {
+        return "Protocol doesn't provide a command to get $getName";
+    }
+    Send($hash, $msgHash->{request}, '', $msgHash->{replyCode}, 1);
+    my ($err, $result) = ReadAnswer($hash, $getName, $msgHash->{replyCode});
+    return $err if ($err);
+    return $result;
+}
+
 
 #####################################
-sub
-ComfoAir_Set($@)
-{
+sub SetFn {
     my ($hash, @a) = @_;
     return "\"set ComfoAir\" needs at least an argument" if(@a < 2);
 
@@ -428,7 +488,7 @@ ComfoAir_Set($@)
     if (defined($requestHash{$setName})) {
         # set Option ist Daten-Abfrage-Request aus parseInfo
         Log3 $name, 5, "$name: Request found in requestHash created from parseInfo data";
-        ComfoAir_Send($hash, $requestHash{$setName}{request}, "", $requestHash{$setName}{replyCode});
+        Send($hash, $requestHash{$setName}{request}, "", $requestHash{$setName}{replyCode});
         return "";
     }
     if (defined($setHash{$setName})) {
@@ -472,46 +532,44 @@ ComfoAir_Set($@)
         # 3. Schritt: Konvertiere mit setexpr falls definiert
         if (defined($setHash{$setName}{setexpr})) {
             my $val = $rawVal;
-            $rawVal = eval($setHash{$setName}{setexpr});
+            $rawVal = eval($setHash{$setName}{setexpr}); ## no critic - expression needs to come from variable
             Log3 $name, 5, "$name: converted Value $val to $rawVal using expr $setHash{$setName}{setexpr}";
         }
         # 4. Schritt: mit sprintf umwandeln und senden.
         $data = sprintf($fmt, $rawVal); # in parseInfo angegebenes Format bei set=> - meist Konvert in Hex
-        ComfoAir_Send($hash, $cmd, $data, 0);
+        Send($hash, $cmd, $data, 0);
         # Nach dem Set gleich den passenden Datenblock nochmals anfordern, damit die Readings de neuen Wert haben
         if ($setHash{$setName}{msgHash}{request}) {
-            ComfoAir_Send($hash, $setHash{$setName}{msgHash}{request}, "", 
+            Send($hash, $setHash{$setName}{msgHash}{request}, "", 
                         $setHash{$setName}{msgHash}{replyCode},1);
             # falls ein minDelay bei Send implementiert wäre, müsste ReadAnswer optimiert werden, sonst wird der 2. send ggf nicht vor einem Timeout gesendet ...
-            my ($err, $result) = ComfoAir_ReadAnswer($hash, $setName, $setHash{$setName}{msgHash}{replyCode});
+            my ($err, $result) = ReadAnswer($hash, $setName, $setHash{$setName}{msgHash}{replyCode});
             #return "$setName -> $result";
             return $err if ($err);
         }
-        return undef;
+        return;
         
-    } elsif (defined($ComfoAir_AddSets{$setName})) {
-        # Additional set option not defined in parseInfo but ComfoAir_AddSets
+    } elsif (defined($AddSets{$setName})) {
+        # Additional set option not defined in parseInfo but AddSets
         if($setName eq "SendRawData") {
             return "please specify data as cmd or cmd -> data in hex" 
                 if (!defined($setVal));
             ($cmd, $data) = split("->",$setVal); # eingegebener Wert ist HexCmd -> HexData
             $data="" if(!defined($data));
         }
-        ComfoAir_Send($hash, $cmd, $data, 0);
+        Send($hash, $cmd, $data, 0);
     } else {
         # undefiniertes Set
-        Log3 $name, 5, "$name: Set $setName not found, return list @setList " . join (" ", keys %ComfoAir_AddSets);
-        return "Unknown argument $a[1], choose one of @setList " . join (" ", keys %ComfoAir_AddSets);
+        Log3 $name, 5, "$name: Set $setName not found, return list @setList " . join (" ", keys %AddSets);
+        return "Unknown argument $a[1], choose one of @setList " . join (" ", keys %AddSets);
     }
-    return undef;
+    return;
 }
 
 
 #####################################
 # Called from the read functions
-sub
-ComfoAir_ParseFrames($)
-{
+sub ParseFrames {
     my $hash  = shift;
     my $name  = $hash->{NAME};
     my $frame = $hash->{helper}{buffer};
@@ -529,65 +587,58 @@ ComfoAir_ParseFrames($)
         Log3 $name, 5, "$name: ParseFrames got frame: $hash->{RAWBUFFER}" .
             " data $hash->{LASTFRAMEDATA} Rest " . unpack ('H*', $hash->{helper}{buffer});
         return $framedata;
-    } elsif ($frame =~ /\x07\xf3(.*)/s) {
-        my $level = ($hash->{INTERVAL} ? 4 : 5);
+    } 
+    # ACK?
+    elsif ($frame =~ /\x07\xf3(.*)/s) {
+        my $level = ($hash->{Interval} ? 4 : 5);
         Log3 $name, $level, "$name: read got Ack";
         $hash->{helper}{buffer} = $1;           # only keep the rest after the frame
         if (!$hash->{EXPECT}) {
             $hash->{BUSY} = 0;
             # es wird keine weitere Antwort erwartet -> gleich weiter Send Queue abarbeiten und nicht auf alten Timer warten
             RemoveInternalTimer ("timeout:".$name);
-            RemoveInternalTimer ("queue:".$name); 
-            ComfoAir_HandleSendQueue ("direct:".$name); # don't wait for next regular handle queue slot
+            HandleSendQueue ("direct:".$name); # don't wait for next regular handle queue slot
         }
-        return undef;                           
-    } else {
-        return undef;                           # continue reading, probably frame not fully received yet
-    }
+    } 
+    return;                           # continue reading, probably frame not fully received yet
 }
 
 
 #####################################
 # Called from the read functions
-sub 
-ComfoAir_InterpretFrame($$)
-{
+sub InterpretFrame {
     my $hash      = shift;
     my $framedata = shift;
     my $name      = $hash->{NAME};
     
     my ($cmd, $hexcmd, $hexdata, $len, $data, $chk);
     if (defined($framedata)) {
-        if ($framedata =~ /(.{2})(.)(.*)(.)/s) {
-            $cmd     = $1;
-            $len     = $2;
-            $data    = $3;
-            $chk     = unpack ('C', $4);
-            $hexcmd  = unpack ('H*', $cmd);
-            $hexdata = unpack ('H*', $data);
-            Log3 $name, 5, "$name: read split frame into cmd $hexcmd, len " . unpack ('C', $len) . 
-                ", data $hexdata chk $chk";
-        } else {
+        if ($framedata !~ /(.{2})(.)(.*)(.)/s) {
             Log3 $name, 3, "$name: read: error splitting frame into fields: $hash->{LASTFRAMEDATA}";
             return;
         }
-    }
-  
+        $cmd     = $1;
+        $len     = $2;
+        $data    = $3;
+        $chk     = unpack ('C', $4);
+        $hexcmd  = unpack ('H*', $cmd);
+        $hexdata = unpack ('H*', $data);
+        Log3 $name, 5, "$name: read split frame into cmd $hexcmd, len " . unpack ('C', $len) . 
+            ", data $hexdata chk $chk";
+    }  
     # Länge prüfen
     if (unpack ('C', $len) != length($data)) {
         Log3 $name, 4, "$name: read: wrong length: " . length($data) . 
             " (calculated) != " . unpack ('C', $len) . " (header)" .
             " cmd=$hexcmd, data=$hexdata, chk=$chk";
-        #return;
+        return;
     }
-    
     # Checksum prüfen
     my $csum = unpack ('%8C*', $cmd . $len . $data . "\xad"); # berechne csum
     if($csum != $chk) {
         Log3 $name, 4, "$name: read: wrong checksum: $csum (calculated) != $chk (frame) cmd $hexcmd, data $hexdata";
         return;
-    };
-    
+    }; 
     # Parse Data
     if ($parseInfo{$hexcmd}) {
         if (!AttrVal($name, "hide-$parseInfo{$hexcmd}{name}", 0)) {
@@ -598,9 +649,9 @@ ComfoAir_InterpretFrame($$)
             my @fields = unpack($p{"unpack"}, $data);
             my $filter = 0;
             if ($p{check}) {
-                Log3 $name, 5, "$name: cmd $hexcmd check is " . eval($p{check}) . 
-                     ', $fields[5] = ' . $fields[5] if ($fields[5] > 15);
-                if (!eval($p{check})) {
+                my $result = eval($p{check});   ## no critic - expression needs to come from variable
+                Log3 $name, 5, "$name: cmd $hexcmd check is " . $result . ', $fields[5] = ' . $fields[5] if ($fields[5] > 15);
+                if (!$result) {
                     Log3 $name, 5, "$name: filter data for failed check: @fields";
                     $filter = 1;
                 }
@@ -614,7 +665,7 @@ ComfoAir_InterpretFrame($$)
                     # Exp zur Nachbearbeitung der Werte?
                     if ($p{"readings"}[$i]{"expr"}) {
                         Log3 $name, 5, "$name: read evaluate $val with expr " . $p{"readings"}[$i]{"expr"};
-                        $val = eval($p{"readings"}[$i]{"expr"});
+                        $val = eval($p{"readings"}[$i]{"expr"});    ## no critic - expr needs tocome from variable
                     }
                     # Map zur Nachbereitung der Werte?
                     if ($p{"readings"}[$i]{"map"}) {
@@ -629,7 +680,7 @@ ComfoAir_InterpretFrame($$)
             }
         }
     } else {
-        my $level = ($hash->{INTERVAL} ? 4 : 5);
+        my $level = ($hash->{Interval} ? 4 : 5);
         Log3 $name, $level, "$name: read: unknown cmd $hexcmd, len " . unpack ('C', $len) . 
             ", data $hexdata, chk $chk";
     }
@@ -637,49 +688,59 @@ ComfoAir_InterpretFrame($$)
         # der letzte Request erwartet eine Antwort -> ist sie das?
         if ($hexcmd eq $hash->{EXPECT}) {
             $hash->{BUSY}   = 0;    
-            $hash->{EXPECT} = "";
+            $hash->{EXPECT} = '';
             Log3 $name, 5, "$name: read got expected reply ($hexcmd), setting BUSY=0";
         } else {
             Log3 $name, 3, "$name: read did not get expected reply (" . $hash->{EXPECT} . ") but $hexcmd";
         }
     }
-    ComfoAir_SendAck($hash) if ($hash->{INTERVAL});
+    SendAck($hash) if ($hash->{Interval});
 
+    # todo: sowohl hier als auch am Ende von ParseFrames wird HandleSendQueue aufgerufen. Geht das nicht eleganter?
     if (!$hash->{EXPECT}) {
         # es wird keine Antwort mehr erwartet -> gleich weiter Send Queue abarbeiten und nicht auf Timer warten
         $hash->{BUSY}   = 0;    # zur Sicherheit falls ein Ack versäumt wurde
         RemoveInternalTimer ("timeout:".$name);
-        RemoveInternalTimer ("queue:".$name);       
-        ComfoAir_HandleSendQueue ("direct:".$name); # don't wait for next regular handle queue slot
+        HandleSendQueue ("direct:".$name); # don't wait for next regular handle queue slot
     }
+    return;
 }
 
 
 #####################################
 # Called from the global loop, when the select for hash->{FD} reports data
-sub
-ComfoAir_Read($)
-{
+sub ReadFn {
     my $hash = shift;
     my $name = $hash->{NAME};
-    my $buf = DevIo_SimpleRead($hash);
-    return if(!defined($buf));
-    
+    my $buf;
+
+    if ($hash->{DeviceName} eq 'none') {            # simulate receiving
+        if ($hash->{TestInput}) {
+            $buf = $hash->{TestInput};
+            delete $hash->{TestInput};
+        }
+    } 
+    else {
+        $buf = DevIo_SimpleRead($hash);
+        return if(!defined($buf));
+    }
     $hash->{helper}{buffer} .= $buf;  
     
+    # todo: does this loop really make sense?
     for (my $i = 0;$i < 2;$i++) {
-        my $framedata = ComfoAir_ParseFrames($hash);
+        my $framedata = ParseFrames($hash);
         return if (!$framedata);
-        ComfoAir_InterpretFrame($hash, $framedata);
+        InterpretFrame($hash, $framedata);
     }
+    return;
 }
 
 
 #####################################
 # Called from get / set to get a direct answer
-sub
-ComfoAir_ReadAnswer($$$)
-{
+# todo: restructure this function (see Modbus)
+# handle BUSY when timeout here!
+sub ReadAnswer {
     my ($hash, $arg, $expectReply) = @_;
     my $name  = $hash->{NAME};
 
@@ -693,7 +754,17 @@ ComfoAir_ReadAnswer($$$)
     Log3 $name, 5, "$name: ReadAnswer called for get $arg";
     for(;;) {
 
-        if($^O =~ m/Win/ && $hash->{USBDev}) {
+        if ($hash->{DeviceName} eq 'none') {            # simulate receiving
+            if ($hash->{TestInput}) {
+                $buf = $hash->{TestInput};
+                delete $hash->{TestInput};
+            } else {
+                #$hash->{BUSY}   = 0;
+                #$hash->{EXPECT} = "";
+                return ("Timeout reading answer for $arg", undef);
+            }
+        } 
+        elsif($^O =~ m/Win/ && $hash->{USBDev}) {
             $hash->{USBDev}->read_const_time($to*1000);   # set timeout (ms)
             $buf = $hash->{USBDev}->read(999);
             if(length($buf) == 0) {
@@ -713,7 +784,7 @@ ComfoAir_ReadAnswer($$$)
                 my $err = $!;
                 DevIo_Disconnected($hash);
                 Log3 $name, 3, "$name: ReadAnswer $arg: error $err";
-                return("ComfoAir_ReadAnswer $arg: $err", undef);
+                return("ReadAnswer $arg: $err", undef);
             }
             if($nfound == 0) {
                 Log3 $name, 3, "$name: Timeout2 in ReadAnswer for $arg";
@@ -732,9 +803,9 @@ ComfoAir_ReadAnswer($$$)
             Log3 $name, 5, "$name: ReadAnswer got: " . unpack ("H*", $hash->{helper}{buffer});
         }
 
-        $framedata = ComfoAir_ParseFrames($hash);
+        $framedata = ParseFrames($hash);
         if ($framedata) {
-            ComfoAir_InterpretFrame($hash, $framedata);
+            InterpretFrame($hash, $framedata);
             $cmd = unpack ('H4x*', $framedata);
             if ($cmd eq $expectReply) {
                 # das war's worauf wir gewartet haben
@@ -742,15 +813,14 @@ ComfoAir_ReadAnswer($$$)
                 return (undef, ReadingsVal($name, $arg, ""));
             }
         }
-        ComfoAir_HandleSendQueue("direct:".$name);
+        HandleSendQueue("direct:".$name);
     }
+    return;
 }
 
 
 #####################################
-sub
-ComfoAir_Ready($)
-{
+sub ReadyFn {
     my ($hash) = @_;
     return DevIo_OpenDev($hash, 1, undef)
         if($hash->{STATE} eq "disconnected");
@@ -764,28 +834,28 @@ ComfoAir_Ready($)
 
 
 #####################################
-sub
-ComfoAir_GetUpdate($$) {
-    my ($hash) = @_;
-    my $name = $hash->{NAME};
-    InternalTimer(gettimeofday()+$hash->{INTERVAL}, "ComfoAir_GetUpdate", $hash, 0)
-        if ($hash->{INTERVAL});
+sub GetUpdate {
+    my $arg  = shift;                               # called with a string type:$name
+    my ($calltype, $name) = split(':', $arg);
+    my $hash = $defs{$name};
+
+    UpdateTimer($hash, \&ComfoAir::GetUpdate, 'next');
     
     foreach my $msgHashRef (values %parseInfo) {
         if (defined($msgHashRef->{request})) {
             my $default = ($msgHashRef->{defaultpoll} ? 1 : 0); # verwende als Defaultwert für Attribut, falls gesetzt in %parseInfo
             if (AttrVal($name, "poll-$msgHashRef->{name}", $default)) {
                 Log3 $name, 5, "$name: GetUpdate requests $msgHashRef->{name}, default is $default";
-                ComfoAir_Send($hash, $msgHashRef->{request}, "", $msgHashRef->{replyCode});
+                Send($hash, $msgHashRef->{request}, "", $msgHashRef->{replyCode});
             }
         }
     }
+    return;
 }
 
 
 #####################################
-sub
-ComfoAir_Send($$$;$$){
+sub Send {
     my ($hash, $hexcmd, $hexdata, $expectReply, $first) = @_;
     my $name = $hash->{NAME};
     
@@ -823,14 +893,13 @@ ComfoAir_Send($$$;$$){
             }
         }
     }
-    ComfoAir_HandleSendQueue("direct:".$name);
+    HandleSendQueue("direct:".$name);
+    return;
 }
 
 
 #######################################
-sub
-ComfoAir_TimeoutSend($)
-{
+sub TimeoutSend {
     my $param = shift;
     my (undef,$name) = split(':',$param);
     my $hash = $defs{$name};
@@ -839,32 +908,28 @@ ComfoAir_TimeoutSend($)
         ($hash->{EXPECT} ? " expecting " . $hash->{EXPECT} : "") .
         " Request was " . $hash->{LASTREQUEST};
     $hash->{BUSY}   = 0;
-    $hash->{EXPECT} = "";  
-};
+    $hash->{EXPECT} = "";
+    return;
+}
 
 
 #######################################
-sub
-ComfoAir_HandleSendQueue($)
-{
+sub HandleSendQueue {
     my $param = shift;
     my (undef,$name) = split(':',$param);
     my $hash = $defs{$name};
-    my $arr  = $hash->{QUEUE};
     my $now  = gettimeofday();
-    my $queueDelay = AttrVal($name, "queueDelay", 1);
-    Log3 $name, 5, "$name: handle send queue";
-    if(defined($arr) && @{$arr} > 0) {
+    my $arr  = $hash->{QUEUE};
+    my $qlen = ($arr ? scalar(@{ $arr }) : 0 );
+    Log3 $name, 5, "$name: HandleSendQueue called from " . FhemCaller() . ", qlen = $qlen";
+    StopQueueTimer($hash, {silent => 1});     
+    if($qlen) {
         if (!$init_done) {      # fhem not initialized, wait with IO
-            RemoveInternalTimer ("queue:".$name);
-            InternalTimer($now+$queueDelay, "ComfoAir_HandleSendQueue", "queue:".$name, 0);
-            Log3 $name, 3, "$name: init not done, delay writing from queue";
+            StartQueueTimer($hash, \&ComfoAir::HandleSendQueue, {log => 'init not done, delay sending from queue'});
             return;
         }
         if ($hash->{BUSY}) {  # still waiting for reply to last request
-            RemoveInternalTimer ("queue:".$name);
-            InternalTimer($now+$queueDelay, "ComfoAir_HandleSendQueue", "queue:".$name, 0);
-            Log3 $name, 5, "$name: send busy, delay writing from queue";
+            StartQueueTimer($hash, \&ComfoAir::HandleSendQueue, {log => 'send busy, delay writing from queue'});
             return;
         }
     
@@ -882,7 +947,12 @@ ComfoAir_HandleSendQueue($)
                 ($entry->{EXPECT} ? " and wait for " . $entry->{EXPECT} : "") .
                 ", V " . $hash->{ModuleVersion};
         
-            DevIo_SimpleWrite($hash, $bstring, 0);
+            if ($hash->{DeviceName} eq 'none') {
+                Log3 $name, 4, "$name: Simulate sending to none: " . unpack ('H*', $bstring);
+            } 
+            else {
+                DevIo_SimpleWrite($hash, $bstring, 0);
+            }
       
             if ($entry->{EXPECT}) {
                 # we expect a reply
@@ -890,27 +960,26 @@ ComfoAir_HandleSendQueue($)
             }
             my $to = AttrVal($name, "timeout", 2);    # default is 2 seconds timeout
             RemoveInternalTimer ("timeout:".$name);
-            InternalTimer($now+$to, "ComfoAir_TimeoutSend", "timeout:".$name, 0);
+            InternalTimer($now+$to, "ComfoAir::TimeoutSend", "timeout:".$name, 0);
         }
         shift(@{$arr});
         if(@{$arr} == 0) {      # last item was sent -> delete queue
             delete($hash->{QUEUE});
         } else {                # more items in queue -> schedule next handle invocation
-            RemoveInternalTimer ("queue:".$name);
-            InternalTimer($now+$queueDelay, "ComfoAir_HandleSendQueue", "queue:".$name, 0);
+            StartQueueTimer($hash, \&ComfoAir::HandleSendQueue);
         }
     }
+    return;
 }
 
 
 #######################################
-sub
-ComfoAir_SendAck($)
-{
+sub SendAck {
     my $hash = shift;
     my $name = $hash->{NAME};
     Log3 $name, 4, "$name: sending Ack";
     DevIo_SimpleWrite($hash, "\x07\xf3", 0);
+    return;
 }
 
 
@@ -1090,6 +1159,10 @@ ComfoAir_SendAck($)
             max length of the send queue, defaults to 50<br>
         <li><b>timeout</b></li> 
             set the timeout for reads, defaults to 2 seconds <br>
+        <li><b>alignTime</b></li>
+            Aligns each periodic read request for the defined interval to this base time. This is typcally something like 00:00 (see the Fhem at command)
+        <br>
+
     </ul>
     <br>
 </ul>

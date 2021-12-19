@@ -25,13 +25,15 @@
 #
 # Discussed in FHEM Forum: https://forum.fhem.de/index.php/topic,58452.300.html
 #
-# $Id: 70_DENON_AVR.pm 21158 2020-02-09 12:23:25Z delmar $
+# $Id: 70_DENON_AVR.pm 23343 2020-12-13 16:30:22Z delmar $
 
 package main;
 
 use strict;
 use warnings;
+use DevIo;
 use Time::HiRes qw(gettimeofday);
+use HttpUtils;
 
 sub DENON_AVR_Get($@);
 sub DENON_AVR_Set($@);
@@ -76,7 +78,7 @@ my $DENON_db = {
 		'SHR'	=> 'Surround-Hight-Right',
 		'TS'	=> 'Top-Surround',
 	},
-	'CV' => {
+		'CV' => {
 		'FL'	=> 'FrontLeft',
 		'FR'	=> 'FrontRight',
 		'C'		=> 'Center',
@@ -109,6 +111,19 @@ my $DENON_db = {
 		'SHR'   => 'SurroundHightRight',
 		'TS'    => 'TopSurround',
 	},
+	'SSALSSET' => {                     #AutoLipSync
+		'on'     => 'ON',
+		'off'    => 'OFF',
+	},
+	'SSVCTZMADIS' =>  {           #Lautstärkeanzeige
+		'relativ'     => 'REL',
+		'absolute'    => 'ABS',
+        },
+	'SSVCTZMAMLV' =>  {           #MutingLevel
+		'mute' => 'MUT',
+		'-40db' => '040',
+		'-20db' => '060',
+		},  
 	'DC' => {
 		'AUTO'		=> 'auto',
 		'PCM' 		=> 'PCM',
@@ -141,45 +156,74 @@ my $DENON_db = {
 		'info' => 'INF',
 	},
 	'MS' => {                    #Surround-Mode
-		'Movie' 			=> 'MOVIE',
-		'Music' 			=> 'MUSIC',
-		'Game' 				=> 'GAME',
-		'Direct' 			=> 'DIRECT',
-		'Pure_Direct' 			=> 'PURE DIRECT',
-		'Stereo' 			=> 'STEREO',
-		'Auto' 				=> 'AUTO',
-		'Dolby_Digital' 		=> 'DOLBY DIGITAL',
+		'Movie' 						=> 'MOVIE',
+		'Music' 						=> 'MUSIC',
+		'Game' 						=> 'GAME',
+		'Direct' 						=> 'DIRECT',
+		'Pure_Direct' 				=> 'PURE DIRECT',
+		'Stereo' 					=> 'STEREO',
+		'Auto' 						=> 'AUTO',
+		'Dolby_Digital' 				=> 'DOLBY DIGITAL',
 		'DTS_Surround' 			=> 'DTS SURROUND',
-		'Auro3D' 			=> 'AURO3D',
-		'Auro2D_Surround' 		=> 'AURO2DSURR',
+		'Auro3D' 					=> 'AURO3D',
+		'Auro2D_Surround' 			=> 'AURO2DSURR',
 		'Multichannel_Stereo' 		=> 'MCH STEREO',
-		'Wide_Screen' 			=> 'WIDE SCREEN',
-		'Super_Stadium' 		=> 'SUPER STADIUM',
-		'Rock_Arena' 			=> 'ROCK ARENA',
-		'Jazz_Club' 			=> 'JAZZ CLUB',
-		'Classic_Concert' 		=> 'CLASSIC CONCERT',
-		'Mono_Movie' 			=> 'MONO MOVIE',
-		'Matrix' 			=> 'MATRIX',
-		'Video_Game' 			=> 'VIDEO GAME',
-		'Virtual' 			=> 'VIRTUAL',
-		'Left' 				=> 'LEFT',
-		'Right' 			=> 'RIGHT',
-		'Quick1' 			=> 'QUICK1',
-		'Quick2' 			=> 'QUICK2',
-		'Quick3' 			=> 'QUICK3',
-		'Quick4' 			=> 'QUICK4',
-		'Quick5' 			=> 'QUICK5',
-		'Smart1' 			=> 'SMART1',
-		'Smart2' 			=> 'SMART2',
-		'Smart3' 			=> 'SMART3',
-		'Smart4' 			=> 'SMART4',
-		'Smart5' 			=> 'SMART5',
-		'Dolby_Audio_Surround'		=> 'DOLBY AUDIO-DSUR',
-		'Neural:X'			=> 'NEURAL:X',
+		'Wide_Screen' 				=> 'WIDE SCREEN',
+		'Super_Stadium' 			=> 'SUPER STADIUM',
+		'Rock_Arena' 				=> 'ROCK ARENA',
+		'Jazz_Club' 					=> 'JAZZ CLUB',
+		'Classic_Concert' 			=> 'CLASSIC CONCERT',
+		'Mono_Movie' 				=> 'MONO MOVIE',
+		'Matrix' 					=> 'MATRIX',
+		'Video_Game' 				=> 'VIDEO GAME',
+		'Dolby_Audio_Surround'	=> 'DOLBY AUDIO-DSUR',
 		'Dolby_Audio_Digital'		=> 'DOLBY AUDIO-DD',
-		'Dolby_Audio_Digital-Surround'	=> 'DOLBY AUDIO-DD+DSUR',
-		'Dolby_Audio_Digital-Neural:X'	=> 'DOLBY AUDIO-DD+NEURAL:X',
-                'Virtual' 			=> 'VIRTUAL'
+		'Dolby_Audio_Digital-Surround'		=> 'DOLBY AUDIO-DD+DSUR',
+		'Dolby_Audio_Digital-Neural:X'		=> 'DOLBY AUDIO-DD+NEURAL:X',
+		'Neural:X'					=> 'NEURAL:X',
+		'Virtual' 					=> 'VIRTUAL',
+		'Left' 						=> 'LEFT',
+		'Right' 						=> 'RIGHT',
+		'Quick1' 					=> 'QUICK1',
+		'Quick2' 					=> 'QUICK2',
+		'Quick3' 					=> 'QUICK3',
+		'Quick4' 					=> 'QUICK4',
+		'Quick5' 					=> 'QUICK5',
+		'Smart1' 					=> 'SMART1',
+		'Smart2' 					=> 'SMART2',
+		'Smart3' 					=> 'SMART3',
+		'Smart4' 					=> 'SMART4',
+		'Smart5' 					=> 'SMART5',
+	},
+		'MS-set_sound_out' => {                    #to set sound_out
+		'Pure_Direct' 				=> 'PURE DIRECT',
+		'Stereo' 					=> 'STEREO',
+		'Auto' 						=> 'AUTO',
+		'Dolby_Digital' 				=> 'DOLBY DIGITAL',
+		'DTS_Surround' 			=> 'DTS SURROUND',
+		'Auro3D' 					=> 'AURO3D',
+		'Auro2D_Surround' 			=> 'AURO2DSURR',
+		'Multichannel_Stereo' 		=> 'MCH STEREO',
+		'Wide_Screen' 				=> 'WIDE SCREEN',
+		'Super_Stadium' 			=> 'SUPER STADIUM',
+		'Rock_Arena' 				=> 'ROCK ARENA',
+		'Jazz_Club' 					=> 'JAZZ CLUB',
+		'Classic_Concert' 			=> 'CLASSIC CONCERT',
+		'Mono_Movie' 				=> 'MONO MOVIE',
+		'Matrix' 					=> 'MATRIX',
+		'Video_Game' 				=> 'VIDEO GAME',
+		'Dolby_Audio_Surround'	=> 'DOLBY AUDIO-DSUR',
+		'Dolby_Audio_Digital'		=> 'DOLBY AUDIO-DD',
+		'Dolby_Audio_Digital-Surround'		=> 'DOLBY AUDIO-DD+DSUR',
+		'Dolby_Audio_Digital-Neural:X'		=> 'DOLBY AUDIO-DD+NEURAL:X',
+		'Neural:X'					=> 'NEURAL:X',
+		'Virtual' 					=> 'VIRTUAL',
+	},
+	 'MS-set_surroundMode' => {                    #to set surroundMode
+		'Movie' 						=> 'MOVIE',
+		'Music' 						=> 'MUSIC',
+		'Game' 						=> 'GAME',
+		'Direct' 						=> 'DIRECT',
 	},
 	'MU' => {
 		'on' 		=> 'ON',
@@ -188,7 +232,7 @@ my $DENON_db = {
 	},
 	'NS' => {  
 		#System-Info:
-		'FRN' => 'model', # device-type
+		'FRN' => 'Network-Name', # device-type
 		#Remote:
 		'up' => '90',
 		'down' => '91',
@@ -254,11 +298,11 @@ my $DENON_db = {
 		},
 		'DYNEQ' 	=> 'dynamicEQ',
 		'DYNVOL' 	=> {
-			'DYNVOL' => 'dynamicVolume',
-			'HEV' => 'heavy',
-			'MED' => 'medium',
-			'LIT' => 'light',
-			'OFF' => 'off',
+			'DYNVOL' 	=> 'dynamicVolume',
+			'HEV' 		=> 'heavy',
+			'MED' 		=> 'medium',
+			'LIT' 		=> 'light',
+			'OFF' 		=> 'off',
 		},
 		'GEQ' 		=> 'graphicEQ',
 		'PAN' 		=> 'panorama',
@@ -269,14 +313,14 @@ my $DENON_db = {
 		
 	},
 	'PV' => {
-		'off' 		=> 'OFF',
-		'Standard' 	=> 'STD',
-		'Movie' 	=> 'MOV',
-		'Vivid' 	=> 'VVD',
-		'Stream' 	=> 'STM',
-		'Costom' 	=> 'CTM',
-		'Day' 		=> 'DAY',
-		'Night' 	=> 'NGT',
+		'OFF' 		=> 'Off',
+		'STD' 		=> 'Standard',
+		'MOV' 		=> 'Movie',
+		'VVD' 		=> 'Vivid',
+		'STM' 		=> 'Stream',
+		'CTM' 		=> 'Custom',
+		'DAY' 		=> 'ISF_Day',
+		'NGT' 		=> 'ISF_Night',
 	},
 	'PW' => {
 		'on' 		=> 'ON',
@@ -445,7 +489,8 @@ my $DENON_db = {
 				'SUP03' => 'resolution3',
 				'SUP04' => 'resolution4',
 			},
-			'FRM' => 'firmware',
+			'FRMAVR' => 'firmware_AVR',
+			'FRMDTS' => 'firmware_DTS',
 			'AIS' => {
 				'FSV' => 'samplingRate',
 				'FOR' => 'audioFormat',
@@ -453,7 +498,7 @@ my $DENON_db = {
 					'00' => 'na 00',
 					'01' => 'Analog',
 					'02' => 'PCM',
-					'03' => 'Dolby Digital',
+					'03' => 'Dolby Audio DD',
 					'04' => 'Dolby TrueHD',
 					'05' => 'Dolby Atmos',
 					'06' => 'DTS',
@@ -611,13 +656,7 @@ my $DENON_db = {
 		'PURE DIRECT' => 'Pure Direct',
 		'DSD PURE DIRECT' => 'DSD Pure Direct',
 		'PURE DIRECT EXT' => 'Pure Direct Ext',
-		'MCH STEREO' => 'Multi Ch Stereo',
-		'MONO MOVIE' => 'Mono Movie',
-		'ROCK ARENA' => 'Rock Arena',
-		'JAZZ CLUB' => 'Jazz Club',
-		'MATRIX' => 'Matrix',
-		'VIRTUAL' => 'Virtual',
-		'VIDEO GAME' => 'Video Game',
+		'MCH STEREO' => 'Multichannel Stereo',
 		'ALL ZONE STEREO' => 'All Zone Stereo',
 		'AUDYSSEY DSX' => 'Audyssey DSX',
 		'PL DSX' => 'PL DSX',
@@ -627,12 +666,16 @@ my $DENON_db = {
 		'PL2X C DSX' => 'PL2X C DSX',
 		'PL2X M DSX' => 'PL2X M DSX',
 		'PL2X G DSX' => 'PL2X G DSX',
+		'DOLBY AUDIO-DSUR' => 'Dolby_Audio_Surround',
 		'DOLBY PL2 C' => 'Dolby PL2 C',
 		'DOLBY PL2 M' => 'Dolby PL2 M',
 		'DOLBY PL2 G' => 'Dolby PL2 G',
 		'DOLBY PRO LOGIC' => 'Dolby Pro Logic',
 		'DOLBY SURROUND' => 'Dolby Surround',
 		'DOLBY ATMOS' => 'Dolby Atmos',
+		'DOLBY AUDIO-DD' => 'Dolby_Audio_Dolby-Digital',
+		'DOLBY AUDIO-DD+DSUR' => 'Dolby_Audio_Digital-Surround',
+		'DOLBY AUDIO-DD+NEURAL:X' => 'Dolby_Audio_Digital-Neural:X',
 		'DOLBY DIGITAL' => 'Dolby Digital',
 		'DOLBY PL2 C' => 'Dolby PL2 C',
 		'DOLBY PL2 M' => 'Dolby PL2 M',
@@ -645,11 +688,10 @@ my $DENON_db = {
 		'DOLBY D+PL2X C' => 'Dolby Digital+PL2X C',
 		'DOLBY D+PL2X M' => 'Dolby Digital+PL2X M',
 		'DOLBY D+PL2Z H' => 'Dolby Digital+PL2Z H',
-		'DOLBY D+DS' => 'Dolby Digital + Dolby Surround',
+		'DOLBY D+DS' => 'Dolby Digital+DS',
 		'DOLBY D+NEO:X C' => 'Dolby Digital+Neo:X C',
 		'DOLBY D+NEO:X M' => 'Dolby Digital+Neo:X M',
 		'DOLBY D+NEO:X G' => 'Dolby Digital+Neo:X G',
-		'DOLBY D+NEURAL:X' => 'Dolby Digital + Neural:X',
 		'DOLBY D+' => 'Dolby Digital Plus',
 		'DOLBY D+ +EX' => 'Dolby Digital Plus+PL2X C',
 		'DOLBY D+ +PL2X C' => 'Dolby Digital Plus+PL2X C',
@@ -660,23 +702,22 @@ my $DENON_db = {
 		'DOLBY D+ +NEO:X C' => 'Dolby Digital Plus+Neo:X C',
 		'DOLBY D+ +NEO:X M' => 'Dolby Digital Plus+Neo:X M',
 		'DOLBY D+ +NEO:X G' => 'Dolby Digital Plus+Neo:X G',
-		'DOLBY HD' => 'Dolby TrueHD',
+		'DOLBY HD' => 'Dolby HD',
 		'DOLBY HD+EX' => 'Dolby HD+EX',
 		'DOLBY HD+PL2X C' => 'Dolby HD+PL2X C',
 		'DOLBY HD+PL2X M' => 'Dolby HD+PL2X M',
 		'DOLBY HD+PL2Z H' => 'Dolby HD+PL2Z H',
-		'DOLBY HD+DS' => 'Dolby TrueHD + Dolby Surround',
+		'DOLBY HD+DS' => 'Dolby HD+DS',
 		'DOLBY HD+NEO:X C' => 'Dolby HD+Neo:X C',
 		'DOLBY HD+NEO:X M' => 'Dolby HD+Neo:X M',
 		'DOLBY HD+NEO:X G' => 'Dolby HD+Neo:X G',
-		'DOLBY HD+NEURAL:X' => 'Dolby TrueHD + Neural:X',
 		'DTS SURROUND' => 'DTS Surround',
 		'DTS ES DSCRT6.1' => 'DTS ES Dscrt 6.1',
 		'DTS ES MTRX6.1' => 'DTS ES Mtrx 6.1',
 		'DTS+PL2X C' => 'DTS+PL2X C',
 		'DTS+PL2X M' => 'DTS+PL2X M',
 		'DTS+PL2Z H' => 'DTS+PL2Z H',
-		'DTS+DS' => 'DTS + Dolby Surround',
+		'DTS+DS' => 'DTS+DS',
 		'DTS96/24' => 'DTS 96/24',
 		'DTS96 ES MTRX' => 'DTS 96 ES MTRX',		
 		'DTS+NEO:6' => 'DTS+Neo:6',		
@@ -688,7 +729,6 @@ my $DENON_db = {
 		'DTS+NEO:X M' => 'DTS+Neo:X M',		
 		'DTS+NEO:X G' => 'DTS+Neo:X G',
 		'DTS+NEO:X G' => 'DTS+Neo:X G',		
-		'DTS+NEURAL:X' => 'DTS + Neural:X',
 		'DTS HD' => 'DTS-HD',
 		'DTS HD TR' => 'DTS-HD TR',
 		'DTS HD MSTR' => 'DTS-HD Mstr',
@@ -696,14 +736,12 @@ my $DENON_db = {
 		'DTS HD+PL2X M' => 'DTS-HD+PL2X M',
 		'DTS HD+PL2Z H' => 'DTS-HD+PL2Z H',
 		'DTS HD+NEO:6' => 'DTS-HD+Neo:6',
-		'DTS HD+DS' => 'DTS-HD + Dolby Surround',
+		'DTS HD+DS' => 'DTS-HD+DS',
 		'DTS HD+NEO:X C' => 'DTS-HD+Neo:X C',
 		'DTS HD+NEO:X M' => 'DTS-HD+Neo:X M',
 		'DTS HD+NEO:X G' => 'DTS-HD+Neo:X G',
-		'DTS HD+NEURAL:X' => 'DTS-HD + Neural:X',
 		'DTS EXPRESS' => 'DTS Express',
 		'DTS ES 8CH DSCRT' => 'DTS ES 8Ch Dscrt',
-		'DTS:X MSTR' => 'DTS:X MSTR',
 		'AURO3D' => 'Auro-3D',
 		'AURO2DSURR' => 'Auro-2D Surround',
 		'MPEG2 AAC' => 'MPEG2 AAC',
@@ -725,9 +763,11 @@ my $DENON_db = {
 		'M CH IN+NEO:X C' => 'Multi Ch In+Neo:X C',
 		'M CH IN+NEO:X M' => 'Multi Ch In+Neo:X M',
 		'M CH IN+NEO:X G' => 'Multi Ch In+Neo:X G',
+		'NEURAL:X'	=> 'Neural:X',
 		'NEO:6 C DSX' => 'Neo:6 C DSX',
 		'NEO:6 M DSX' => 'Neo:6 M DSX',
-		'NEURAL:X' => 'DTS Neural:X'
+		'7.1IN' => 'Multi Ch In 7.1',
+		'VIRTUAL' => 'Virtual',
 	},
 	'TF' => {
 		'AN' => {
@@ -939,6 +979,98 @@ DENON_GetKey($$;$) {
     }
 }
 
+sub DENON_AVR_RequestDeviceinfo {
+    my ($hash) = @_;
+    my $name = $hash->{NAME};
+
+    my $url = "http://$hash->{IP}/goform/Deviceinfo.xml";
+    Log3 $name, 4, "DENON_AVR ($name) - requesting $url";
+    my $param = {
+                    url        => "$url",
+                    timeout    => 5,
+                    hash       => $hash,
+                    method     => "GET",
+                    header     => "User-Agent: FHEM\r\nAccept: application/xml",
+                    callback   => \&DENON_AVR_ParseDeviceinfoResponse
+                };
+
+    HttpUtils_NonblockingGet($param);
+}
+
+sub DENON_AVR_ParseDeviceinfoResponse {
+  my ($param, $err, $data) = @_;
+  my $hash = $param->{hash};
+  my $name = $hash->{NAME};
+  my $return;
+
+  if($err ne '' || $data =~ m/Error 403/) {
+      if ( $err eq '' ) {
+        $err = 'Error 403: Forbidden';
+      }
+      Log3 $name, 0, "DENON_AVR ($name) - Error while requesting ".$param->{url}." - $err";
+      readingsBeginUpdate($hash);
+      readingsBulkUpdate($hash, 'httpState', 'ERROR', 0);
+      readingsBulkUpdate($hash, 'httpError', $err, 0);
+      readingsEndUpdate($hash, 0);
+
+      DENON_AVR_RequestProductTypeName($hash);
+  } elsif($data ne "") {
+      readingsDelete($hash, 'httpState');
+      readingsDelete($hash, 'httpError');
+
+      Log3 $name, 5, "DENON_AVR ($name) - Deviceinfo.xml\n$data";
+      my $ref = XMLin($data, KeyAttr => { }, ForceArray => [ ]);
+
+      my $codes = {
+        '0' => 'Denon',
+        '1' => 'Marantz'
+      };
+      my $brandCode = $ref->{BrandCode};
+
+      $hash->{model} = $codes->{$brandCode} . ' ' . $ref->{ModelName};
+  }
+}
+
+sub DENON_AVR_RequestProductTypeName {
+    my ($hash) = @_;
+    my $name = $hash->{NAME};
+
+    my $url = "http://$hash->{IP}/ajax/get_config?type=25";
+    Log3 $name, 4, "DENON_AVR ($name) - requesting $url";
+    my $param = {
+                    url        => "$url",
+                    timeout    => 5,
+                    hash       => $hash,
+                    method     => "GET",
+                    header     => "User-Agent: FHEM\r\nAccept: application/xml",
+                    callback   => \&DENON_AVR_ParseProductTypeName
+                };
+
+    HttpUtils_NonblockingGet($param);
+}
+
+sub DENON_AVR_ParseProductTypeName {
+  my ($param, $err, $data) = @_;
+  my $hash = $param->{hash};
+  my $name = $hash->{NAME};
+  my $return;
+
+  if($err ne "") {
+      Log3 $name, 0, "DENON_AVR ($name) - Error while requesting ".$param->{url}." - $err";
+      readingsBeginUpdate($hash);
+      readingsBulkUpdate($hash, 'httpState', 'ERROR', 0);
+      readingsBulkUpdate($hash, 'httpError', $err, 0);
+      readingsEndUpdate($hash, 0);
+  } elsif($data ne "") {
+      readingsDelete($hash, 'httpState');
+      readingsDelete($hash, 'httpError');
+
+      my $productTypeName = $data =~ s/<productTypeName>|<\/productTypeName>//rg;
+      Log3 $name, 4, "DENON_AVR ($name) - productTypeName: $productTypeName";
+
+      $hash->{model} = $productTypeName;
+  }
+}
 
 ###################################
 sub
@@ -948,8 +1080,6 @@ DENON_AVR_Initialize($)
 
 	Log 5, "DENON_AVR_Initialize: Entering";
 		
-	require "$attr{global}{modpath}/FHEM/DevIo.pm";
-	
 # Provider
 	$hash->{ReadFn}	    = "DENON_AVR_Read";
 	$hash->{WriteFn}    = "DENON_AVR_Write";
@@ -987,7 +1117,7 @@ DENON_AVR_Define($$)
 		return $msg;
 	}
 	
-    RemoveInternalTimer($hash);
+        RemoveInternalTimer($hash);
 	DevIo_CloseDev($hash);
 	
 	my $name = $a[0]; 
@@ -1007,6 +1137,9 @@ DENON_AVR_Define($$)
 	unless (exists($attr{$name}{webCmd})){
 		$attr{$name}{webCmd} = 'volume:muteT:input:surroundMode';
 	}
+	unless (exists($attr{$name}{suppressReading})){
+		$attr{$name}{suppressReading} = 'HASH.*';
+	}
 	unless ( exists( $attr{$name}{cmdIcon} ) ) {
 		$attr{$name}{cmdIcon} = 'muteT:rc_MUTE';
 	}
@@ -1018,26 +1151,28 @@ DENON_AVR_Define($$)
 	}
 	
 		
-	# connect using serial connection (old blocking style)
-	if ($hash->{DeviceName} =~ /^([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) (.+@.+)/)
-	{
-		my $ret = DevIo_OpenDev($hash, 0, "DENON_AVR_DoInit");
-		return $ret;
-	}
 	# connect using TCP connection (non-blocking style)
-	else
+	if ($hash->{DeviceName} =~ /^([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})/)
 	{
+                $hash->{IP} = $a[2];
+                use XML::Simple qw(:strict);
+                DENON_AVR_RequestDeviceinfo($hash);
+
 		$hash->{DeviceName} = $hash->{DeviceName} . ":23"
 			if ( $hash->{DeviceName} !~ m/^(.+):([0-9]+)$/ );
-		  
-		DevIo_OpenDev(
-           $hash, 0,
-           "DENON_AVR_DoInit",
-           sub() {
-                my ( $hash, $err ) = @_;
-               Log3 $name, 4, "DENON_AVR $name: $err." if ($err);
-           }
-       );
+
+		my $ret = DevIo_OpenDev($hash, 0, "DENON_AVR_DoInit", 
+                  sub() {
+                    my ( $hash, $err ) = @_;
+                    Log3 $name, 4, "DENON_AVR $name: $err." if ($err);
+                  });
+
+		return $ret;
+	}
+	# connect using serial connection (old blocking style)
+	else
+	{
+		DevIo_OpenDev($hash, 0, "DENON_AVR_DoInit");
 	}
 	
 }
@@ -1451,18 +1586,7 @@ DENON_AVR_Parse(@)
 
 		$return = $power;
 	}
-	#Channel-Level (older devices)
-	elsif ($msg =~ /^CV([A-Z2]+) (.+)/){
-		my $channel = DENON_GetValue('CV', $1);
-		my $volume = $2;
-		if (length($volume) == 2)
-		{
-			$volume = $volume."0";
-		}
-		readingsBulkUpdate($hash, "level".$channel, ($volume / 10 - 50).$dezibel) if($channel ne "unknown");
-		$return = "level".$channel." ".($volume / 10 - 50);
-	}
-	#Channel-Level (newer devices)
+	#Channel-Level
 	elsif ($msg =~ /^SSLEV([A-Z2]+) (.+)/){
 		my $channel = DENON_GetValue('SSLEV', $1);
 		my $volume = $2;
@@ -1492,12 +1616,46 @@ DENON_AVR_Parse(@)
 		readingsBulkUpdate($hash, "mute", lc($1));
 		$return = lc($1);
 	}
-	#Maximal Volume
-	elsif ($msg =~ /^MVMAX (.+)/)
+  	#Maximal Volume
+    	elsif ($msg =~ /^MVMAX(.+)/)
 	{
 		readingsBulkUpdate($hash, "volumeMax", $1.$percent);
 		$return = "volumeMax ".$1;
 	}
+	elsif ($msg =~ /^SSVCTZMALIM (.+)([0-9]{2})/)          #/^0*([0-9]*)/;     ^([A-Z]{3}) (.+)/
+	{
+		readingsBulkUpdate($hash, "Volume-Max", $2.$percent);
+		$return = "Volume-Max".$2;
+	}
+		#Einschaltlautstärke
+	elsif ($msg =~ /^SSVCTZMAPON (.+)/)
+	{
+				
+				my $mutelevel = $1;
+					
+				if($1 eq 'LAS')
+				{
+					readingsBulkUpdate($hash, "Volume-Startup", "last") if($mutelevel ne "unknown");
+					$return = "Volume-Startup"."$1";
+			
+				}
+				elsif($1 eq 'MUT')
+				{
+					readingsBulkUpdate($hash, "Volume-Startup", "mute") if($mutelevel ne "unknown");
+					$return = "Volume-Startup"."$1";
+			
+				}
+				else
+				{
+					if (length($mutelevel) == 2)
+					{
+						$mutelevel = $mutelevel."";
+						
+				readingsBulkUpdate($hash, "Volume-Startup", $mutelevel) if($mutelevel ne "unknown");
+				$return = "Volume-Startup".$mutelevel;
+			}
+			} 
+			}
 	#Volume
 	elsif ($msg =~ /^MV(.+)/)
 	{
@@ -1560,10 +1718,6 @@ DENON_AVR_Parse(@)
 				{
 					$volume = $volume." ms";
 				}
-                                elsif($1 eq 'CLV')
-				{
-					$volume = ($volume -50).$dezibel;
-				}
 				else
 				{
 					if (length($volume) == 2)
@@ -1609,6 +1763,7 @@ DENON_AVR_Parse(@)
 		my $status = DENON_GetKey('SI', $1);
 		readingsBulkUpdate($hash, "input", $status) if($status ne "unknown");
 		readingsBulkUpdate($hash, "currentStream", "-") if($status ne "Server");
+		readingsBulkUpdate($hash, "sound_signal_in", "-") if($status ne "CD|DOCK|DVR|DVD|BD|TV|SAT\/CBL|SAT|GAME|MPLAY|SAT|AUX1|AUX2|AUX3|AUX4|AUX5|AUX6|AUX7"); #	sets sound_signal_out to "-" if Input <-
 		$hash->{helper}{INPUT} = $1;
 		$return = $status;
 		
@@ -1640,6 +1795,13 @@ DENON_AVR_Parse(@)
 		readingsBulkUpdate($hash, "videoSelect", $status) if($status ne "unknown");
 		$return = "videoSelect ".$status;
 	}
+	#Video-Select
+	elsif ($msg =~ /^PV(.+)/)
+	{
+		my $status = DENON_GetValue('PV', $1);
+		readingsBulkUpdate($hash, "pictureMode", $status) if($status ne "unknown");
+		$return = "pictureMode ".$status;
+	}
 	#Setup-Menu
 	elsif ($msg =~ /^MNMEN ([A-Z]+)/)
 	{
@@ -1669,7 +1831,7 @@ DENON_AVR_Parse(@)
 			$return = "smartselect ".$quick;
 		}
 	}		
-	#Sound
+		#Sound
 	elsif ($msg =~ /^MS(.+)/)
 	{
 		my $sound = DENON_GetValue('SOUND', $1);
@@ -1680,8 +1842,8 @@ DENON_AVR_Parse(@)
 		}
 		if ($sound ne "unknown")
 		{
-			readingsBulkUpdate($hash, "sound", $sound);
-			$return = "sound ".$sound;	
+			readingsBulkUpdate($hash, "sound_out", $sound);
+			$return = "sound_out ".$sound;	
 		}
 	}
 	#tuner band
@@ -1739,6 +1901,33 @@ DENON_AVR_Parse(@)
 	{	
 		readingsBulkUpdate($hash, "tunerStationName", $1);
 		$return = "tunerStationName ".$1;
+	}
+	#elsif ($msg =~ /^NSFRN(.+)/) #Netwerk-Name
+	#{	
+	#	readingsBulkUpdate($hash, "Netzwerk-Name", $1);
+	#	$return = "Netzwerk-Name ".$1;
+	#}
+	
+	#Auto-LipSync
+	elsif ($msg =~ /^SSALSSET ([A-Z]+)/)
+	{
+		my $status = DENON_GetKey('SSALSSET', $1);
+		readingsBulkUpdate($hash, "Auto-Lip-Sync", $status) if($status ne "unknown");
+		$return = "Auto-Lip-Sync ".$status;
+	} 
+	#Lautstärkeanzeige
+	elsif ($msg =~ /^SSVCTZMADIS.([A-Z]+)/)
+	{
+		my $status = DENON_GetKey('SSVCTZMADIS', $1);
+		readingsBulkUpdate($hash, "Volume-Display", $status) if($status ne "unknown");
+		$return = "Volume-Display ".$status;
+	}
+  	#Muting-Pegel
+	elsif ($msg =~ /^SSVCTZMAMLV ([A-Z0-9]+)/)
+	{
+		my $status = DENON_GetKey('SSVCTZMAMLV', $1);
+		readingsBulkUpdate($hash, "Muting-Level", $status) if($status ne "unknown");
+		$return = "Muting-Level".$status;
 	}
 	#ECO-Mode
 	elsif ($msg =~ /^ECO([A-Z]+)/)
@@ -1968,16 +2157,21 @@ DENON_AVR_Parse(@)
 				#DENON_SetValue($3, 'SS', $1, $2);			
 				$return = lc($3)." ".$2;			
 			}
-			elsif ($1 eq 'PAA') # SSPAA
-			{
-				my $status = DENON_GetValue('SS', $1, $2, $3);	
-				readingsBulkUpdate($hash, "ampAssign", $status) if($status ne "unknown");
-				$return = "ampAssign ".$status;
-			}
+#			elsif ($1 eq 'PAA') # SSPAA
+#			{
+#				my $status = DENON_GetValue('SS', $1, $2, $3);	
+#				readingsBulkUpdate($hash, "ampAssign", $status) if($status ne "unknown");
+#				$return = "ampAssign ".$status;
+#			}
 			elsif ($1 eq 'INF') # SSINFFRM 0000-0000-0000-00
 			{		
-				#Firmware
-				if ($2 eq "FRM") { # SSINFFRM 0000-0000-0000-00
+				#Firmware_AVR
+				if ($2 eq "FRMAVR") { # SSINFFRMAVR 0000-0000-0000-00
+					my $status = DENON_GetValue('SS', $1, $2);
+					readingsBulkUpdate($hash, $status, $3) if($status ne "unknown");
+					$return = $status." ".$3;
+				}
+				if ($2 eq "FRMDTS") { # SSINFFRMDTS 0.00.00.00
 					my $status = DENON_GetValue('SS', $1, $2);
 					readingsBulkUpdate($hash, $status, $3) if($status ne "unknown");
 					$return = $status." ".$3;
@@ -1991,18 +2185,18 @@ DENON_AVR_Parse(@)
 					
 					if ($1 eq 'AIS') 
 					{	
-						#input signal
+									#input signal
 						if ($2 eq 'SIG')
 						{
 							my $signal = DENON_GetValue('SS', $cmd1, $1, $2, $value);
-							readingsBulkUpdate($hash, "signal", $signal) if($signal ne "unknown");
-							$return = "signal ".$signal;
+							readingsBulkUpdate($hash, "sound_signal_in", $signal) if($signal ne "unknown");
+							$return = "sound_signal_in ".$signal;
 							if($signal =~ /^na (.+)/)
 							{
-								my $sound = ReadingsVal( $name, "sound", "?" );
-								Log3 $name, 2, "DENON_AVR $name: unknown input signal <$1>, sound <$sound>.";
+								my $sound = ReadingsVal( $name, "sound_out", "?" );
+								Log3 $name, 2, "DENON_AVR $name: unknown input signal <$1>, sound_out <$sound>.";
 							}
-						}					
+						}						
 						# samplingRate, audioFormat
 						elsif ($2 eq 'FSV' || $2 eq 'FOR')
 						{
@@ -2028,11 +2222,13 @@ DENON_AVR_Parse(@)
 		}
 	}	
 	#Model
-	elsif ($msg =~ /^NS([A-Z]{3}) .+ (.+)/){
+	elsif ($msg =~ /^NS([A-Z]{3}) (.+)/){
 		my $status = DENON_GetValue('NS', $1);
 		readingsBulkUpdate($hash, $status, $2) if($status ne "unknown");
-		$return = $status." ".$2;
+			$return = $status." ".$2;
 	}
+	
+	
 	elsif ($msg =~ /^VS(.+)/){
 		my $cmd  = $1;
 		if($cmd =~ /^(ASP)(.+)/)
@@ -2096,7 +2292,7 @@ DENON_AVR_Parse(@)
 	}
 	else 
 	{
-		if($msg eq "CVEND")
+		if($msg eq "CV END")
 		{
 			$return = "ignored";	
 		}
@@ -2138,7 +2334,7 @@ DENON_AVR_Get($@)
 
 	return "argument is missing" if (int(@a) < 2 && int(@a) > 3);
 
-	if ($a[1] =~ /^(power|volumeStraight|volume|mute|eco|display|input|disconnect|reconnect|remotecontrol|autoStandby|sound|statusRequest|mediaInfo|surroundMode|zone)$/)
+	if ($a[1] =~ /^(power|volumeStraight|volume|mute|eco|display|input|disconnect|reconnect|remotecontrol|autoStandby|sound_out|statusRequest|mediaInfo|surroundMode|zone)$/)
 	{
 		if ($a[1] eq "statusRequest")
 		{
@@ -2168,8 +2364,8 @@ DENON_AVR_Get($@)
 			}
 		}
 		elsif ($a[1] eq "zone")
-		{			
-			my $return = DENON_AVR_Make_Zone($name."_Zone_".$a[2], $a[2]);
+		{
+			my $return = DENON_AVR_Make_Zone($name, $name."_Zone_".$a[2], $a[2]);
 			DENON_AVR_Command_StatusRequest($hash);
 			return $return;
 		}
@@ -2207,7 +2403,7 @@ DENON_AVR_Get($@)
 				push(@inputs, $key);
 			}
 		}
-		return "Unknown argument $a[1], choose one of power volumeStraight volume mute eco display input disconnect reconnect remotecontrol autoStandby sound statusRequest mediaInfo surroundMode zone:2,3,4";
+		return "Unknown argument $a[1], choose one of power volumeStraight volume mute eco display input disconnect reconnect remotecontrol autoStandby sound_out statusRequest mediaInfo surroundMode zone:2,3,4";
 	}
 }
 
@@ -2230,6 +2426,7 @@ DENON_AVR_Set($@)
 	my @presetCallAn = ("A1","A2","A3","A4","A5","A6","A7","A8","B1","B2","B3","B4","B5","B6","B7","B8","C1","C2","C3","C4","C5","C6","C7","C8","D1","D2","D3","D4","D5","D6","D7","D8","E1","E2","E3","E4","E5","E6","E7","E8","F1","F2","F3","F4","F5","F6","F7","F8","G1","G2","G3","G4","G5","G6","G7","G8");
 	my @inputs = ();
 	my @inputSound = ();
+	my @pictureMode = ();
 	my @usedInputs = ();
 	my @remoteControl = ();
 	my @resolution = ();
@@ -2290,6 +2487,11 @@ DENON_AVR_Set($@)
 		push(@inputSound, $DENON_db->{'SD'}{$key});	
 	}
 	
+	
+	foreach my $key (sort(keys %{$DENON_db->{'PV'}})) {
+		push(@pictureMode, $DENON_db->{'PV'}{$key});	
+	}
+	
 	foreach my $key (sort(keys %{$DENON_db->{'TM'}{'AN'}})) {
 		push(@tuner, $key);	
 	}
@@ -2347,10 +2549,12 @@ DENON_AVR_Set($@)
 			$ceolEntry  .
 			"input:" . join(",", @inputs) . " " .
 			"inputSound:" . join(",", @inputSound) . " " .
+			"pictureMode:" . join(",", @pictureMode) . " " .
 			"usedInputs:multiple-strict,"  . join(",", @usedInputs) . " " .
 			"remoteControl:" . join(",", @remoteControl) . " " .
-			"surroundMode:" . join(",", sort keys %{$DENON_db->{'MS'}}) . " " .
-		    "rawCommand"; 	
+			"sound_out:" . join(",", sort keys %{$DENON_db->{'MS-set_sound_out'}}) . " " .
+			"surroundMode:" . join(",", sort keys %{$DENON_db->{'MS-set_surroundMode'}}) . " " .
+		 	"rawCommand"; 	
 		
 	if(AttrVal($name, "dlnaName", "") ne "")
 	{
@@ -2619,6 +2823,16 @@ DENON_AVR_Set($@)
 		readingsEndUpdate($hash, 1);
 		return undef;
 	}		
+	elsif ($a[1] eq "sound_out")
+	{	
+		my $sound = $a[2];		
+		my $cmd = DENON_GetValue('MS', $a[2]);
+		DENON_AVR_Write($hash, "MS".$cmd, "sound_out");
+		
+		readingsBulkUpdate($hash, "sound_out", $sound);	
+		readingsEndUpdate($hash, 1);
+		return undef;	
+	}
 	elsif ($a[1] eq "surroundMode")
 	{	
 		my $sound = $a[2];		
@@ -2628,7 +2842,7 @@ DENON_AVR_Set($@)
 		readingsBulkUpdate($hash, "surroundMode", $sound);	
 		readingsEndUpdate($hash, 1);
 		return undef;	
-	}
+		}
 	elsif ($a[1] eq "volumeStraight")
 	{
 		my $volume = $a[2];
@@ -2689,6 +2903,14 @@ DENON_AVR_Set($@)
 		}
 		else
 		{
+		
+		
+		
+		
+		
+		
+		
+
 			$channel = DENON_GetKey("CV", $command);
 			$volume = $a[3] + 50;
 			if ($volume % 1 == 0)
@@ -2877,6 +3099,14 @@ DENON_AVR_Set($@)
 		my $cmd = DENON_GetKey("SD", $a[2]);
 		DENON_AVR_Write($hash, "SD".$cmd, "inputSound");
 		readingsBulkUpdate($hash, "inputSound", $a[2]);
+		readingsEndUpdate($hash, 1);
+		return undef;
+	}
+	elsif ($a[1] eq "pictureMode")
+	{
+		my $cmd = DENON_GetKey("PV", $a[2]);
+		DENON_AVR_Write($hash, "PV".$cmd, "pictureMode");
+		readingsBulkUpdate($hash, "pictureMode", $a[2]);
 		readingsEndUpdate($hash, 1);
 		return undef;
 	}
@@ -3241,8 +3471,10 @@ DENON_AVR_Command_StatusRequest($)
 	DENON_AVR_Write($hash, "MNMEN?", "query");				#menu
 	DENON_AVR_Write($hash, "MNZST?", "query");				#All Zone Stereo
 	DENON_AVR_Write($hash, "NSE", "query"); 				#Onscreen Display Information List
-	DENON_AVR_Write($hash, "CV?", "query"); 				#channel volume
+	DENON_AVR_Write($hash, "CV ?", "query"); 				#channel volume
+	DENON_AVR_Write($hash, "SSINFFRM ?", "query"); 				#Firmware-Infos
 #	DENON_AVR_Write($hash, "SR?", "query"); 				#record select - older models
+  DENON_AVR_Write($hash, "SSVCTZMA ?", "query"); 				#channel volume new
 	DENON_AVR_Write($hash, "SD?", "query"); 				#sound input mode
 	DENON_AVR_Write($hash, "DC?", "query"); 				#digital input
 	DENON_AVR_Write($hash, "SV?", "query"); 				#video select mode
@@ -3484,14 +3716,14 @@ DENON_AVR_SetUsedInputs($$) {
 }
 
 #####################################
-sub 
-DENON_AVR_Make_Zone($$) {
-	my ( $name, $zone ) = @_;
+sub
+DENON_AVR_Make_Zone($$$) {
+	my ( $ioname, $name, $zone ) = @_;
 	if(!defined($defs{$name}))
 	{
-		fhem("define $name Denon_AVR_ZONE $zone");
+		fhem("define $name Denon_AVR_ZONE $zone $ioname");
 	}
-		
+
     Log3 $name, 3, "DENON_AVR $name: create Denon_AVR_ZONE $zone.";
     return "Denon_AVR_ZONE $name created by DENON_AVR";
 }
@@ -3576,7 +3808,7 @@ sub DENON_AVR_RClayout() {
 =pod
 =item device
 =item summary control for DENON (Marantz) AV receivers via network or serial connection
-=item summary_DE Steuerung von DENON (Marantz) AV Receivern per Netzwerk oder RS-232
+=item summary_DE Steuerung von DENON (Marantz) AV Receivern per LAN oder RS-232
 =begin html
 
 
@@ -4310,3 +4542,4 @@ sub DENON_AVR_RClayout() {
 =end html_DE
 
 =cut
+	

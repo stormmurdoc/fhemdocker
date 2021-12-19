@@ -1,12 +1,15 @@
 "use strict";
 var FW_version={};
-FW_version["fhemweb.js"] = "$Id: fhemweb.js 21057 2020-01-26 14:04:57Z rudolfkoenig $";
+FW_version["fhemweb.js"] = "$Id: fhemweb.js 25343 2021-12-14 11:51:22Z rudolfkoenig $";
 
 var FW_serverGenerated;
+var FW_jsLog;
 var FW_serverFirstMsg = (new Date()).getTime()/1000;
 var FW_serverLastMsg = FW_serverFirstMsg;
 var FW_isIE = (navigator.appVersion.indexOf("MSIE") > 0);
-var FW_isiOS = navigator.userAgent.match(/(iPad|iPhone|iPod)/);
+var FW_isiOS = navigator.userAgent.match(/(iPad|iPhone|iPod)/) ||
+               (navigator.platform === 'MacIntel' && 
+                navigator.maxTouchPoints > 1); /* iPad OS 13+ */
 var FW_scripts = {}, FW_links = {};
 var FW_docReady = false, FW_longpollType, FW_csrfToken, FW_csrfOk=true;
 var FW_root = "/fhem";  // root
@@ -36,6 +39,7 @@ var FW_widgets = {
   textField:         { createFn:FW_createTextField },
   textFieldNL:       { createFn:FW_createTextField, second:true },
   "textField-long":  { createFn:FW_createTextField, second:true },
+  "textFieldNL-long":{ createFn:FW_createTextField, second:true },
   bitfield:          { createFn:FW_createBitfield },
 };
 
@@ -79,9 +83,11 @@ FW_jqueryReadyFn()
   if(FW_docReady)       // loading fhemweb.js twice is hard to debug
     return;
   FW_docReady = true;
-  FW_serverGenerated = $("body").attr("generated");
 
+  FW_serverGenerated = $("body").attr("generated");
+  FW_jsLog = $("body").attr("data-jsLog");
   FW_longpollType = $("body").attr("longpoll");
+
   var ajs = $("body").attr("data-availableJs");
   if(ajs) {
     ajs = ajs.split(",");
@@ -258,6 +264,7 @@ FW_jqueryReadyFn()
             $(sel).append('<option value="'+attrName+'">'+attrName+'</option>');
           $(sel).val(attrName);
           FW_detailSelect(sel, true);
+          $(sel).trigger("change");
         });
     });
 
@@ -301,24 +308,9 @@ FW_jqueryReadyFn()
     if(!m)
       return;
     $("#devSpecHelp").remove();
-    var sel = this;
-    FW_getHelp(m[2], function(data) { // show either the next or the outer li
-      $("#content")
-        .append("<div id='workbench' style='display:none'></div>");
-      $("#content > #workbench").html(data);
-      var aTag = $("#content > #workbench").find("a[name="+val+"]");
-      if($(aTag).length) {
-        var liTag = $(aTag).next("li");
-        if(!$(liTag).length)
-          liTag = $(aTag).parent("li");
-        if($(liTag).length) {
-          $(sel).closest("div[cmd='"+m[1]+"']")
-             .after('<div class="makeTable" id="devSpecHelp"></div>')
-          $("#devSpecHelp").html($(liTag).html());
-        }
-      }
-      $("#content > #workbench").remove();
-    });
+    var sel=this, devName=m[2], selType=m[1];
+    var group = $(this).parent().find(':selected').parent().attr('label');
+    FW_displayHelp(devName, sel, selType, val, group);
   });
 
   FW_smallScreenCommands();
@@ -342,17 +334,95 @@ FW_jqueryReadyFn()
 
 }
 
-var FW_helpData;
+function
+FW_displayHelp(devName, sel, selType, val, group)
+{
+  if(group) {
+    if(group.indexOf("userattr") >= 0)
+      return;
+    devName = (group == "framework" ? "commandref" : group);
+  }
+
+  FW_getHelp(devName, function(data) { // show either the next or the outer li
+    $("#content")
+      .append("<div id='workbench' style='display:none'></div>");
+    var wb = $("#content > #workbench");
+    wb.html(data);
+
+    var mtype = wb.find("a[id]").attr("id"), aTag;
+    if(!mtype)
+      mtype = wb.find("a[name]").attr("name");
+
+    if(devName == "commandref")
+      mtype = "";
+
+    if(mtype) {             // current syntax: FHEMWEB-attr-webCmd
+      var mv = (""+mtype+"-"+selType+"-"+val).replace(/[^a-z0-9_-]/ig,'_');
+      aTag = wb.find("a[id="+mv+"]");
+      if(!$(aTag).length) { // old style #1 syntax: FHEMWEBwebCmd
+        mv = (""+mtype+val).replace(/[^a-z0-9_-]/ig,'_');
+        aTag = wb.find("a[name="+mv+"]");
+      }
+    }
+    if(!$(aTag).length) { // old style #2 syntax : webCmd
+      var v = (val).replace(/[^a-z0-9_-]/ig,'_');
+      aTag = wb.find("a[name="+v+"]");
+    }
+
+    if(!$(aTag).length) { // regexp attributes, like backend_.*
+      wb.find("a[id^='"+mtype+"-"+selType+"-'][data-pattern]").each(
+        function() {
+          if(val.match($(this).attr("data-pattern")))
+            aTag = this;
+        });
+    }
+
+    if($(aTag).length) {
+      var liTag = $(aTag).next("li");
+      if(!$(liTag).length)
+        liTag = $(aTag).parent("li");
+      if(!$(liTag).length)
+        liTag = $(aTag).parent().next("li");
+      $("#devSpecHelp").remove(); // shown only one if FHEM is slow
+      if($(liTag).length) {
+        $(sel).closest("div[cmd='"+selType+"']")
+           .after('<div class="makeTable" id="devSpecHelp"></div>')
+        $("#devSpecHelp").html($(liTag).html());
+      }
+    }
+    wb.remove();
+
+  });
+}
+
+var FW_helpData={};
 function
 FW_getHelp(dev, fn)
 {
-  if(FW_helpData)
-    return fn(FW_helpData);
+  if(FW_helpData[dev])
+    return fn(FW_helpData[dev]);
+
+  if(dev == "commandref") {
+    var lang = $("body").attr("data-language");
+    var url = FW_root+"/docs/commandref_frame"+
+                (lang == "EN" ? "" : "_"+lang)+".html";
+    $.ajax({
+      url:url, headers: { "cache-control": "no-cache" },
+      success: function(data, textStatus, req){
+        FW_helpData[dev] = data;
+        return fn(data);
+      },
+      error:function(xhr, status, err) { log("E:"+err+"/"+status); }
+    });
+    return;
+  }
+
   FW_cmd(FW_root+"?cmd=help "+dev+"&XHR=1", function(data) {
-    if(data.match(/^<html>No help found/)) // for our german only friends
+    if(data.match(/^<html>No help found/) &&
+       !dev.match(" DE")) // for our german only friends
       return FW_getHelp(dev+" DE", fn);
-    FW_helpData = data;
-    return fn(FW_helpData);
+    FW_helpData[dev] = data;
+    return fn(data);
   });
 }
 
@@ -490,16 +560,27 @@ FW_delayedStart()
 }
     
 
-
+var FW_logStack=[];
 function
 log(txt)
 {
   var d = new Date();
   var ms = ("000"+(d.getMilliseconds()%1000));
   ms = ms.substr(ms.length-3,3);
-  txt = d.toTimeString().substring(0,8)+"."+ms+" "+txt;
+  var lTxt = d.toTimeString().substring(0,8)+"."+ms+" "+txt;
   if(typeof window.console != "undefined")
-    console.log(txt);
+    console.log(lTxt);
+
+  if(FW_jsLog==1 && FW_longpollType == "websocket") {
+    FW_logStack.push(txt);
+    if(FW_pollConn && FW_pollConn.readyState == FW_pollConn.OPEN) {
+      while(FW_logStack.length) {
+        txt = '{Log 1, "jsLog: '+FW_logStack.shift().replace(/"/g, "'")+'"}';
+        console.log(txt);
+        FW_pollConn.send(txt);
+      }
+    }
+  }
 }
 
 function
@@ -529,8 +610,9 @@ FW_csrfRefresh(callback)
   });
 }
 
+var FW_cmdStack=[];
 function
-FW_cmd(arg, callback)
+FW_cmd(arg, callback, rep)
 {
   if(arg.length < 120)
     log("FW_cmd:"+arg);
@@ -538,6 +620,8 @@ FW_cmd(arg, callback)
     log("FW_cmd:"+arg.substr(0,120)+"...");
   $.ajax({
     url:addcsrf(arg)+'&fw_id='+$("body").attr('fw_id'),
+    headers: { "cache-control": "no-cache" },
+    dataType: "text",
     method:'POST',
     success: function(data, textStatus, req){
       FW_csrfOk = true;
@@ -545,11 +629,23 @@ FW_cmd(arg, callback)
         callback(req.responseText);
       else if(req.responseText)
         FW_errmsg(req.responseText, 5000);
+      var todo = FW_cmdStack.shift();
+      if(todo) {
+        log("FW_cmd retry #"+todo.rep);
+        FW_cmd(todo.arg, todo.callback, todo.rep);
+      }
     },
     error:function(xhr, status, err) {
-      if(xhr.status == 400 && typeof FW_csrfToken != "undefined") {
+      // iOS 13+ is not queueing requests, have to do it myself. Forum #116962
+      if(xhr.status == 0 && xhr.readyState == 0 && (!rep || rep < 10)) {
+        FW_cmdStack.push({ arg:arg, callback:callback, rep:(rep?rep+1:1)});
+
+      } else if(xhr.status == 400 && typeof FW_csrfToken != "undefined") {
         FW_csrfToken = "";
         FW_csrfRefresh(function(){FW_cmd(arg, callback)});
+
+      } else {
+        log("FW_cmd error: "+status+"/"+JSON.stringify(xhr));
       }
     }
   });
@@ -579,6 +675,7 @@ FW_errmsg(txt, timeout)
 function
 FW_okDialog(txt, parent, removeFn)
 {
+  $("#FW_okDialog").remove();
   var div = $("<div id='FW_okDialog'>");
   $(div).html(txt);
   $("body").append(div);
@@ -744,6 +841,7 @@ FW_inlineModify()       // Do not generate a new HTML page upon pressing modify
     }
     });
     
+  // Set and attr 
   $("div input.psc[type=submit]:not(.get)").click(function(e){
     e.preventDefault();
     var newDef = typeof cm !== 'undefined' ?
@@ -789,10 +887,9 @@ FW_inlineModify()       // Do not generate a new HTML page upon pressing modify
         return FW_okDialog(resp);
       }
       if(isDef) {
+        newDef = FW_htmlQuote(newDef);
         if(newDef.indexOf("\n") >= 0)
           newDef = '<pre>'+newDef+'</pre>';
-        else
-          newDef = FW_htmlQuote(newDef);
         $("div#disp").html(newDef).css("display", "");
         $("div#edit").css("display", "none");
       }
@@ -884,6 +981,8 @@ FW_execRawDef(data)
   doNext()
   {
     if(++i1 >= arr.length) {
+      if($("#FW_okDialog").length) // F2F remote cmd execution
+        return;
       return FW_okDialog("Executed everything, no errors found.");
     }
     str += arr[i1];
@@ -892,9 +991,8 @@ FW_execRawDef(data)
       return doNext();
     }
     if(str != "") {
-      str = str.replace(/\\\n/g, "\n")
-               .replace(/;;/g, ";");
-      FW_cmd(FW_root+"?cmd.x="+encodeURIComponent(str)+"&XHR=1",
+      str = str.replace(/\\\n/g, "\n");
+      FW_cmd(FW_root+"?cmd="+encodeURIComponent(str)+"&XHR=1",
       function(r){
         if(r)
           return FW_okDialog('<pre>'+r+'</pre>');
@@ -997,7 +1095,7 @@ FW_escapeSelector(s)
 {
   if(typeof s != 'string')
     return s;
-  return s.replace(/[ .#\[\]>]/g, function(r) { return '\\'+r });
+  return s.replace(/[ .#\[\]>,]/g, function(r) { return '\\'+r });
 }
 
 /*************** LONGPOLL START **************/
@@ -1051,7 +1149,8 @@ FW_doUpdate(evt)
   if(typeof WebSocket == "function" && evt && evt.target instanceof WebSocket) {
     if(evt.type == 'close' && !FW_leaving) {
       FW_errmsg(errstr, retryTime-100);
-      FW_pollConn.close();
+      if(FW_pollConn) // Race-condition(?) # 112181
+        FW_pollConn.close();
       FW_pollConn = undefined;
       setTimeout(FW_longpoll, retryTime);
       return;
@@ -1088,7 +1187,8 @@ FW_doUpdate(evt)
     var l = input.substr(FW_longpollOffset, nOff-FW_longpollOffset);
     FW_longpollOffset = nOff+1;
 
-    log("Rcvd: "+(l.length>132 ? l.substring(0,132)+"...("+l.length+")":l));
+    if(l != '[""]') // jsLog answer
+      log("Rcvd: "+(l.length>132 ? l.substring(0,132)+"...("+l.length+")":l));
     if(!l.length)
       continue;
     if(l.indexOf("<")== 0) {  // HTML returned by proxy, if FHEM behind is dead
@@ -1239,26 +1339,34 @@ FW_detailSelect(selEl, mayMissing)
   var div = $(selEl).closest("div.makeSelect");
   if(!div.attr("list"))      // hiddenRoom=input
     return;
-  var arg,
+  var argAndPar, fnd,
       listArr = $(div).attr("list").split(" "),
       devName = $(div).attr("dev"),
       cmd = $(div).attr("cmd");
 
-  var i1;
-  for(i1=0; i1<listArr.length; i1++) {
-    arg = listArr[i1];
-    if(arg.indexOf(selVal) == 0 &&
-       (arg.length == selVal.length || arg[selVal.length] == ':'))
-      break;
+  if(selVal != null && selVal != undefined) {
+    for(var i1=0; i1<listArr.length; i1++) {
+      var aap = listArr[i1].split(":");
+      try {
+        if(selVal.match(new RegExp("^"+aap[0]+"$"))) {
+          if(aap.length > 2) {
+            var re = aap.shift();
+            aap = [re, aap.join(":")];
+          }
+          argAndPar = aap;
+          fnd = true;
+        }
+      } catch(e){
+        log("Problem building regexp from "+listArr[i1]);
+      }
+    }
   }
 
   var vArr = [];
-  if(i1==listArr.length && !mayMissing)
+  if(!fnd && !mayMissing)
     return;
-  if(i1<listArr.length) {
-    if(arg.length > selVal.length)
-      vArr = arg.substr(selVal.length+1).split(","); 
-  }
+  if(fnd && argAndPar[1])
+    vArr = argAndPar[1].split(",");
 
   FW_replaceWidget($(selEl).next(), devName, vArr,undefined,selVal,
     undefined, undefined, undefined,
@@ -1383,7 +1491,7 @@ FW_queryValue(cmd, el)
 function
 FW_createTextField(elName, devName, vArr, currVal, set, params, cmd)
 {
-  if(vArr.length != 1 ||
+  if(vArr.length > 2 ||
      (vArr[0] != "textField" && 
       vArr[0] != "textFieldNL" &&
       vArr[0] != "textField-long" &&
@@ -1413,7 +1521,7 @@ FW_createTextField(elName, devName, vArr, currVal, set, params, cmd)
     $(inp).unbind("blur");
     $('body').append(
       '<div id="editdlg" style="display:none">'+
-        '<textarea id="td_longText" rows="25" cols="60" style="width:99%"/>'+
+        '<textarea id="td_longText" style="width:100%;height:100%;"/>'+
       '</div>');
 
     var txt = $(inp).val();
@@ -1425,9 +1533,11 @@ FW_createTextField(elName, devName, vArr, currVal, set, params, cmd)
       AddCodeMirror($("#td_longText"), function(pcm) {cm = pcm;});
     }
 
+    var sz = vArr[1] ? parseInt(vArr[1]) : 75;
     $('#editdlg').dialog(
-      { modal:true, closeOnEscape:true, width:$(window).width()*3/4,
-        height:$(window).height()*3/4,
+      { modal:true, closeOnEscape:true, 
+        width:$(window).width()*(sz/100),
+        height:$(window).height()*(sz/100),
         close:function(){ $('#editdlg').remove(); },
         buttons:[
         { text:"Cancel", click:function(){
@@ -1462,18 +1572,24 @@ FW_createSelect(elName, devName, vArr, currVal, set, params, cmd)
   var vHash = {};
   for(var j=1; j < vArr.length; j++) {
     var o = document.createElement('option');
-    if(!vArr[j].match(/&#[0-9a-f]{1,4};/i))
+    if(!vArr[j].match(/&#[0-9a-f]{1,4};/i)) // how to reproduce?
       o.text = o.value = vArr[j].replace(/#/g," ");
-    vHash[vArr[j]] = 1;
+    vHash[o.value] = 1;
     newEl.options[j-1] = o;
   }
-  if(currVal)
-    $(newEl).val(currVal);
+
   if(elName)
     $(newEl).attr('name', elName);
   if(cmd)
     $(newEl).change(function(arg) { cmd($(newEl).val()) });
-  newEl.setValueFn = function(arg) { if(vHash[arg]) $(newEl).val(arg); };
+  newEl.setValueFn = function(arg) {
+    if(!vHash[arg] && typeof(arg) != "undefined")
+      arg = (arg+"").replaceAll(" ",".");    // Forum #124505
+    if(vHash[arg])
+      $(newEl).val(arg);
+  };
+  newEl.setValueFn(currVal);
+
   return newEl;
 }
 
@@ -1494,7 +1610,7 @@ FW_createSelectNumbers(elName, devName, vArr, currVal, set, params, cmd)
 
   if(currVal != undefined)
     currVal = currVal.replace(/[^\d.\-]/g, "");
-    currVal = (currVal==undefined || currVal=="") ?  min : parseFloat(currVal);
+  currVal = (currVal==undefined || currVal=="") ?  min : parseFloat(currVal);
   if(max==min)
     return undefined;
   if(!(fun == "lin" || fun == "log10"))
@@ -1534,7 +1650,7 @@ FW_createSelectNumbers(elName, devName, vArr, currVal, set, params, cmd)
       k++;
     }
   }
-  if(currVal)
+  if(typeof(currVal) != "undefined")
     $(newEl).val(currVal.toFixed(dp));
   if(elName)
     $(newEl).attr('name', elName);
@@ -1686,7 +1802,7 @@ FW_createSlider(elName, devName, vArr, currVal, set, params, cmd)
   sh.ontouchstart = function(e) { touchFn(e, mouseDown); }
 
   newEl.setValueFn = function(arg) {
-    var res = arg.match(/[\d.\-]+/); // extract first number
+    var res = arg.match(/-?[\d.]+/); // extract first number
     currVal = (res ? parseFloat(res[0]) : min);
     if(currVal < min || currVal > max)
       currVal = min;
@@ -2025,9 +2141,11 @@ FW_getSVG(emb)
   <li>textField - show an input field.<br>
       Example: attr WEB widgetOverride room:textField</li>
   <li>textFieldNL - show the input field and hide the label.</li>
-  <li>textField-long - show an input-field, but upon
-      clicking on the input field open a textArea (60x25).</li>
-  <li>textFieldNL-long - the behaviour is the same
+  <li>textField-long[,sizePct] - show an input-field, but upon
+      clicking on the input field open a textArea.
+      sizePct specifies the size of the dialog relative to the screen, in
+      percent. Default is 75</li>
+  <li>textFieldNL-long[,sizePct] - the behaviour is the same
       as :textField-long, but no label is displayed.</li>
   <li>slider,&lt;min&gt;,&lt;step&gt;,&lt;max&gt;[,1] - show
       a JavaScript driven slider. The optional ,1 at the end
@@ -2057,8 +2175,13 @@ FW_getSVG(emb)
       Beispiel: attr FS20dev widgetOverride on-till:time</li>
   <li>textField - zeigt ein Eingabefeld.<br>
       Beispiel: attr WEB widgetOverride room:textField</li>
-  <li>textField-long - ist wie textField, aber beim Click im Eingabefeld wird
-      ein Dialog mit einer HTML textarea (60x25) wird ge&ouml;ffnet.</li>
+  <li>textFieldNL - Eingabefeld ohne Label.</li>
+  <li>textField-long[,sizePct] - ist wie textField, aber beim Click im
+      Eingabefeld wird ein Dialog mit einer HTML textarea wird
+      ge&ouml;ffnet.  sizePct ist die relative Gr&ouml;&szlig;e des Dialogs,
+      die Voreinstellung ist 75.</li>
+  <li>textFieldNL-long[,sizePct] - wi textField-long, aber kein Label wir
+      angezeigt.</li>
   <li>slider,&lt;min&gt;,&lt;step&gt;,&lt;max&gt;[,1] - zeigt einen
       Schieberegler. Das optionale 1 (isFloat) vermeidet eine Rundung der
       Fliesskommazahlen.</li>

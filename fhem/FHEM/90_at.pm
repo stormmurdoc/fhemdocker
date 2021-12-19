@@ -1,10 +1,9 @@
 ##############################################
-# $Id: 90_at.pm 17561 2018-10-18 14:45:30Z rudolfkoenig $
+# $Id: 90_at.pm 25248 2021-11-21 10:29:01Z rudolfkoenig $
 package main;
 
 use strict;
 use warnings;
-use POSIX;
 use Time::HiRes qw(gettimeofday);
 
 #####################################
@@ -61,7 +60,7 @@ at_Define($$)
   }
 
   return "Wrong timespec, use \"[+][*[{count}]]<time or func>\""
-                                        if($tm !~ m/^(\+)?(\*(\{\d+\})?)?(.*)$/);
+                                       if($tm !~ m/^(\+)?(\*(\{\d+\})?)?(.+)$/);
   my ($rel, $rep, $cnt, $tspec) = ($1, $2, $3, $4);
 
   my ($abstime, $err, $hr, $min, $sec, $fn);
@@ -74,13 +73,28 @@ at_Define($$)
 
   } else {
     ($err, $hr, $min, $sec, $fn) = GetTimeSpec($tspec);
-    return $err if($err);
+    if($err) { # $fn contains the result, try again
+      my $ntspec = ($fn ? $fn : "");
+      $fn = undef;
+      if($ntspec =~ m/^\d{10}$/) {
+        $abstime = $ntspec;
+
+      } elsif($ntspec =~ m/^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)$/) {
+        my ($y,$m,$d,$h,$m2,$s) = ($1,$2,$3,$4,$5,$6);
+        $abstime = mktime($s,$m2,$h,$d,$m-1,$y-1900, 0,0,-1);
+
+      } else {
+        $hash->{STATE} = $err;
+        return $err;
+      }
+
+    }
 
   }
-  return "datespec is not allowed with + or *" if($abstime && ($rel || $rep));
+  return "datespec is not allowed with +" if($abstime && $rel);
 
   if($hash->{CL}) {     # Do not check this for definition
-    $err = perlSyntaxCheck($command, ());
+    $err = perlSyntaxCheck($command, ("%SELF" => $name) );
     return $err if($err);
   }
 
@@ -171,14 +185,18 @@ at_Exec($)
   return if($hash->{DELETED});           # Just deleted
   my $name = $hash->{NAME};
 
-  my $skip = AttrVal($name, "skip_next", undef);
-  delete $attr{$name}{skip_next} if($skip);
+  my $skip = AttrVal($name, "skip_next", ReadingsVal($name, "skip_next", 0));
+  if($skip) {
+    delete $attr{$name}{skip_next};
+    readingsDelete($hash,"skip_next");
+  }
   $hash->{TEMPORARY} = 1 if($hash->{VOLATILE}); # 68680
   delete $hash->{VOLATILE};
 
   if(!$skip && !IsDisabled($name)) {
     Log3 $name, 5, "exec at command $name";
-    my $ret = AnalyzeCommandChain(undef, SemicolonEscape($hash->{COMMAND}));
+    my %sp = ( "%SELF" => $name );
+    my $ret = AnalyzeCommandChain(undef, EvalSpecials($hash->{"COMMAND"}, %sp));
     Log3 $name, 3, "$name: $ret" if($ret);
   }
 
@@ -234,7 +252,7 @@ at_Set($@)
 {
   my ($hash, @a) = @_;
 
-  my %sets = (modifyTimeSpec=>1, inactive=>0, active=>0, execNow=>0);
+  my %sets =(modifyTimeSpec=>1,inactive=>0,active=>0,execNow=>0,"skip_next"=>0);
   my $cmd = join(" ", sort keys %sets);
   $cmd =~ s/modifyTimeSpec/modifyTimeSpec:time/ if($at_detailFnCalled);
   $at_detailFnCalled = 0;
@@ -265,8 +283,13 @@ at_Set($@)
    
   } elsif($a[1] eq "execNow") {
     my $name = $hash->{NAME};
-    my $ret = AnalyzeCommandChain(undef, SemicolonEscape($hash->{COMMAND}));
+    my %sp = ( "%SELF" => $name );
+    my $ret = AnalyzeCommandChain(undef, EvalSpecials($hash->{"COMMAND"}, %sp));
     Log3 $name, 3, "$name: $ret" if($ret);
+
+  } elsif($a[1] eq "skip_next") {
+    setReadingsVal($hash, $a[1], 1, TimeNow());
+    return undef;
 
   }
 
@@ -396,6 +419,20 @@ EOF
   return "$h1$h2</table></div><br>$j1$j2";
 }
 
+sub 
+at_ultimo(;$$$)
+{
+  my ($h,$m,$s) = @_;
+  $h //= 23;
+  $m //= 59;
+  $s //= 0;
+  my $add = $data{AT_RECOMPUTE} ? DAYSECONDS : 0;
+  my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = 
+        localtime(time+$add);
+  my ($nm, $ny) = ($mon == 11) ? (0,$year+1) : ($mon+1,$year);
+  return mktime($s,$m,$h,1,$nm,$ny) - DAYSECONDS;
+}
+
 1;
 
 =pod
@@ -404,14 +441,14 @@ EOF
 =item helper
 =begin html
 
-<a name="at"></a>
+<a id="at"></a>
 <h3>at</h3>
 <ul>
 
   Start an arbitrary FHEM command at a later time.<br>
   <br>
 
-  <a name="atdefine"></a>
+  <a id="at-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; at [&lt;timespec&gt;|&lt;datespec&gt;]
@@ -431,7 +468,7 @@ EOF
       any spaces or tabs.<br>
 
       &lt;datespec&gt; is either ISO8601 (YYYY-MM-DDTHH:MM:SS) or number of
-      seconds since 1970.
+      seconds since 1970 or {perlfunc()}.
     </ul>
     <br>
 
@@ -488,20 +525,34 @@ EOF
           cron or filter the date in a perl expression, see the last example and
           the section <a href="#perl">Perl special</a>.
       </li>
+      <li>To execute a FHEM command on every last day of the month,<br/>
+          the function <code>at_ultimo()</code> can be used as perlfunc for
+          datespec.</br>
+          <code>define at_ultimo at *{at_ultimo()} set lamp1 off</code><br/>
+          This will create an at device which will be executed at 23:59:00
+          on the last day of month.</br>
+          at_ultimo() can take additional parameters to specify an other time
+          on this day<br/>
+          <code>define at_ultimo at *{at_ultimo(12,23,45)} set lamp1
+          off</code><br/>
+          This will create an at device which will be executed ad 12:34:45
+          on the last day of month.<br/>
+      </li>
     </ul>
     <br>
   </ul>
 
 
-  <a name="atset"></a>
+  <a id="at-set"></a>
   <b>Set</b>
   <ul>
-    <a name="modifyTimeSpec"></a>
+    <a id="at-set-modifyTimeSpec"></a>
     <li>modifyTimeSpec &lt;timespec&gt;<br>
         Change the execution time. Note: the N-times repetition is ignored.
         It is intended to be used in combination with
         <a href="#webCmd">webCmd</a>, for an easier modification from the room
         overview in FHEMWEB.</li>
+    <a id="at-set-inactive"></a>
     <li>inactive<br>
         Inactivates the current device. Note the slight difference to the
         disable attribute: using set inactive the state is automatically saved
@@ -510,22 +561,28 @@ EOF
         deactivate the at.<br>
         The concurrent setting of the disable attribute is not recommended.
         </li>
+    <a id="at-set-active"></a>
     <li>active<br>
         Activates the current device (see inactive).</li>
+    <a id="at-set-execNow"></a>
     <li>execNow<br>
         Execute the command associated with the at. The execution of a relative
         at is not affected by this command.</li>
+    <a id="at-set-skip_next"></a>
+    <li>skip_next<br>
+        skip the next execution. Just like the attribute with the same name,
+        but better suited for webCmd.
+        </li>
+
   </ul><br>
 
-
-
-  <a name="atget"></a>
+  <a id="at-get"></a>
   <b>Get</b> <ul>N/A</ul><br>
 
-  <a name="atattr"></a>
+  <a id="at-attr"></a>
   <b>Attributes</b>
   <ul>
-    <a name="alignTime"></a>
+    <a id="at-attr-alignTime"></a>
     <li>alignTime<br>
         Applies only to relative at definitions: adjust the time of the next
         command execution so, that it will also be executed at the desired
@@ -539,7 +596,7 @@ EOF
         </ul>
         </li><br>
 
-    <a name="computeAfterInit"></a>
+    <a id="at-attr-computeAfterInit"></a>
     <li>computeAfterInit<br>
         If perlfunc() in the timespec relies on some other/dummy readings, then
         it will return a wrong time upon FHEM start, as the at define is
@@ -547,34 +604,10 @@ EOF
         FHEM will recompute timespec after the initialization is finished.
         </li><br>
 
-    <a name="disable"></a>
-    <li>disable<br>
-        Can be applied to at/watchdog/notify/FileLog devices.<br>
-        Disables the corresponding at/notify or FileLog device. Note:
-        If applied to an <a href="#at">at</a>, the command will not be executed,
-        but the next time will be computed.</li><br>
+    <li><a href="#disable">disable</a></li>
+    <li><a href="#disabledForIntervals">disabledForIntervals</a></li>
 
-    <a name="disabledForIntervals"></a>
-    <li>disabledForIntervals HH:MM-HH:MM HH:MM-HH:MM ...<br>
-        Space separated list of HH:MM or D@HH:MM tupels. If the current time is
-        between the two time specifications, the current device is disabled.
-        Instead of HH:MM you can also specify HH or HH:MM:SS. D is the day of
-        the week, with 0 indicating Sunday and 3 indicating Wednesday.
-        Specifying the day for the "from" part does _not_ specify it for the
-        "to" part, i.e.  1@00-24 will disable from monday to the end of the
-        week, but not on sunday (as 1@00 is greater than any time on sunday).
-        To specify an interval spawning midnight, you have to specify two
-        intervals, e.g.:
-        <ul>
-          23:00-24:00 00:00-01:00
-        </ul>
-        If parts of the attribute value are enclosed in {}, they are evaluated:
-        <ul>
-          {sunset_abs()}-24 {sunrise_abs()}-08
-        </ul>
-        </li><br>
-
-    <a name="skip_next"></a>
+    <a id="at-attr-skip_next"></a>
     <li>skip_next<br>
         Used for at commands: skip the execution of the command the next
         time.</li><br>
@@ -589,14 +622,14 @@ EOF
 
 =begin html_DE
 
-<a name="at"></a>
+<a id="at"></a>
 <h3>at</h3>
 <ul>
 
   Startet einen beliebigen FHEM Befehl zu einem sp&auml;teren Zeitpunkt.<br>
   <br>
 
-  <a name="atdefine"></a>
+  <a id="at-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; at [&lt;timespec&gt;|&lt;datespec&gt;]
@@ -613,12 +646,12 @@ EOF
       Das optionale <code>{N}</code> nach dem * bedeutet, dass der Befehl genau
       <i>N-mal</i> wiederholt werden soll.<br>
 
-      &lt;timespec&gt; ist entweder HH:MM, HH:MM:SS oder {perlfunc()}.  perlfunc
-      muss ein String in timedet Format zurueckliefern.  Achtung: {perlfunc()}
-      darf keine Leerzeichen enthalten.<br>
+      &lt;timespec&gt; ist entweder HH:MM, HH:MM:SS oder {perlfunc()}.
+      perlfunc muss ein String in timedet Format zur&uuml;ckliefern.  Achtung:
+      {perlfunc()} darf keine Leerzeichen enthalten.<br>
 
       &lt;datespec&gt; ist entweder ISO8601 (YYYY-MM-DDTHH:MM:SS) oder Anzahl
-      der Sekunden seit 1970.
+      der Sekunden seit 1970 oder {perlfunc()}.
 
     </ul>
     <br>
@@ -676,21 +709,35 @@ EOF
       filtern. Siehe hierzu das letzte Beispiel und das <a href="#perl">Perl
       special</a>.  </li>
 
+      <li>Um einen FHEM Befehl immer am letzten Tag des Monats auszuführen,
+          kann die Funktion <code>at_ultimo()</code> als perlfunc für eine
+          datespec verwendet werden.</br>
+          <code>define at_ultimo at *{at_ultimo()} set lamp1 off</code><br/>
+          Hiermit wird ein at device erzeugt, der immer am letzten Tag des
+          Monats um 23:59:00 Uhr ausgeführt wird.<br/>
+          at_ultimo() kann drei optionale Parameter verarbeiten, um eine andere
+          Uhrzeit anzugeben.<br/>
+          <code>define at_ultimo at *{at_ultimo(12,23,45)} set lamp1
+          off</code><br/>
+          Es wird ein at device erzeugt, das immer um 12:34:45 am Monatsletzten
+          ausgeführt wird.<br/>
+      </li>
     </ul>
     <br>
   </ul>
 
 
-  <a name="atset"></a>
+  <a id="at-set"></a>
   <b>Set</b>
   <ul>
-    <a name="modifyTimeSpec"></a>
+    <a id="at-set-modifyTimeSpec"></a>
     <li>modifyTimeSpec &lt;timespec&gt;<br>
         &Auml;ndert die Ausf&uuml;hrungszeit. Achtung: die N-malige
         Wiederholungseinstellung wird ignoriert. Gedacht zur einfacheren
         Modifikation im FHEMWEB Raum&uuml;bersicht, dazu muss man
         modifyTimeSpec in <a href="webCmd">webCmd</a> spezifizieren.
         </li>
+    <a id="at-set-inactive"></a>
     <li>inactive<br>
         Deaktiviert das entsprechende Ger&auml;t. Beachte den leichten
         semantischen Unterschied zum disable Attribut: "set inactive"
@@ -700,28 +747,35 @@ EOF
         deaktivieren.<br>
         Das gleichzeitige Verwenden des disable Attributes wird nicht empfohlen.
         </li>
+    <a id="at-set-active"></a>
     <li>active<br>
         Aktiviert das entsprechende Ger&auml;t, siehe inactive.
         </li>
+    <a id="at-set-execNow"></a>
     <li>execNow<br>
         F&uuml;hrt das mit dem at spezifizierte Befehl aus. Beeinflu&szlig;t
         nicht die Ausf&uuml;hrungszeiten relativer Spezifikationen.
         </li>
+    <a id="at-set-skip_next"></a>
+    <li>skip_next<br>
+        genau wie der gleichnamige Attribut, verhindert die n&auml;chste
+        Ausf&uuml;hrung. Als set Befehl, eignet sich besser f&uuml;r webCmd.
+        </li>
   </ul><br>
 
 
-  <a name="atget"></a>
+  <a id="atget"></a>
   <b>Get</b> <ul>N/A</ul><br>
 
-  <a name="atattr"></a>
+  <a id="at-attr"></a>
   <b>Attribute</b>
   <ul>
-    <a name="alignTime"></a>
+    <a id="at-attr-alignTime"></a>
     <li>alignTime<br>
         Nur f&uuml;r relative Definitionen: Stellt den Zeitpunkt der
         Ausf&uuml;hrung des Befehls so, dass er auch zur alignTime
         ausgef&uuml;hrt wird.  Dieses Argument ist ein timespec. Siehe oben
-        f&uuml; die Definition<br>
+        f&uuml;r die Definition<br>
 
         Beispiel:<br>
         <ul>
@@ -731,46 +785,19 @@ EOF
         </ul>
         </li><br>
 
-    <a name="computeAfterInit"></a>
+    <a id="at-attr-computeAfterInit"></a>
     <li>computeAfterInit<br>
         Falls perlfunc() im timespec Readings or Statusinformationen
         ben&ouml;gt, dann wird sie eine falsche Zeit beim FHEM-Start
-        zurueckliefern, da zu diesem Zeitpunkt die Readings noch nicht aktiv
+        zur&uuml;ckliefern, da zu diesem Zeitpunkt die Readings noch nicht aktiv
         sind. Mit gesetztem computeAfterInit wird perlfunc nach Setzen aller
-        Readings erneut ausgefuehrt. (Siehe Forum #56706)
+        Readings erneut ausgef&uuml;hrt. (Siehe Forum #56706)
         </li><br>
 
-    <a name="disable"></a>
-    <li>disable<br>
-        Deaktiviert das entsprechende Ger&auml;t.<br>
-        Hinweis: Wenn angewendet auf ein <a href="#at">at</a>, dann wird der
-        Befehl nicht ausgef&uuml;hrt, jedoch die n&auml;chste
-        Ausf&uuml;hrungszeit berechnet.</li><br>
+    <li><a href="#disable">disable</a></li>
+    <li><a href="#disabledForIntervals">disabledForIntervals</a></li>
 
-    <a name="disabledForIntervals"></a>
-    <li>disabledForIntervals HH:MM-HH:MM HH:MM-HH:MM ...<br>
-        Das Argument ist eine Leerzeichengetrennte Liste von Minuszeichen-
-        getrennten HH:MM oder D@HH:MM Paaren. Falls die aktuelle Uhrzeit
-        zwischen diesen Werten f&auml;llt, dann wird die Ausf&uuml;hrung, wie
-        beim disable, ausgesetzt. Statt HH:MM kann man auch HH oder HH:MM:SS
-        angeben.  D ist der Tag der Woche, mit 0 als Sonntag and 3 als
-        Mittwoch. Die Angabe des Wochentags f&uuml;r den "von" Wert impliziert
-        _nicht_ den gleichen Tag f&uuml;r den "bis" Wert, z.Bsp.  deaktiviert
-        1@00-24 die Asf&uuml;hrung von Montag bis Ende der Woche, aber nicht
-        Sonntag (da alle Zeitangaben am Montag vor 1@00 liegen).
-        Um einen Intervall um Mitternacht zu spezifizieren, muss man
-        zwei einzelne angeben, z.Bsp.:
-        <ul>
-          23:00-24:00 00:00-01:00
-        </ul>
-        Falls Teile des Wertes in {} eingeschlossen sind, dann werden sie als
-        ein Perl Ausdruck ausgewertet:
-        <ul>
-          {sunset_abs()}-24 {sunrise_abs()}-08
-        </ul>
-        </li><br>
-
-    <a name="skip_next"></a>
+    <a id="at-attr-skip_next"></a>
     <li>skip_next<br>
         Wird bei at Befehlen verwendet um die n&auml;chste Ausf&uuml;hrung zu
         &uuml;berspringen</li><br>

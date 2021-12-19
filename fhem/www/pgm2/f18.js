@@ -1,5 +1,5 @@
 "use strict";
-FW_version["f18.js"] = "$Id: f18.js 20818 2019-12-23 20:12:15Z rudolfkoenig $";
+FW_version["f18.js"] = "$Id: f18.js 24575 2021-06-03 09:52:42Z rudolfkoenig $";
 
 // TODO: hierMenu+Pin,SVGcolors,floorplan
 // Known bugs: AbsSize is wrong for ColorSlider
@@ -72,6 +72,7 @@ $(document).ready(function(){
   
   f18_setWrapColumns();
   f18_setFixedInput();
+  f18_setWidePortrait();
 });
 
 function
@@ -124,7 +125,7 @@ f18_tables()
 
   $("#content .devType").each(function(){
     var el = this, grp = $(el).text();
-    f18_addPin(el, "Room."+FW_urlParams.room+".grp."+grp, true,
+    f18_addPin(el, "Room."+f18_room+".grp."+grp, true,
     function(isFixed){
       var ntr = $(el).closest("tr").next("tr");
       isFixed ? $(ntr).show() : $(ntr).hide();
@@ -372,6 +373,8 @@ f18_special()
     addHider("fixedInput", false, "Fixed input and menu", f18_setFixedInput);
     addHider("wrapcolumns",false,"Wrap columns<br>on small screen",
                         f18_setWrapColumns);
+    addHider("widePortrait",true,"Show all columns<br>in portrait mode",
+                        f18_setWidePortrait);
 
     $("div.f18colors").css("margin-top", "20px");
     $("tr.f18 div.fileList").each(function(e){ f18_addPinToStyleDiv(this) });
@@ -395,6 +398,12 @@ function
 f18_setWrapColumns()
 {
   $("table.block").toggleClass("wrapcolumns", f18_getAttr("wrapcolumns"));
+}
+
+function
+f18_setWidePortrait()
+{
+  $("#content").toggleClass("slim", !f18_getAttr("widePortrait"));
 }
 
 function
@@ -530,6 +539,7 @@ f18_addDragger(el)
   /////////////////////////////////////
   // Size
   var off = 20;
+  var elPadding = ($(el).outerWidth()-$(el).width());
   if(!$(el).hasClass("SVGlabel")) {
     $("<div class='dragSize'></div>")
       .appendTo(el)
@@ -538,7 +548,7 @@ f18_addDragger(el)
              top:$(comp).height()+2, left:$(comp).width()-off, "z-index":1 })
       .draggable({
         drag:function(evt,ui){
-          $(el).css(  { width:ui.position.left+off });
+          $(el).css(  { width:ui.position.left+off-elPadding });
           $(comp).css({ width:ui.position.left+off,
                         height:ui.position.top });
         },
@@ -658,8 +668,8 @@ f18_doSetPos(el, comp, pos)
   f18_applyGrid(pos);
   $(el).css({ position:"absolute", left:pos.left, top:pos.top });
   if(!$(el).hasClass("SVGlabel")) {
-    var padding = parseInt($(el).css("padding-left").replace("px",""));
-    $(el).css({ width:pos.width-padding });
+    var elPadding = ($(el).outerWidth()-$(el).width());
+    $(el).css({ width:pos.width-elPadding });
   }
   $(comp).css({ position:"absolute", 
                 left:pos.left+pos.oLeft, top:pos.top+pos.oTop,
@@ -694,6 +704,8 @@ f18_setAttr(name, value, dontSave)
   var wn = $("body").attr("data-webName");
   FW_cmd(FW_root+"?cmd=attr "+wn+" styleData "+
          encodeURIComponent(JSON.stringify(f18_sd, undefined, 1))+"&XHR=1");
+  // for commandref background coloring
+  localStorage.setItem("styleData", JSON.stringify(f18_sd.f18));
 }
 
 function
@@ -725,7 +737,7 @@ f18_setCss(why)
   function bg(c) { return "{ background:#"+c+"; fill:#"+c+"; }\n" }
   function fg(c) { return "{ color:#"+c+"; }\n" }
   style += ".col_fg, body, input, textarea "+fg(col("fg"));
-  style += ".col_bg, textarea, input, option "+bg(col("bg"));
+  style += ".col_bg, textarea, input, option, optgroup "+bg(col("bg"));
   style += ".col_link,a:not(.changed),.handle,.fhemlog,input[type=submit],"+
            "select,div.ui-widget-content a "+
            "{color:#"+col("link")+"!important; stroke:#"+col("link")+";}\n";
@@ -859,6 +871,7 @@ f18_textInput()
   $("#"+n).dialog({
     dialogClass:"no-close", modal:true, width:"auto", closeOnEscape:true, 
     maxWidth:$(window).width()*0.9, maxHeight:$(window).height()*0.9,
+    position: { my: "right", at: "center" },
     buttons: [
     {text:"Execute",click:function(){ FW_execRawDef( ta.val()) }},
     {text:"Close", click:function(){ $(this).remove(); }},

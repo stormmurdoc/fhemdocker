@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 91_notify.pm 20827 2019-12-25 19:17:36Z rudolfkoenig $
+# $Id: 91_notify.pm 25231 2021-11-15 17:34:18Z rudolfkoenig $
 package main;
 
 use strict;
@@ -24,10 +24,11 @@ notify_Initialize($)
     forwardReturnValue:1,0
     ignoreRegexp
     readLog:1,0
+    setList
     showtime:1,0
   );
   use warnings 'qw';
-  $hash->{AttrList} = join(" ", @attrList);
+  $hash->{AttrList} = join(" ", @attrList)." $readingFnAttributes";
 
   $hash->{SetFn}    = "notify_Set";
   $hash->{StateFn}  = "notify_State";
@@ -122,8 +123,11 @@ notify_Exec($$)
       Log3 $ln, 3, "$ln return value: $r" if($r);
       $ret .= " $r" if($r);
       $ntfy->{TRIGGERTIME} = $now;
-      $ntfy->{STATE} =
-        AttrVal($ln,'showtime',1) ? $dev->{NTFY_TRIGGERTIME} : 'active';
+      setReadingsVal($ntfy, "triggeredByDev",   $n, $dev->{NTFY_TRIGGERTIME});
+      setReadingsVal($ntfy, "triggeredByEvent", $s, $dev->{NTFY_TRIGGERTIME});
+      $ntfy->{STATE} = $dev->{NTFY_TRIGGERTIME}
+        if(AttrVal($ln, 'showtime', !AttrVal($ln, "stateFormat", 0)));
+      last if($dat);
     }
   }
   
@@ -179,13 +183,21 @@ notify_Set($@)
 
   return "no set argument specified" if(int(@a) < 2);
   my %sets = (addRegexpPart=>2, removeRegexpPart=>1, inactive=>0, active=>0);
+  my $setList = AttrVal($me, "setList", "");
+  my %usrSets = map { $_ =~ s/:.*//; $_ => 1 } split(" ", $setList);
   
   my $cmd = $a[1];
-  if(!defined($sets{$cmd})) {
-    my $ret ="Unknown argument $cmd, choose one of ".join(" ", sort keys %sets);
+  if(!defined($sets{$cmd}) && !defined($usrSets{$cmd})) {
+    my $ret ="Unknown argument $cmd, choose one of ".
+        join(" ", sort keys %sets)." $setList";
     $ret =~ s/active/active:noArg/g;
     return $ret;
   }
+  if($usrSets{$cmd}) {
+    readingsSingleUpdate($hash, $cmd, join(" ",@a[2..$#a]), 1);
+    return;
+  }
+
   return "$cmd needs $sets{$cmd} parameter(s)" if(@a-$sets{$cmd} != 2);
 
   if($cmd eq "addRegexpPart") {
@@ -232,6 +244,8 @@ sub
 notify_State($$$$)
 {
   my ($hash, $tim, $vt, $val) = @_;
+
+  $hash->{STATE} = $val if($vt eq "STATE" && !$init_done);
 
   return undef if($vt ne "state" || $val ne "inactive");
   readingsSingleUpdate($hash, "state", "inactive", 1);
@@ -384,12 +398,12 @@ END
 =item summary_DE f&uuml;hrt bei Events Anweisungen aus
 =begin html
 
-<a name="notify"></a>
+<a id="notify"></a>
 <h3>notify</h3>
 <ul>
   <br>
 
-  <a name="notifydefine"></a>
+  <a id="notify-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; notify &lt;pattern&gt; &lt;command&gt;</code>
@@ -436,6 +450,7 @@ END
           be textually replaced for FHEM commands.</li>
         <li>$NAME and $TYPE contain the name and type of the device triggering
           the event, e.g. myFht and FHT</li>
+        <li>$SELF contains the name of the notify itself</li>
        </ul></li>
 
       <li>Note: the following is deprecated and will be removed in a future
@@ -488,18 +503,21 @@ END
   <br>
 
 
-  <a name="notifyset"></a>
+  <a id="notify-set"></a>
   <b>Set </b>
   <ul>
+    <a id="notify-set-addRegexpPart"></a>
     <li>addRegexpPart &lt;device&gt; &lt;regexp&gt;<br>
         add a regexp part, which is constructed as device:regexp.  The parts
         are separated by |.  Note: as the regexp parts are resorted, manually
         constructed regexps may become invalid. </li>
+    <a id="notify-set-removeRegexpPart"></a>
     <li>removeRegexpPart &lt;re&gt;<br>
         remove a regexp part.  Note: as the regexp parts are resorted, manually
         constructed regexps may become invalid.<br>
         The inconsistency in addRegexpPart/removeRegexPart arguments originates
         from the reusage of javascript functions.</li>
+    <a id="notify-set-inactive"></a>
     <li>inactive<br>
         Inactivates the current device. Note the slight difference to the
         disable attribute: using set inactive the state is automatically saved
@@ -507,27 +525,28 @@ END
         This command is intended to be used by scripts to temporarily
         deactivate the notify.<br>
         The concurrent setting of the disable attribute is not recommended.</li>
+    <a id="notify-set-active"></a>
     <li>active<br>
         Activates the current device (see inactive).</li>
     </ul>
     <br>
 
 
-  <a name="notifyget"></a>
+  <a id="notify-get"></a>
   <b>Get</b> <ul>N/A</ul><br>
 
-  <a name="notifyattr"></a>
+  <a id="notify-attr"></a>
   <b>Attributes</b>
   <ul>
     <li><a href="#disable">disable</a></li>
     <li><a href="#disabledForIntervals">disabledForIntervals</a></li>
 
-    <a name="disabledAfterTrigger"></a>
+    <a id="notify-attr-disabledAfterTrigger"></a>
     <li>disabledAfterTrigger someSeconds<br>
       disable the execution for someSeconds after it triggered.
     </li>
 
-    <a name="addStateEvent"></a>
+    <a id="notify-attr-addStateEvent"></a>
     <li>addStateEvent<br>
       The event associated with the state Reading is special, as the "state: "
       string is stripped, i.e $EVENT is not "state: on" but just "on". In some
@@ -542,7 +561,7 @@ END
       supporting the <a href="#readingFnAttributes">readingFnAttributes</a>.
       </li>
 
-    <a name="forwardReturnValue"></a>
+    <a id="notify-attr-forwardReturnValue"></a>
     <li>forwardReturnValue<br>
         Forward the return value of the executed command to the caller,
         default is disabled (0).  If enabled (1), then e.g. a set command which
@@ -550,29 +569,37 @@ END
         FHEMWEB to display this value, when clicking "on" or "off", which is
         often not intended.</li>
 
-    <a name="ignoreRegexp"></a>
+    <a id="notify-attr-ignoreRegexp"></a>
     <li>ignoreRegexp regexp<br>
         It is hard to create a regexp which is _not_ matching something, this
-        attribute helps in this case, as the event is ignored if matches the
+        attribute helps in this case, as the event is ignored if it matches the
         argument. The syntax is the same as for the original regexp.
         </li>
 
-    <a name="readLog"></a>
+    <li><a href="#perlSyntaxCheck">perlSyntaxCheck</a></li>
+
+    <a id="notify-attr-readLog"></a>
     <li>readLog<br>
         Execute the notify for messages appearing in the FHEM Log. The device
-        in this case is set to the notify itself, e.g. checking for the startup
-        message looks like:
+        in this case is set to the notify itself, e.g. checking for the
+        startup message looks like:
         <ul><code>
           define n notify n:.*Server.started.* { Log 1, "Really" }<br>
           attr n readLog
         </code></ul>
         </li>
 
-    <a name="perlSyntaxCheck"></a>
-    <li>perlSyntaxCheck<br>
-        by setting the <b>global</b> attribute perlSyntaxCheck, a syntax check
-        will be executed upon definition or modification, if the command is
-        perl and FHEM is already started.
+    <a id="notify-attr-setList"></a>
+    <li>setList<br>
+        space separated list of user-defined commands. When executing such a
+        command, a reading with the same name is set to the arguments of the
+        command.<br>
+        Can be used in scenarios like:
+        <ul><code>
+          define Leuchtdauer notify schalter:on
+                set Licht on-for-timer [$SELF:dauer]<br>
+          attr Leuchtdauer setList dauer:60,120,180
+        </code></ul>
         </li>
 
   </ul>
@@ -584,12 +611,12 @@ END
 
 =begin html_DE
 
-<a name="notify"></a>
+<a id="notify"></a>
 <h3>notify</h3>
 <ul>
   <br>
 
-  <a name="notifydefine"></a>
+  <a id="notify-define"></a>
   <b>Define</b>
   <ul>
     <code>define &lt;name&gt; notify &lt;Suchmuster&gt; &lt;Anweisung&gt;</code>
@@ -650,6 +677,8 @@ END
 
           <li>$NAME und $TYPE enthalten den Namen bzw. Typ des Ereignis
             ausl&ouml;senden Ger&auml;tes, z.B. myFht und FHT</li>
+
+        <li>$SELF enthaelt den Namen dieser notify</li>
        </ul></li>
 
       <li>Achtung: Folgende Vorgehensweise ist abgek&uuml;ndigt, funktioniert
@@ -711,18 +740,21 @@ END
   <br>
 
 
-  <a name="notifyset"></a>
+  <a id="notify-set"></a>
   <b>Set </b>
   <ul>
+    <a id="notify-set-addRegexpPart"></a>
     <li>addRegexpPart &lt;device&gt; &lt;regexp&gt;<br>
         F&uuml;gt ein regexp Teil hinzu, der als device:regexp aufgebaut ist.
         Die Teile werden nach Regexp-Regeln mit | getrennt.  Achtung: durch
         hinzuf&uuml;gen k&ouml;nnen manuell erzeugte Regexps ung&uuml;ltig
         werden.</li>
+    <a id="notify-set-removeRegexpPart"></a>
     <li>removeRegexpPart &lt;re&gt;<br>
         Entfernt ein regexp Teil.  Die Inkonsistenz von addRegexpPart /
         removeRegexPart-Argumenten hat seinen Ursprung in der Wiederverwendung
         von Javascript-Funktionen.</li>
+    <a id="notify-set-inactive"></a>
     <li>inactive<br>
         Deaktiviert das entsprechende Ger&auml;t. Beachte den leichten
         semantischen Unterschied zum disable Attribut: "set inactive"
@@ -732,22 +764,29 @@ END
         deaktivieren.<br>
         Das gleichzeitige Verwenden des disable Attributes wird nicht empfohlen.
         </li>
+    <a id="notify-set-active"></a>
     <li>active<br>
         Aktiviert das entsprechende Ger&auml;t, siehe inactive.
         </li>
     </ul>
     <br>
 
-  <a name="notifyget"></a>
+  <a id="notify-get"></a>
   <b>Get</b> <ul>N/A</ul><br>
 
-  <a name="notifyattr"></a>
+  <a id="notify-attr"></a>
   <b>Attribute</b>
   <ul>
     <li><a href="#disable">disable</a></li>
     <li><a href="#disabledForIntervals">disabledForIntervals</a></li>
 
-    <a name="addStateEvent"></a>
+    <a id="notify-attr-disabledAfterTrigger"></a>
+    <li>disabledAfterTrigger &lt;sekunden&gt;<br>
+      deaktiviert die Ausf&uuml;hrung f&uuml;r &lt;sekunden&gt; nach dem
+      das notify ausgel&ouml;st wurde.
+    </li>
+
+    <a id="notify-attr-addStateEvent"></a>
     <li>addStateEvent<br>
       Das mit dem state Reading verkn&uuml;pfte Event ist speziell, da das
       dazugeh&ouml;rige Prefix "state: " entfernt wird, d.h. $EVENT ist nicht
@@ -767,22 +806,24 @@ END
       </ul>
       </li>
 
-    <a name="forwardReturnValue"></a>
+    <a id="notify-attr-forwardReturnValue"></a>
     <li>forwardReturnValue<br>
         R&uuml;ckgabe der Werte eines ausgef&uuml;hrten Kommandos an den
         Aufrufer.  Die Voreinstellung ist 0 (ausgeschaltet), um weniger
         Meldungen im Log zu haben.
         </li>
 
-    <a name="ignoreRegexp"></a>
+    <a id="notify-attr-ignoreRegexp"></a>
     <li>ignoreRegexp regexp<br>
         Es ist nicht immer einfach ein Regexp zu bauen, was etwas _nicht_
-        matcht. Dieses Attribu hilft in diesen F&auml;llen: das Event wird
-        ignoriert, falls den angegebenen Regexp matcht. Syntax ist gleich wie
-        in der Definition.
+        matcht. Dieses Attribut hilft in diesen F&auml;llen: das Event wird
+        ignoriert, falls es den angegebenen Regexp matcht. Syntax ist gleich
+        wie in der Definition.
         </li>
 
-    <a name="readLog"></a>
+    <li><a href="#perlSyntaxCheck">perlSyntaxCheck</a></li>
+
+    <a id="notify-attr-readLog"></a>
     <li>readLog<br>
         Das notify wird f&uuml;r Meldungen, die im FHEM-Log erscheinen,
         ausgegef&uuml;hrt. Das "Event-Generierende-Ger&auml;t" wird auf dem
@@ -794,12 +835,17 @@ END
         </code></ul>
         </li>
 
-    <a name="perlSyntaxCheck"></a>
-    <li>perlSyntaxCheck<br>
-        nach setzen des <b>global</b> Attributes perlSyntaxCheck wird eine 
-        Syntax-Pr&uuml;fung der Anweisung durchgef&uuml;hrt bei jeder
-        &Auml;nderung (define oder modify), falls die Anweisung Perl ist, und
-        FHEM bereits gestartet ist.  </li>
+    <a id="notify-attr-setList"></a>
+    <li>setList<br>
+        Leerzeichen getrennte Liste von benutzerdefinierten Befehlen. Beim
+        ausf&uuml;ren solcher Befehle wird ein gleichnamiges Reading auf dem
+        Wert des Befehls gesetzt. Kann z.Bsp. wie folgt verwendet werden:
+        <ul><code>
+          define Leuchtdauer notify schalter:on
+                set Licht on-for-timer [$SELF:dauer]<br>
+          attr Leuchtdauer setList dauer:60,120,180
+        </code></ul>
+        </li>
 
   </ul>
   <br>

@@ -29,7 +29,7 @@
 #
 # Contributed by Kai 'wusel' Siering <wusel+fhem@uu.org> in 2010
 # Based in part on work for FHEM by other authors ...
-# $Id: 70_SISPM.pm 2076 2012-11-04 13:49:43Z rudolfkoenig $
+# $Id: 70_SISPM.pm 25037 2021-10-01 08:14:27Z rudolfkoenig $
 ###########################
 
 package main;
@@ -224,8 +224,9 @@ SISPM_Undef($$)
   my @a = split("[ \t][ \t]*", $def);
   my $name = $hash->{NAME};
 
-  if(defined($hash->{FD})) {
-      close($hash->{FD});
+  if(defined($hash->{FH})) {
+      close($hash->{FH});
+      delete $hash->{FH};
       delete $hash->{FD};
   }
   delete $selectlist{"$name.pipe"};
@@ -263,7 +264,8 @@ SISPM_GetStatus($)
 	return "SISPM Can't open pipe: $dev: $!";
     }
 
-    $hash->{FD}=$FH;
+    $hash->{FD}=fileno($FH);
+    $hash->{FH}=$FH;	
     $selectlist{"$name.pipe"} = $hash;
     Log 4, "SISPM pipe opened";
     $hash->{STATE} = "running";
@@ -293,7 +295,7 @@ SISPM_Read($)
 	Log 3, "Oops, SISPM FD empty";
 	return undef;
     }
-    $FH = $hash->{FD};
+    $FH = $hash->{FH};
 
     Log 4, "SISPM reading started";
 
@@ -434,6 +436,7 @@ SISPM_Read($)
 
     if($eof) {
 	close($FH);
+	delete $hash->{FH};
 	delete $hash->{FD};
 	delete $selectlist{"$name.pipe"};
 	InternalTimer(gettimeofday()+ $hash->{Timer}, "SISPM_GetStatus", $hash, 1);
@@ -527,6 +530,7 @@ sub nonblockGetLinesSISPM {
 1;
 
 =pod
+=item summary      Control the Silver Shield Power Manager over sispmctl
 =begin html
 
 <a name="SISPM"></a>
@@ -540,7 +544,6 @@ sub nonblockGetLinesSISPM {
     <code>define &lt;name&gt; SISPM &lt;/path/to/sispmctl&gt;</code>
     <br><br>
 
-    <!--<div style="background-color: #ffaaaa;"> -->
     <div>
     When <i>using multiple SIS PMs on one host</i>, sispmctl up to and including V 2.7 has a bug:
 <pre>plug-2:# sispmctl -v -s -d 1 -g all -d 2 -g all

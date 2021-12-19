@@ -1,4 +1,4 @@
-# $Id: 49_Arlo.pm 20369 2019-10-15 18:12:41Z maluk $
+# $Id: 49_Arlo.pm 25247 2021-11-21 07:29:45Z maluk $
 
 package main;
 
@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use IO::Socket;
 use IO::Socket::INET;
+use IO::Socket::SSL;
 use HTTP::Request;
 use HTTP::Cookies;
 use LWP::UserAgent;
@@ -21,7 +22,7 @@ sub Arlo_Initialize($$) {
   $hash->{UndefFn}  = "Arlo_Undef";
   $hash->{GetFn}    = "Arlo_Get";
   $hash->{SetFn}    = "Arlo_Set";
-  $hash->{AttrList} = "disable:1 expiryTime pingInterval updateInterval downloadDir downloadLink ssePollingInterval videoDownloadFix:0,1 ".$readingFnAttributes;  
+  $hash->{AttrList} = "disable:1 expiryTime pingInterval updateInterval downloadDir downloadLink mailServer ssePollingInterval videoDownloadFix:0,1 ".$readingFnAttributes;  
   $hash->{AttrFn}   = "Arlo_Attr";
 }
 
@@ -31,16 +32,29 @@ sub Arlo_Define($$) {
   my @a = split("[ \t][ \t]*", $def);
 
   my $subtype = $a[2];
-  if ($subtype eq 'ACCOUNT' && @a == 5) {
+  if ($subtype eq 'ACCOUNT' && @a >= 5) {
     my $user = Arlo_decrypt($a[3]);
     my $passwd = Arlo_decrypt($a[4]);
+    my $mailPasswd = '';
     $hash->{helper}{username} = $user;
     $hash->{helper}{password} = $passwd;
+    if (@a > 5) {
+       $mailPasswd = Arlo_decrypt($a[5]);
+       $hash->{helper}{mailPassword} = $mailPasswd;
+    }
+    my $mailUser = '';
+    if (@a > 6) {
+       $mailUser = $a[6];
+       $hash->{helper}{mailUser} = $mailUser;
+    } else {
+       $hash->{helper}{mailUser} = $user;
+    }
     $modules{$MODULE}{defptr}{"account"} = $hash;
     
     my $cryptUser = Arlo_encrypt($user);
     my $cryptPasswd = Arlo_encrypt($passwd);
-    $hash->{DEF} = "ACCOUNT $cryptUser $cryptPasswd";
+    my $cryptMailPasswd = Arlo_encrypt($mailPasswd);
+    $hash->{DEF} = "ACCOUNT $cryptUser $cryptPasswd $cryptMailPasswd $mailUser";
     InternalTimer(gettimeofday() + 3, "Arlo_Login", $hash);
 
   } elsif (($subtype eq 'BASESTATION' || $subtype eq 'ROUTER') && @a == 5) {
@@ -148,8 +162,7 @@ sub Arlo_Attr($$$) {
     if ($attrName eq 'disable') {
       RemoveInternalTimer($hash);
       if ($cmd eq 'del') {
-        Arlo_Login($hash);
-        $hash->{STATE} = 'active';
+        InternalTimer(gettimeofday() + 1, "Arlo_Login", $hash);
       } else {
         Arlo_Logout($hash);
         $hash->{STATE} = 'disabled';
@@ -394,31 +407,33 @@ sub Arlo_Event($$) {
 #
 
 sub Arlo_PrepareRequest($$;$$$$) {
-  my ($hash, $urlSuffix, $method, $body, $additionalHeader) = @_;
+  my ($hash, $url, $method, $body, $additionalHeader) = @_;
   $method = "GET" if (!defined($method));
   
   my $account = $modules{$MODULE}{defptr}{"account"};
   
-  if ($account->{STATE} eq 'inactive') {
-    Arlo_Login($account);
-  }
-  
   my $name = $account->{NAME};
-  my $cookies = $account->{helper}{cookies};
   my $token = $account->{helper}{token};
-  my $headers = "Authorization: ".$token."\r\nReferer: https://my.arlo.com\r\nContent-Type: application/json; charset=utf-8\r\nCookie: ".$cookies.
-      "\r\nschemaVersion: 1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0";
-  $headers = $headers."\r\n".$additionalHeader if (defined($additionalHeader));
-  Log3 $name, 5, "Header: $headers";
+  my $cookies = $account->{helper}{cookies};
+  my $serviceHeaders;
   
-  my $url = 'https://my.arlo.com/hmsweb'.$urlSuffix;
-  Log3 $name, 5, "URL: $url";
+  $url = 'https://myapi.arlo.com/hmsweb'.$url;
+  
+  my $headers = "Accept: application/json\r\nAuth-Version: 2\r\n";
+  $headers = $headers."Authorization: $token\r\n" if (defined($token)); 
+  $headers = $headers."Cookie: $cookies\r\n" if (defined($cookies)); 
+  $headers = $headers."Content-Type: application/json; charset=utf-8\r\nOrigin: https://myapi.arlo.com\r\nReferer: https://myapi.arlo.com\r\nschemaVersion: 1\r\n";
+  $headers = $headers."User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36";
+  $headers = $headers."\r\n".$additionalHeader if (defined($additionalHeader));
+  Log3 $name, 5, "Arlo header: $headers";
+  
+  Log3 $name, 4, "Arlo URL: $url";
 
-  my $request = {url => $url, method => $method, header => $headers, host => 'my.arlo.com'};
+  my $request = {url => $url, method => $method, header => $headers, keepalive => 1, httpversion => '1.1', loglevel => 4};
   
   if (defined($body)) {
     my $bodyJson = encode_json $body;
-    Log3 $name, 5, "Body: $bodyJson";
+    Log3 $name, 5, "Arlo body: $bodyJson";
     $request->{data} = $bodyJson;
   }
   
@@ -430,16 +445,85 @@ sub Arlo_Request($$;$$$$$$) {
   my $request = Arlo_PrepareRequest($hash, $urlSuffix, $method, $body, $additionalHeader);
 
   if (defined($callback)) {
-    $request->{callback} = $callback;
+    $request->{callbackArlo} = $callback;
   } else {
-    $request->{callback} = \&Arlo_DefaultCallback;
+    $request->{callbackArlo} = \&Arlo_DefaultCallback;
   }
-  
   if (defined($origin)) {
     $request->{origin} = $origin;
   }
+
+  # request für HttpUtils_NonblockingGet($request);
+  my $err = HttpUtils_Connect($request);
+  if ($err) {
+    $request->{callbackArlo}($request, $err, '');
+    return;
+  }
   
-  HttpUtils_NonblockingGet($request);
+  $request->{buf} = '';
+  $request->{readCounter} = 0;
+  delete($request->{httpdatalen});
+  delete($request->{httpheader});
+  InternalTimer(gettimeofday() + 0.5, 'Arlo_HttpRead', $request);
+}
+
+sub Arlo_HttpRead($) {
+  my ($hash) = @_;
+
+  if (!defined($hash->{conn})) {
+    Log3 $hash, 3, "Arlo HTTP connection not defined, stop reading.";
+    return;
+  }
+
+  my ($rout, $rin) = ('', '');
+  vec($rin, $hash->{conn}->fileno(), 1) = 1;
+  Log3 $hash, $hash->{loglevel}, "Read http response from $hash->{url}";
+  my $nfound = select($rout=$rin, undef, undef, 0.1);
+  while ($nfound > 0) {
+    my $buf = '';
+    my $len = sysread($hash->{conn}, $buf, 65536);
+    if (!defined($len) || $len <= 0) {
+      my ($err, $ret, $redirect) = HttpUtils_ParseAnswer($hash);
+      $hash->{callbackArlo}($hash, $err, $ret);
+      return;
+    }
+    $hash->{buf} = $hash->{buf} . $buf;
+    $nfound = select($rout=$rin, undef, undef, 0.1);
+  }
+  
+  if (HttpUtils_DataComplete($hash)) {
+    Log3 $hash, $hash->{loglevel}, "Arlo read http DataComplete";
+    my ($err, $ret, $redirect) = HttpUtils_ParseAnswer($hash);
+    $hash->{callbackArlo}($hash, $err, $ret);
+    return;
+  } 
+  
+  my $counter = $hash->{readCounter};
+  if ($counter < 8) {
+    $hash->{readCounter} = $counter + 1;
+    InternalTimer(gettimeofday() + 0.5, 'Arlo_HttpRead', $hash);
+  } else {
+    HttpUtils_Close($hash);
+    $hash->{callbackArlo}($hash, "$hash->{addr} timed out", '');
+  }
+}
+
+sub Arlo_RequestWithLogin($$;$$$$$$) {
+  my ($hash, $urlSuffix, $method, $body, $additionalHeader, $callback, $origin) = @_;
+
+  my $account = $modules{$MODULE}{defptr}{"account"};
+  if ($account->{STATE} eq 'inactive') {
+    if (defined($account->{helper}{followUpRequest})) {
+      return 'Please wait until login is finished.';
+    } 
+
+    Arlo_Login($account);
+    my $followUpRequest = {hash => $hash, urlSuffix => $urlSuffix, method => $method, body => $body, additionalHeader => $additionalHeader, callback => $callback, origin => $origin};
+    $account->{helper}{followUpRequest} = $followUpRequest;
+    return 'Action will be executed after login.';
+  } 
+
+  Arlo_Request($hash, $urlSuffix, $method, $body, $additionalHeader, $callback, $origin);
 }
 
 sub Arlo_BlockingRequest($$;$$$$) {
@@ -460,39 +544,66 @@ sub Arlo_DefaultCallback($$$) {
     eval {
       $response = decode_json $jsonData;
       if ($response->{success}) {
+        Arlo_SetCookies($account, $hash->{httpheader});
         Log3 $name, 5, "Response from Arlo: $jsonData";
       } else {
-	    my $logLevel = 2;
+	      my $logLevel = 2;
         if ($response->{data}) {
-	      my $data = $response->{data};
-		  my $origin = $hash->{origin};
-		  if ($origin && $data->{error} eq '2059' && $data->{reason} eq 'Device is offline.') {
+	        my $data = $response->{data};
+		      my $origin = $hash->{origin};
+		      if ($origin && $data->{error} eq '2059' && $data->{reason} eq 'Device is offline.') {
             readingsSingleUpdate($origin, 'state', 'offline', 1) if (ReadingsVal($origin->{NAME}, 'state', '') ne 'offline');
-			$logLevel = 5;
-		  } elsif ($data->{error} eq '1022' && $data->{reason} eq 'Access token is invalid') {
-			Log3 $name, 3, "Arlo access token was invalid. Reconnect to Arlo.";
-			if ($account->{STATE} eq 'active') {
-			  $account->{RETRY} = 1;
+			      $logLevel = 5;
+		      } elsif ($data->{error} eq '1022' && $data->{reason} eq 'Access token is invalid') {
+  			    Log3 $name, 3, "Arlo access token was invalid. Reconnect to Arlo.";
+	  		    if ($account->{STATE} eq 'active') {
               Arlo_Login($account);
             }
-			$logLevel = 5;
-		  }
-		} 
+			      $logLevel = 5;
+		      }
+		    } 
         Log3 $name, $logLevel, "Arlo call was not successful: $jsonData";
         $response = undef;
       }
     };
     if ($@) {
-      Log3 $hash->{NAME}, 3, 'Invalid Arlo callback response: '.$jsonData;
+      Log3 $name, 3, 'Invalid Arlo callback response: '.$jsonData;
     }
     return $response;
+  } else {
+    Log3 $name, 2, 'Arlo callback response code '.$hash->{code};
+    Log3 $name, 4, 'Arlo callback response header '.$hash->{header};
   }
+}
+
+sub Arlo_SetCookies($$) {
+  my ($hash, $httpHeader) = @_;
+
+  my %cookies;
+  if (defined($hash->{helper}{cookies})) {
+    foreach my $cookie (split("; ", $hash->{helper}{cookies})) {
+      my($key, $val) = split(/=/, $cookie, 2);
+      $cookies{$key} = $val;
+    }
+  }
+
+  if (defined($httpHeader)) {
+    my @header = split("\n", $httpHeader);
+    foreach my $line (@header) {
+      if ($line =~ m/^Set-Cookie: ([^;]+)/g) {
+        my($key, $val) = split(/=/, $1, 2);
+        $cookies{$key} = $val;
+      }
+    }
+  }
+
+  $hash->{helper}{cookies} = join('; ', map { "$_=$cookies{$_}" } keys %cookies);
 }
 
 
 sub Arlo_CreateDevices($) {
   my ($hash) = @_;
-  Arlo_Request($hash, '/users/devices', 'GET', undef, undef, \&Arlo_CreateDevicesCallback);
+  Arlo_RequestWithLogin($hash, '/users/devices', 'GET', undef, undef, \&Arlo_CreateDevicesCallback);
 }
 
 sub Arlo_CreateDevice($$$$$$$;$) {
@@ -582,13 +693,17 @@ sub Arlo_Notify($$;$) {
   my ($hash, $body, $callback) = @_;
   my ($account, $deviceId, $xCloudId) = Arlo_PreparePostRequest($hash, $body);
   Log3 $account->{NAME}, 4, "Notify $deviceId, action: $body->{action} $body->{resource}";
-  Arlo_Request($account, '/users/devices/notify/'.$deviceId, 'POST', $body, 'xcloudId: '.$xCloudId, $callback, $hash);
+  Arlo_RequestWithLogin($account, '/users/devices/notify/'.$deviceId, 'POST', $body, 'xcloudId: '.$xCloudId, $callback, $hash);
 }
 
 sub Arlo_Subscribe($) {
   my ($hash) = @_;
   my $account = $modules{$MODULE}{defptr}{'account'};
   my $userId = $account->{helper}{userId};
+  if (!defined($userId)) {
+    Log3 $account->{NAME}, 3, 'User id missing in subscribe request.';
+    return;
+  }
   my $basestationId = $hash->{serialNumber};
   my @devices = ($basestationId);
   my $props = {devices => \@devices};
@@ -620,12 +735,12 @@ sub Arlo_SubscribeCallback($$$)  {
 
 sub Arlo_Unsubscribe($) {
   my ($hash) = @_;
-  Arlo_Request($hash, '/client/unsubscribe');
+  Arlo_RequestWithLogin($hash, '/client/unsubscribe');
 }
 
 sub Arlo_ReadModes($) {
   my ($hash) = @_;
-  Arlo_Request($hash, '/users/automation/definitions?uniqueIds=all', 'GET', undef, undef, \&Arlo_ReadModesCallback);
+  Arlo_RequestWithLogin($hash, '/users/automation/definitions?uniqueIds=all', 'GET', undef, undef, \&Arlo_ReadModesCallback);
 };
 
 sub Arlo_ReadModesCallback($$$)  {
@@ -656,9 +771,9 @@ sub Arlo_ReadCamerasAndLights($) {
   if (defined($hash->{basestationSerialNumber}) && $hash->{basestationSerialNumber} eq $hash->{serialNumber}) {
     my $mode = {action => 'get', resource => 'modes', publishResponse => \0};
     Arlo_PreparePostRequest($hash, $mode);
-	push @body, $mode;
+	  push @body, $mode;
   }
-  Arlo_Request($account, '/users/devices/notify/'.$deviceId, 'POST', \@body, 'xcloudId: '.$xCloudId);
+  Arlo_RequestWithLogin($account, '/users/devices/notify/'.$deviceId, 'POST', \@body, 'xcloudId: '.$xCloudId);
 }
 
 sub Arlo_UpdateReadings($) {
@@ -675,7 +790,7 @@ sub Arlo_UpdateReadings($) {
 
 sub Arlo_UpdateBasestationReadings($) {
   my ($hash) = @_;
-  Arlo_Request($hash, '/users/devices/automation/active', 'GET', undef, undef, \&Arlo_UpdateReadingsCallback);
+  Arlo_RequestWithLogin($hash, '/users/devices/automation/active', 'GET', undef, undef, \&Arlo_UpdateReadingsCallback);
 }
 
 sub Arlo_UpdateReadingsCallback($$$)  {
@@ -737,7 +852,7 @@ sub Arlo_CheckBasestationsInactive() {
   my %defptr = %{$modules{$MODULE}{defptr}};
   foreach my $key (keys %defptr) {
     if (substr($key, 0, 1) eq 'B') {
-      my $state = %defptr{$key}->{STATE};
+      my $state = $defptr{$key}->{STATE};
       if ($state ne 'disarmed' && $state ne 'offline') {
         return \0;
       }
@@ -787,7 +902,7 @@ sub Arlo_DoSetBasestationMode($$) {
     my $automation = {deviceId => $hash->{serialNumber}, timestamp => $now, activeModes => \@modes, activeSchedules => \@schedules};
     my @automations = ($automation);
     my $body = { activeAutomations => \@automations };
-    Arlo_Request($hash, '/users/devices/automation/active', 'POST', $body);
+    Arlo_RequestWithLogin($hash, '/users/devices/automation/active', 'POST', $body);
   }
 }
 
@@ -822,7 +937,7 @@ sub Arlo_Snapshot($) {
   my $body = {action => 'set', resource => "cameras/$cameraId", publishResponse => \1,  properties => $props};
   my ($account, $basestationId, $xCloudId) = Arlo_PreparePostRequest($basestation, $body);
   Log3 $account->{NAME}, 4, "Take snapshot for camera $cameraId.";
-  Arlo_Request($account, '/users/devices/fullFrameSnapshot', 'POST', $body, 'xcloudId: '.$xCloudId);
+  Arlo_RequestWithLogin($account, '/users/devices/fullFrameSnapshot', 'POST', $body, 'xcloudId: '.$xCloudId);
 }
 
 sub Arlo_StartRecording($)  {
@@ -839,7 +954,7 @@ sub Arlo_StartRecording($)  {
     my ($account, $basestationId, $xCloudId) = Arlo_PreparePostRequest($basestation, $body);
     Log3 $account->{NAME}, 4, "Start streaming for camera $cameraId.";
     $hash->{FOLLOW_CALL} = 'startRecord';
-    Arlo_Request($account, '/users/devices/startStream', 'POST', $body, 'xcloudId: '.$xCloudId);
+    Arlo_RequestWithLogin($account, '/users/devices/startStream', 'POST', $body, 'xcloudId: '.$xCloudId);
     InternalTimer(gettimeofday() + 10, "Arlo_CheckStreamStart", $hash);
   }
   return undef;
@@ -869,7 +984,7 @@ sub Arlo_CameraAction($$) {
   my $basestationId = $hash->{basestationSerialNumber};
   my $body = {xcloudId => $xCloudId, parentId => $basestationId, deviceId => $cameraId, olsonTimeZone => 'Europe/Berlin'};
   Log3 $account->{NAME}, 4, "Action $action for camera $cameraId.";
-  Arlo_Request($account, '/users/devices/'.$action, 'POST', $body, 'xcloudId: '.$xCloudId);
+  Arlo_RequestWithLogin($account, '/users/devices/'.$action, 'POST', $body, 'xcloudId: '.$xCloudId);
 }  
 
 sub Arlo_SetBrightness($$) {
@@ -948,6 +1063,7 @@ sub Arlo_SetLightState($$) {
 sub Arlo_GetRecordings($$) {
   my ($hash, $date) = @_;
   my $body = {dateFrom => $date, dateTo => $date};
+  # new https://myapi.arlo.com/hmsweb/users/library?eventId=FE!c985adde-bed3-4aa2-abe9-3baab559adae&time=1602097428821
   my ($err, $jsonData) = Arlo_BlockingRequest($hash, '/users/library', 'POST', $body);
   my $response = Arlo_DefaultCallback($hash, $err, $jsonData); 
   my @result = ();
@@ -1000,79 +1116,101 @@ sub Arlo_Login($) {
     return;
   }
 
-  $hash->{STATE} = 'login';
+  $hash->{STATE} = 'python-login';
   delete $hash->{EXPIRY};
+  delete $hash->{helper}{followUpRequest};
   
-  my $password = encode_base64($hash->{helper}{password}, '');
-  my $input = {email => $hash->{helper}{username}, password => $password, EnvSource => 'prod', language => 'de'};
-  my $postData = encode_json $input;
-  my $header = ['Content-Type' => 'application/json; charset=utf-8', 'Auth-Version' => 2];
+  delete $hash->{helper}{cookies};
+  delete $hash->{helper}{token};
+  my $mailServer = AttrVal($name, 'mailServer', '');
+  if ($mailServer eq '') {
+    Log3 $name, 1, 'Bei 2-Faktor-Authentifizierung muss das Attribut mailServer gesetzt sein, damit die Mail mit dem Authentifizerungs-Code abgerufen werden kann.';
+    return;
+  }
   
-  my $cookie_jar = HTTP::Cookies->new;
-  my $ua = LWP::UserAgent->new(cookie_jar => $cookie_jar, agent => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0');
-  my $req = HTTP::Request->new('POST', 'https://ocapi-app.arlo.com/api/auth', $header, $postData);
-  my $resp = $ua->request($req);
-  
-  if ($resp->is_success) {
-    my $loginPhase = 'Authenticate';
-    eval {
-      my $respObj = decode_json $resp->decoded_content;
-      if ($respObj->{meta}{code} == 200) {
-        $loginPhase = 'ValidateAccessToken';
-        my $data = $respObj->{data};
-        $hash->{helper}{token} = $data->{token};
-        $hash->{helper}{userId} = $data->{userId};
-        my $validateData = $data->{authenticated};
-        my $authorization = encode_base64($data->{token}, '');
-        $header = ['Content-Type' => 'application/json; charset=utf-8', 'Auth-Version' => 2, 'Authorization' => $authorization];
-        $req = HTTP::Request->new('GET', 'https://ocapi-app.arlo.com/api/validateAccessToken?data='.$validateData, $header);
-        $resp = $ua->request($req);
-        if ($resp->is_success) {
-          $respObj = decode_json $resp->decoded_content;
-          if ($respObj->{meta}{code} == 200) {
-            $loginPhase = 'GetSession';
-            $header = ['Content-Type' => 'application/json; charset=utf-8', 'Auth-Version' => 2, 'Authorization' => $data->{token}];
-            $req = HTTP::Request->new('GET', 'https://my.arlo.com/hmsweb/users/session/v2', $header);
-            $resp = $ua->request($req);
-            if ($resp->is_success) {
-              $respObj = decode_json $resp->decoded_content;
-              if ($respObj->{success}) {
-                $cookie_jar->extract_cookies($resp);
-                $hash->{helper}{cookies} = Arlo_GetCookies($cookie_jar);
-                Log3 $name, 5, $hash->{helper}{cookies};
-                $hash->{SSE_STATUS} = 200;
-                delete $hash->{RETRY};
-                $hash->{STATE} = 'active';
-                Arlo_Request($hash, '/users/devices');
-                Arlo_EventQueue($hash);
-                Arlo_Ping($hash);
-                if (!defined($hash->{MODES})) {
-                  InternalTimer(gettimeofday() + 5, "Arlo_ReadModes", $hash);
-                }
-                InternalTimer(gettimeofday() + 30, "Arlo_Poll", $hash);
-                $loginPhase = '';
-              }
-            }
-          }
-        }
-      }
-    };
-    if ($@ || $loginPhase ne '') {
-      Log3 $name, 2, 'Invalid Arlo response for login request during phase '.$loginPhase.': '.$resp->decoded_content;
+  system "python3 contrib/49_Arlo.py $hash->{helper}{username} $hash->{helper}{password} $mailServer $hash->{helper}{mailUser} $hash->{helper}{mailPassword} > /tmp/arlo &";
+
+  $hash->{helper}{pythonTimeout} = gettimeofday() + 120;
+  InternalTimer(gettimeofday() + 1, "Arlo_ReadPythonResult", $hash);
+}
+
+sub Arlo_ReadPythonResult($) {
+  my ($hash) = @_;
+  if (gettimeofday() > $hash->{helper}{pythonTimeout}) {
+    $hash->{STATE} = 'login timeout';
+    Arlo_ClosePythonFile($hash);
+    return;
+  }
+  my $fh = $hash->{helper}{pythonFh};
+  if (!defined($fh)) {
+    open($fh, '<', '/tmp/arlo');
+    $hash->{helper}{pythonFh} = $fh;
+  }
+  my $line = <$fh>;
+  while (defined($line)) {
+    $line =~ s/\s+$//;
+    if ($line eq "end") {
+      Arlo_ClosePythonFile($hash);
+      Arlo_Request($hash, '/users/session/v2', 'GET', undef, undef, \&Arlo_FinishLogin);
+      return;
     }
-  } else {
-    my $status_line = $resp->status_line;
-    if ($status_line =~ /401/) {
-      delete $hash->{RETRY};
-      Log3 $name, 2, 'Arlo Login not successful, wrong username or password.';
+    my $p = index($line, ': ');
+    my $key = substr($line, 0, $p);
+    my $value = substr($line, $p + 2);
+    if ($key eq 'error') {
+      $hash->{STATE} = 'login failed';
+      Log3 $hash->{NAME}, 2, "Arlo: $value";
+      Arlo_ClosePythonFile($hash);
+      return;
+    } elsif ($key eq 'log') {
+      Log3 $hash->{NAME}, 3, "Arlo: $value";
+    } elsif ($key eq 'status') {
+      $hash->{STATE} = $value;
+    } elsif ($key eq 'cookies') {
+      $hash->{helper}{cookies} = $value;
+    } elsif ($key eq 'token') {
+      $hash->{helper}{token} = $value;
+    } elsif ($key eq 'userId') {
+      $hash->{helper}{userId} = $value;
     } else {
-      Log3 $name, 2, 'Arlo Login not successful, status $status_line';
+      Log3 $hash->{NAME}, 2, "Arlo: unknown command $line";
     }
+    $line = <$fh>;
   }
-  if (defined($hash->{RETRY})) {
-    Log3 $name, 3, 'Retry Arlo Login in 60 seconds.s';
-    InternalTimer(gettimeofday() + 60, "Arlo_Login", $hash);
-  }
+  InternalTimer(gettimeofday() + 1, "Arlo_ReadPythonResult", $hash);
+}
+
+sub Arlo_ClosePythonFile($) {
+  my ($hash) = @_;
+  my $fh = $hash->{helper}{pythonFh};
+  close($fh);
+  unlink('/tmp/arlo');
+  delete $hash->{helper}{pythonFh};
+  delete $hash->{helper}{pythonTimeout};
+}
+
+sub Arlo_FinishLogin($$$) {
+  my ($hash, $err, $jsonData) = @_;
+  my $response = Arlo_DefaultCallback($hash, $err, $jsonData);
+  if (defined($response)) {
+    my $account = $modules{$MODULE}{defptr}{"account"};
+		$account->{SSE_STATUS} = 200;
+		$account->{STATE} = 'active';
+		Arlo_Request($account, '/users/devices');
+    
+    my $req = $account->{helper}{followUpRequest};
+    if (defined($req)) {
+		  Arlo_Request($req->{hash}, $req->{urlSuffix}, $req->{method}, $req->{body}, $req->{additionalHeader}, $req->{callback}, $req->{origin});
+      delete $account->{helper}{followUpRequest};
+    }
+
+		Arlo_EventQueue($account);
+		Arlo_Ping($account);
+		if (!defined($account->{MODES})) {
+		  InternalTimer(gettimeofday() + 5, "Arlo_ReadModes", $account);
+		}
+		InternalTimer(gettimeofday() + 30, "Arlo_Poll", $account);
+	}
 }
 
 sub Arlo_Logout($) {
@@ -1083,16 +1221,6 @@ sub Arlo_Logout($) {
   $hash->{STATE} = 'inactive';
 }  
 
-sub Arlo_GetCookies($) {
-  my ($cookie_jar) = @_;
-  my $result = '';
-  $cookie_jar->scan(sub {  
-    $result .= '; ' if ($result ne '');
-    $result .= $_[1]."=".$_[2];
-  });
-  return $result;
-}
-
 sub Arlo_EventQueue($) {
   my ($hash) = @_;
   my $name = $hash->{NAME};
@@ -1100,9 +1228,10 @@ sub Arlo_EventQueue($) {
   my $token = $hash->{helper}{token};
   delete $hash->{RESPONSE_TIMEOUT};
 
-  my $headers = "Authorization: ".$token."\r\nAccept: text/event-stream\r\nReferer: https://my.arlo.com\r\n".
-          "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0\r\nCookie: ".$cookies;
-  my $con = {url => 'https://my.arlo.com/hmsweb/client/subscribe', method => "GET", header => $headers, keepalive => 1, host => 'my.arlo.com', httpversion => '1.1'};
+  my $headers = {'Auth-Version' => 2, Authorization => $token, Accept => 'text/event-stream', 'Access-Control-Request-Headers' => 'auth-version,authorization',
+    'Access-Control-Request-Method' => 'GET', Cookie => $cookies, Origin => 'https://my.arlo.com', Referer => 'https://myapi.arlo.com',
+    'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.96 Safari/537.36' };
+  my $con = {url => 'https://myapi.arlo.com/hmsweb/client/subscribe', method => "GET", header => $headers, keepalive => 1, host => 'myapi.arlo.com', httpversion => '1.1', loglevel => 4};
   my $err = HttpUtils_Connect($con);
   if ($err) {
     Log3 $name, 2, "Error in Arlo event queue: $err";
@@ -1168,16 +1297,19 @@ sub Arlo_EventPolling($) {
     }
   } else {
     if ($sseStatus == 299) {
-      $hash->{RETRY} = 1;
       InternalTimer(gettimeofday() + 60, "Arlo_Login", $hash);
+      return;
+    } elsif ($sseStatus == 298) {
+      $hash->{SSE_STATUS} = 0;
+      InternalTimer(gettimeofday() + 5, "Arlo_EventQueue", $hash);
       return;
     } else {
       if (defined($timeout) && $timeout < gettimeofday()) {
-          $hash->{SSE_STATUS} = 0;
-          Log3 $name, 3, "Arlo connection timeout, try to restart event listener.";
-          HttpUtils_Close($con);
-          Arlo_EventQueue($hash);
-		  return;
+        $hash->{SSE_STATUS} = 0;
+        Log3 $name, 3, "Arlo connection timeout, try to restart event listener.";
+        HttpUtils_Close($con);
+        Arlo_EventQueue($hash);
+		    return;
       }
     }
   }
@@ -1226,9 +1358,15 @@ sub Arlo_ProcessResponse($$) {
           Log3 $hash->{NAME}, 2, "Arlo event queue error: session lost.";
           $hash->{SSE_STATUS} = 299;
         }
-      } elsif ($check ne 'event' && $check ne 'Cache' && $check ne 'Conte' && $check ne 'Date:' && $check ne 'Pragm' && $check ne 'Server' 
+      } elsif ($check eq 'Vary:') {
+          my $val = substr($line, 6, 6);
+          if ($val ne 'Origin' && $val ne 'Access') {
+            Log3 $hash->{NAME}, 3, "Arlo event queue error: subscription declined (Header $line). $val Retry event subscription.";
+            $hash->{SSE_STATUS} = 298;
+          }
+      } elsif ($check ne 'event' && $check ne 'Cache' && $check ne 'Conte' && $check ne 'Date:' && $check ne 'Pragm' && $check ne 'serve' && $check ne 'Acces'
           && substr($check, 0, 2) ne 'X-' && $check ne 'trans' && $check ne 'Serve' && $check ne 'Expir' && $check ne 'Stric' && $check ne 'Trans'
-          && $check ne 'Expec' && $check ne 'CF-RA' && $check ne 'CF-Ca') {
+          && $check ne 'Expec' && $check ne 'CF-RA' && $check ne 'CF-Ca' && $check ne 'reque' && $check ne 'x-tra' && $check ne 'cf-re') {
         Log3 $hash->{NAME}, 2, "Invalid Arlo event response: $line";
       }
     } 
@@ -1379,9 +1517,12 @@ sub Arlo_decrypt($) {
 
   <p><a name="ArloDefine"></a> <b>Define</b></p>
   <ul>
-    <code>define Arlo_Cloud Arlo ACCOUNT &lt;hans.mustermann@xyz.de&gt; &lt;myPassword&gt;</code>
+    <code>define Arlo_Cloud Arlo ACCOUNT &lt;hans.mustermann@xyz.de&gt; &lt;myArloPassword&gt; &lt;myEmailPassword&gt; &lt;myEmailUsername&gt;</code>
     
-	<p>Please replace hans.mustermann@xyz.de by the e-mail address you have registered at Arlo and myPassword by the password used there.</p>
+	<p>Please replace hans.mustermann@xyz.de by the e-mail address you have registered at Arlo and myArloPassword by the password used there.
+    For the 2 factor authentication you also have to set the password of the email account. The email server which receives the Arlo mails has to be set
+    with attr Arlo_Cloud mailServer imap.gmx.net, where imap.gmx.net has to be replaced by the IMAP server of your mail provider. Only IMAP with encryption is supported.
+    You can skip the parameter myEmailUsername if the username matches the email address.</p>
     
   <p>After you have successfully created the account definition, you can call <code>set Arlo_Cloud autocreate</code>.
     Now the base station(s) and cameras which are assigned to the Arlo account will be created in FHEM. All new devices are created in the room Arlo.</p>
@@ -1504,6 +1645,11 @@ sub Arlo_decrypt($) {
 	  Unit is seconds, default 600 (10 minutes). If you set the value to 0 the connection will not be closed.</p>
   </ul> 
 
+  <p><a name="ArloMailServer"></a> <b>mailServer</b></p>
+  <ul> 
+    <p>Subtype ACCOUNT: Name of the IMAP mail server which receives the Arlo 2FA code mail. The passwort for the mail server has to be set in the define of Arlo_Cloud device.</p>
+  </ul> 
+  
   <p><a name="ArloPingVideoDownloadFix"></a> <b>videoDownloadFix</b></p>
   <ul> 
     <p>Subtype ACCOUNT: Set this attribute to 1 if videos are not downloaded automatically. Normally the server sents a notification when there is a new video available but sometimes 
@@ -1539,9 +1685,13 @@ sub Arlo_decrypt($) {
 
   <p><a name="ArloDefine"></a> <b>Define</b></p>
   <ul>
-    <code>define Arlo_Cloud Arlo ACCOUNT &lt;hans.mustermann@xyz.de&gt; &lt;meinPasswort&gt;</code>
+    <code>define Arlo_Cloud Arlo ACCOUNT &lt;hans.mustermann@xyz.de&gt; &lt;meinArloPasswort&gt; &lt;meinEmailPasswort&gt; &lt;meinEmailBenutzername&gt;</code>
     
-	<p>hans.mustermann@xyz.de durch die E-Mail-Adresse ersetzen, mit der man bei Arlo registriert ist, meinPasswort durch das Passwort dort.</p>
+	<p>hans.mustermann@xyz.de durch die E-Mail-Adresse ersetzen, mit der man bei Arlo registriert ist, meinArloPasswort durch das Passwort bei Arlo. 
+    Für die 2-Faktor-Authentifizierung wird zusätzlich das Passwort des E-Mail-Accounts benötigt. Der E-Mail-Server, von dem die Arlo-Mails abgerufen werden sollen,
+    muss mit attr Arlo_Cloud mailServer imap.gmx.net angegeben werden, wobei imap.gmx.net durch den IMAP-Mailserver des Providers ersetzt werden muss, bei dem
+    das E-Mail-Konto liegt. Es wird ausschließlich IMAP mit Verschlüsselung unterstützt. Der Parameter meinEmailBenutzername muss nur angegeben werden, falls
+    der Benutzernamen, mit dem man sich am Mailserver anmeldet, von der E-Mail-Adresse abweicht.</p>
     
   <p>Nach der erfolgreichen Definition des Account kann auf dem neu erzeugten Device <code>set Arlo_Cloud autocreate</code> aufgerufen werden. 
     Dies legt die Basistation(en) und Kameras an, die zu dem Arlo Account zugeordnet sind. Die neuen Devices befinden sich initial im Raum Arlo.</p>
@@ -1663,6 +1813,11 @@ sub Arlo_decrypt($) {
   <ul> 
     <p>Subtype ACCOUNT: Wenn alle Basisstation auf "disarmed" stehen, wird die Verbindung zur Cloud nach der hier angegebenen Zeit beendet. Bei einer Aktion mit einem Arlo-Gerät wird eine neue Verbindung aufgebaut.
 	  Angabe in Sekunden, Standard ist 600 (10 Minuten). Durch Angabe von 0 kann die Verbindung dauerhaft bestehen bleiben.</p>
+  </ul> 
+
+  <p><a name="ArloMailServer"></a> <b>mailServer</b></p>
+  <ul> 
+    <p>Subtype ACCOUNT: Name des IMAP Mailservers, an den Arlo den Code für die 2-Faktor-Authentifizierung sendet. Das Passwort muss beim define des Arlo_Cloud-Devices angegeben werden.</p>
   </ul> 
 
   <p><a name="ArloPingVideoDownloadFix"></a> <b>videoDownloadFix</b></p>

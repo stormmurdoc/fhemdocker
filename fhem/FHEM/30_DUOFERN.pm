@@ -1,11 +1,12 @@
 ##############################################
-# $Id: 30_DUOFERN.pm 20390 2019-10-21 18:33:42Z Telekatz $
+# $Id: 30_DUOFERN.pm 24381 2021-05-04 16:45:36Z Telekatz $
 
 package main;
 
 use strict;
 use warnings;
 use SetExtensions;
+use DevIo;
 
 my %devices = (
     "40"    => {"name" => "RolloTron Standard"                },
@@ -369,6 +370,7 @@ my %commandsHSA = (
   "timeAutomatic"           => {"bitFrom" => 9,   "changeFlag" => 11},
   "sendingInterval"         => {"bitFrom" => 0,   "changeFlag" => 7,    "min" => 0, "max" => 60,  "step" => 1},
   "desired-temp"            => {"bitFrom" => 17,  "changeFlag" => 23,   "min" => 4, "max" => 28,  "step" => 0.5},
+  "windowContact"           => {"bitFrom" => 12,  "changeFlag" => 13},
 );
 
 my @readingsBlindMode = ( "tiltInSunPos",
@@ -559,13 +561,14 @@ my %setsThermostat = (
 my %setsHSA = (
   "manualMode:on,off"                   => "",
   "timeAutomatic:on,off"                => "",
+  "windowContact:on,off"                => "",
   "sendingInterval:slider,1,1,60"       => "",
   "desired-temp:$tempSetList"           => "",
 );
                           
 my $duoStatusRequest      = "0DFFnn400000000000000000000000000000yyyyyy01";
 my $duoCommand            = "0Dccnnnnnnnnnnnnnnnnnnnn000000zzzzzzyyyyyy00";
-my $duoCommand2           = "0Dccnnnnnnnnnnnnnnnnnnnn000000000000yyyyyy01";
+my $duoCommand2           = "0Dccnnnnnnnnnnnnnnnnnnnn000000000000yyyyyy00";
 my $duoWeatherConfig      = "0D001B400000000000000000000000000000yyyyyy00";
 my $duoWeatherWriteConfig = "0DFF1Brrnnnnnnnnnnnnnnnnnnnn00000000yyyyyy00";
 my $duoSetTime            = "0D0110800001mmmmmmmmnnnnnn0000000000yyyyyy00";
@@ -707,7 +710,7 @@ DUOFERN_Set($@)
     if(!exists $hash->{helper}{HSAold}{$cmd}) {
       $hash->{helper}{HSAold}{$cmd} = ReadingsVal($name, $cmd, 0);
     }
-    
+        
     if($cmd eq "desired-temp") {
       if($arg2 && ($arg2 eq "timer")) {
         $hash->{helper}{HSAtimer} = 1;
@@ -996,12 +999,11 @@ DUOFERN_Define($$)
   } else {
   	$hash->{SUBTYPE} = "unknown";
   }
-  
-  readingsSingleUpdate($hash, "state", "Initialized", 1);
-  
+   
  return undef if (AttrVal($name,"ignore",0) != 0);
   
   if ($hash->{CODE} =~ m/^(40|41|42|43|46|47|48|49|4A|4B|4C|4E|61|62|65|69|70|71|73|74)....$/) {
+    readingsSingleUpdate($hash, "state", "Initialized", 1);
     $hash->{helper}{timeout}{t} = 30;
     InternalTimer(gettimeofday()+$hash->{helper}{timeout}{t}, "DUOFERN_StatusTimeout", $hash, 0);
     $hash->{helper}{timeout}{count} = 2;
@@ -1205,7 +1207,7 @@ DUOFERN_Parse($$)
               
               delete($hash->{helper}{HSAold}{$key});
               
-              if($oldValue eq $isValue) {
+              if(($oldValue eq $isValue) || ($key eq "windowContact")) {
                 $statusValue{$key} = $newValue;
                 $changeFlag = 1;
               }
@@ -1276,7 +1278,7 @@ DUOFERN_Parse($$)
       }
 
     } else {
-      Log3 $hash, 3, "DUOFERN unknown msg: $msg";
+      Log3 $hash, 4, "DUOFERN unknown msg: $msg";
     }
   
   #Wandtaster, Funksender UP, Handsender, Sensoren      
@@ -1284,7 +1286,7 @@ DUOFERN_Parse($$)
     my $id = substr($msg, 4, 4);
     
     if (!(exists $sensorMsg{$id})) {
-      Log3 $hash, 3, "DUOFERN unknown msg: $msg";
+      Log3 $hash, 4, "DUOFERN unknown msg: $msg";
     } else {
     
       my $chan = substr($msg, $sensorMsg{$id}{chan}*2 + 2 , 2);
@@ -1340,7 +1342,7 @@ DUOFERN_Parse($$)
     }
   
   #Umweltsensor Wetter
-  } elsif ($msg =~ m/0F011322.{36}/) {  
+  } elsif ($msg =~ m/0F..1322.{36}/) {  
     $def01 = $modules{DUOFERN}{defptr}{$code."00"};
     if(!$def01) {
       DoTrigger("global","UNDEFINED DUOFERN_$code"."_sensor DUOFERN $code"."00");
@@ -1372,8 +1374,8 @@ DUOFERN_Parse($$)
     readingsBulkUpdate($hash, "wind",           $wind,     1);
     readingsEndUpdate($hash, 1); # Notify is done by Dispatch
   
-  #Umweltsensor Zeit
-  } elsif ($msg =~ m/0FFF1020.{36}/) {
+  #Umweltsensor/Handzentrale Zeit
+  } elsif ($msg =~ m/0F..1020.{36}/) {
     $def01 = $modules{DUOFERN}{defptr}{$code."00"};
     if(!$def01) {
       DoTrigger("global","UNDEFINED DUOFERN_$code"."_sensor DUOFERN $code"."00");
@@ -1450,7 +1452,7 @@ DUOFERN_Parse($$)
     Log3 $hash, 3, "DUOFERN error: $name NOT INITIALIZED; reopen DUOFERNSTICK";
                      
   } else {
-    Log3 $hash, 3, "DUOFERN unknown msg: $msg";
+    Log3 $hash, 4, "DUOFERN unknown msg: $msg";
   }
   
   push (@retval, $def01->{NAME}) if ($def01); 

@@ -1,5 +1,5 @@
 #####################################################################################
-# $Id: 22_HOMEMODE.pm 20562 2019-11-22 21:11:54Z DeeSPe $
+# $Id: 22_HOMEMODE.pm 25308 2021-12-06 18:43:23Z DeeSPe $
 #
 # Usage
 #
@@ -16,7 +16,7 @@ use Time::HiRes qw(gettimeofday);
 use HttpUtils;
 use vars qw{%attr %defs %modules $FW_CSRF};
 
-my $HOMEMODE_version = "1.5.3";
+my $HOMEMODE_version = "1.5.5";
 my $HOMEMODE_Daytimes = "05:00|morning 10:00|day 14:00|afternoon 18:00|evening 23:00|night";
 my $HOMEMODE_Seasons = "03.01|spring 06.01|summer 09.01|autumn 12.01|winter";
 my $HOMEMODE_UserModes = "gotosleep,awoken,asleep";
@@ -60,7 +60,7 @@ sub HOMEMODE_Define($$)
   if (!$resdev)
   {
     my @resdevs;
-    foreach (devspec2array("TYPE=RESIDENTS"))
+    for (devspec2array("TYPE=RESIDENTS"))
     {
       push @resdevs,$_;
     }
@@ -160,7 +160,7 @@ sub HOMEMODE_Notify($$)
     }
     elsif (grep /^DEFINED/,@{$events})
     {
-      foreach (@{$events})
+      for (@{$events})
       {
         next unless ($_ =~ /^DEFINED\s(.+)$/);
         my $dev = $1;
@@ -200,7 +200,7 @@ sub HOMEMODE_Notify($$)
            (AttrVal($name,"HomeEventsCalendarDevices",undef)
               && grep(/^$devname$/,devspec2array(AttrVal($name,"HomeEventsCalendarDevices","")))))
     {
-      foreach my $evt (@{$events})
+      for my $evt (@{$events})
       {
         next unless ((HOMEMODE_ID($devname,"Calendar") && $evt =~ /^(start|end):\s(.+)$/) || (HOMEMODE_ID($devname,"holiday") && $evt =~ /^(state):\s(.+)$/));
         HOMEMODE_EventCommands($hash,$devname,$1,$2);
@@ -258,7 +258,7 @@ sub HOMEMODE_Notify($$)
     {
       my $read = AttrVal($name,"HomeSensorsPowerEnergyReadings","power energy");
       $read =~ s/ /\|/g;
-      foreach my $evt (@{$events})
+      for my $evt (@{$events})
       {
         next unless ($evt =~ /^($read):\s(.+)$/);
         HOMEMODE_PowerEnergy($hash,$devname,$1,(split " ",$2)[0]);
@@ -268,7 +268,7 @@ sub HOMEMODE_Notify($$)
     elsif ($hash->{SENSORSSMOKE} && grep(/^$devname$/,split /,/,$hash->{SENSORSSMOKE}))
     {
       my $read = AttrVal($name,"HomeSensorsSmokeReading","state");
-      foreach my $evt (@{$events})
+      for my $evt (@{$events})
       {
         next unless ($evt =~ /^$read:\s(.+)$/);
         HOMEMODE_Smoke($hash,$devname,$1);
@@ -292,7 +292,7 @@ sub HOMEMODE_Notify($$)
         my $read = AttrVal($name,"HomeSensorsLuminanceReading","luminance");
         if (grep /^$read:\s.+$/,@{$events})
         {
-          foreach my $evt (@{$events})
+          for my $evt (@{$events})
           {
             next unless ($evt =~ /^$read:\s(.+)$/);
             HOMEMODE_Luminance($hash,$devname,(split " ",$1)[0]);
@@ -304,7 +304,7 @@ sub HOMEMODE_Notify($$)
       {
         my $temp;
         my $humi;
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           next unless ($evt =~ /^(humidity|temperature):\s(.+)$/);
           $temp = (split " ",$2)[0] if ($1 eq "temperature");
@@ -329,7 +329,7 @@ sub HOMEMODE_Notify($$)
       if (AttrVal($name,"HomeSensorHumidityOutside",undef) && $devname eq AttrVal($name,"HomeSensorHumidityOutside","") && grep /^humidity:\s/,@{$events})
       {
         $hash->{helper}{externalHumidity} = 1;
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           next unless ($evt =~ /^humidity:\s(.+)$/);
           my $val = (split " ",$1)[0];
@@ -343,7 +343,7 @@ sub HOMEMODE_Notify($$)
         my $read = (split /:/,AttrVal($name,"HomeSensorWindspeed",""))[1];
         if (grep /^$read:\s(.+)$/,@{$events})
         {
-          foreach my $evt (@{$events})
+          for my $evt (@{$events})
           {
             next unless ($evt =~ /^$read:\s(.+)$/);
             my $val = (split " ",$1)[0];
@@ -358,7 +358,7 @@ sub HOMEMODE_Notify($$)
         my $read = (split /:/,AttrVal($name,"HomeSensorAirpressure",""))[1];
         if (grep /^$read:\s(.+)$/,@{$events})
         {
-          foreach my $evt (@{$events})
+          for my $evt (@{$events})
           {
             next unless ($evt =~ /^$read:\s(.+)$/);
             my $val = (split " ",$1)[0];
@@ -372,7 +372,7 @@ sub HOMEMODE_Notify($$)
       {
         my $resident;
         my $residentregex;
-        foreach (split /,/,$hash->{RESIDENTS})
+        for (split /,/,$hash->{RESIDENTS})
         {
           my $regex = lc($_);
           $regex =~ s/^(rr_|rg_|rp_)//;
@@ -388,7 +388,7 @@ sub HOMEMODE_Notify($$)
         if (ReadingsVal($devname,"presence","") !~ /^maybe/)
         {
           my @presentdevicespresent;
-          foreach my $device (devspec2array("TYPE=$prestype:FILTER=presence=^(maybe.)?(absent|present|appeared|disappeared)"))
+          for my $device (devspec2array("TYPE=$prestype:FILTER=presence=^(maybe.)?(absent|present|appeared|disappeared)"))
           {
             next unless (lc($device) =~ /$residentregex/);
             push @presentdevicespresent,$device if (ReadingsVal($device,"presence","") =~ /^(present|appeared|maybe.absent)$/);
@@ -438,7 +438,7 @@ sub HOMEMODE_Notify($$)
         my @lowOld = split /,/,ReadingsVal($name,"batteryLow","");
         my @low;
         @low = @lowOld if (@lowOld);
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           next unless ($evt =~ /^$read:\s(.+)$/);
           my $val = $1;
@@ -449,7 +449,7 @@ sub HOMEMODE_Notify($$)
           elsif (grep /^$devname$/,@low)
           {
             my @lown;
-            foreach (@low)
+            for (@low)
             {
               push @lown,$_ if ($_ ne $devname);
             }
@@ -542,7 +542,7 @@ sub HOMEMODE_updateInternals($;$$)
     my @presdevs = devspec2array("TYPE=$presencetype:FILTER=presence=^(maybe.)?(absent|present|appeared|disappeared)");
     my @residentsshort;
     my @logtexte;
-    foreach my $resident (split /,/,$hash->{RESIDENTS})
+    for my $resident (split /,/,$hash->{RESIDENTS})
     {
       push @allMonitoredDevices,$resident;
       my $short = lc($resident);
@@ -551,7 +551,7 @@ sub HOMEMODE_updateInternals($;$$)
       if ($autopresence)
       {
         my @residentspresdevs;
-        foreach my $p (@presdevs)
+        for my $p (@presdevs)
         {
           next unless (lc($p) =~ /$short/);
           push @residentspresdevs,$p;
@@ -592,7 +592,7 @@ sub HOMEMODE_updateInternals($;$$)
     if ($contacts)
     {
       my @sensors;
-      foreach my $s (devspec2array($contacts))
+      for my $s (devspec2array($contacts))
       {
         push @sensors,$s;
         push @allMonitoredDevices,$s if (!grep /^$s$/,@allMonitoredDevices);
@@ -609,7 +609,7 @@ sub HOMEMODE_updateInternals($;$$)
     if ($motion)
     {
       my @sensors;
-      foreach my $s (devspec2array($motion))
+      for my $s (devspec2array($motion))
       {
         push @sensors,$s;
         push @allMonitoredDevices,$s if (!grep /^$s$/,@allMonitoredDevices);
@@ -627,7 +627,7 @@ sub HOMEMODE_updateInternals($;$$)
     {
       my @sensors;
       my ($p,$e) = split " ",AttrVal($name,"HomeSensorsPowerEnergyReadings","power energy");
-      foreach my $s (devspec2array($power))
+      for my $s (devspec2array($power))
       {
         next unless (HOMEMODE_ID($s,undef,$p) && HOMEMODE_ID($s,undef,$e));
         push @sensors,$s;
@@ -640,7 +640,7 @@ sub HOMEMODE_updateInternals($;$$)
     {
       my @sensors;
       my $r = AttrVal($name,"HomeSensorsSmokeReading","state");
-      foreach my $s (devspec2array($smoke))
+      for my $s (devspec2array($smoke))
       {
         next unless (HOMEMODE_ID($s,undef,$r));
         push @sensors,$s;
@@ -652,7 +652,7 @@ sub HOMEMODE_updateInternals($;$$)
     if ($battery)
     {
       my @sensors;
-      foreach my $s (devspec2array($battery))
+      for my $s (devspec2array($battery))
       {
         my $read = AttrVal($name,"HomeSensorsBatteryReading","battery");
         my $val = ReadingsVal($s,$read,undef);
@@ -662,7 +662,10 @@ sub HOMEMODE_updateInternals($;$$)
         $hash->{SENSORSBATTERY} = join(",",sort @sensors) if (@sensors);
         if (!grep(/^$s$/,split(/,/,ReadingsVal($name,"batteryLow",""))))
         {
-          CommandTrigger(undef,"$s $read: ok");
+          CommandTrigger(undef,"$s $read: ok") if ($val =~ /^(low|nok)$/);
+          CommandTrigger(undef,"$s $read: 100") if ($val =~ /^\d{1,3}$/);
+          CommandTrigger(undef,"$s $read: 100%") if ($val =~ /^\d{1,3}%$/);
+          CommandTrigger(undef,"$s $read: 100 %") if ($val =~ /^\d{1,3}\s%$/);
           CommandTrigger(undef,"$s $read: $val");
         }
       }
@@ -682,19 +685,19 @@ sub HOMEMODE_updateInternals($;$$)
     CommandDeleteReading(undef,"$name event-.+");
     if (HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices"))
     {
-      foreach my $c (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices")))
+      for my $c (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices")))
       {
         push @cals,$c if (!grep /^$c$/,@cals);
       }
     }
     if (HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices"))
     {
-      foreach my $c (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices")))
+      for my $c (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices")))
       {
         push @cals,$c if (!grep /^$c$/,@cals);
       }
     }
-    foreach my $c (@cals)
+    for my $c (@cals)
     {
       push @allMonitoredDevices,$c if (!grep /^$c$/,@allMonitoredDevices);
       if (HOMEMODE_ID($c,"Calendar"))
@@ -713,7 +716,7 @@ sub HOMEMODE_updateInternals($;$$)
     {
       my $read = AttrVal($name,"HomeSensorsLuminanceReading","luminance");
       my @sensors;
-      foreach my $s (devspec2array($luminance))
+      for my $s (devspec2array($luminance))
       {
         next unless (HOMEMODE_ID($s,undef,AttrVal($name,"HomeSensorsLuminanceReading","luminance")));
         push @sensors,$s;
@@ -819,8 +822,7 @@ sub HOMEMODE_Get($@)
       "$cmd benötigt ein Argument, entweder long oder short!":
       "$cmd needs one argument of long or short!";
     return $trans if (!$value || $value !~ /^(long|short)$/);
-    my $m = "Long";
-    $m = "Short" if ($value eq "short");
+    my $m = $value eq "short"?"Short":"Long";
     HOMEMODE_WeatherTXT($hash,AttrVal($name,"HomeTextWeather$m",""));
   }
   elsif ($cmd eq "weatherForecast")
@@ -861,7 +863,7 @@ sub HOMEMODE_Set($@)
   my $slocations = HOMEMODE_AttrCheck($hash,"HomeSpecialLocations");
   if ($slocations)
   {
-    foreach (split /,/,$slocations)
+    for (split /,/,$slocations)
     {
       push @locations,$_;
     }
@@ -870,7 +872,7 @@ sub HOMEMODE_Set($@)
   my $smodes = HOMEMODE_AttrCheck($hash,"HomeSpecialModes");
   if ($smodes)
   {
-    foreach (split /,/,$smodes)
+    for (split /,/,$smodes)
     {
       push @modeparams,$_;
     }
@@ -1135,7 +1137,7 @@ sub HOMEMODE_makeHR($$@)
   my @aliases;
   my $and = (split /\|/,AttrVal($name,"HomeTextAndAreIs","and|are|is"))[0];
   my $text;
-  foreach (@names)
+  for (@names)
   {
     my $alias = $noart ? HOMEMODE_name2alias($_) : HOMEMODE_name2alias($_,1);
     push @aliases,$alias;
@@ -1191,7 +1193,7 @@ sub HOMEMODE_RESIDENTS($;$)
   my $emp = ReplaceEventMap($dev,"present",1);
   if (grep /^state:\s/,@{$events})
   {
-    foreach (@{$events})
+    for (@{$events})
     {
       next unless ($_ =~ /^state:\s(.+)$/ && grep /^$1$/,split /,/,$HOMEMODE_UserModesAll);
       $mode = $1;
@@ -1239,7 +1241,7 @@ sub HOMEMODE_RESIDENTS($;$)
     if (grep /^location:\s/,@{$events})
     {
       my $loc;
-      foreach (@{$events})
+      for (@{$events})
       {
         next unless ($_ =~ /^location:\s(.+)$/);
         $loc = $1;
@@ -1359,20 +1361,20 @@ sub HOMEMODE_Attributes($)
   push @attribs,"HomeCMDicewarning-on:textField-long";
   push @attribs,"HomeCMDicewarning-off:textField-long";
   push @attribs,"HomeCMDlocation:textField-long";
-  foreach (split /,/,$HOMEMODE_Locations)
+  for (split /,/,$HOMEMODE_Locations)
   {
     push @attribs,"HomeCMDlocation-$_:textField-long";
   }
   push @attribs,"HomeCMDlocation-resident:textField-long";
   push @attribs,"HomeCMDmode:textField-long";
   push @attribs,"HomeCMDmode-absent-belated:textField-long";
-  foreach (split /,/,$HOMEMODE_UserModesAll)
+  for (split /,/,$HOMEMODE_UserModesAll)
   {
     push @attribs,"HomeCMDmode-$_:textField-long";
     push @attribs,"HomeCMDmode-$_-resident:textField-long";
   }
   push @attribs,"HomeCMDmodeAlarm:textField-long";
-  foreach (split /,/,$HOMEMODE_AlarmModes)
+  for (split /,/,$HOMEMODE_AlarmModes)
   {
     push @attribs,"HomeCMDmodeAlarm-$_:textField-long";
   }
@@ -1469,7 +1471,7 @@ sub HOMEMODE_userattr($)
   my @userattrAll;
   my @homeattr;
   my @stayattr;
-  foreach (split " ",AttrVal($name,"userattr",""))
+  for (split " ",AttrVal($name,"userattr",""))
   {
     if ($_ =~ /^Home/)
     {
@@ -1480,23 +1482,23 @@ sub HOMEMODE_userattr($)
       push @stayattr,$_;
     }
   }
-  foreach (split /,/,HOMEMODE_AttrCheck($hash,"HomeSpecialModes"))
+  for (split /,/,HOMEMODE_AttrCheck($hash,"HomeSpecialModes"))
   {
     push @userattrAll,"HomeCMDmode-$_";
   }
-  foreach (split /,/,HOMEMODE_AttrCheck($hash,"HomeSpecialLocations"))
+  for (split /,/,HOMEMODE_AttrCheck($hash,"HomeSpecialLocations"))
   {
     push @userattrAll,"HomeCMDlocation-$_";
   }
   if (HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices"))
   {
-    foreach my $cal (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices")))
+    for my $cal (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsHolidayDevices")))
     {
       my $events = HOMEMODE_CalendarEvents($name,$cal);
       push @userattrAll,"HomeCMDevent-$cal-each";
       if ($adv)
       {
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           push @userattrAll,"HomeCMDevent-$cal-$evt-begin";
           push @userattrAll,"HomeCMDevent-$cal-$evt-end";
@@ -1506,13 +1508,13 @@ sub HOMEMODE_userattr($)
   }
   if (HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices"))
   {
-    foreach my $cal (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices")))
+    for my $cal (devspec2array(HOMEMODE_AttrCheck($hash,"HomeEventsCalendarDevices")))
     {
       my $events = HOMEMODE_CalendarEvents($name,$cal);
       push @userattrAll,"HomeCMDevent-$cal-each";
       if ($adv)
       {
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           push @userattrAll,"HomeCMDevent-$cal-$evt-begin";
           push @userattrAll,"HomeCMDevent-$cal-$evt-end";
@@ -1520,7 +1522,7 @@ sub HOMEMODE_userattr($)
       }
     }
   }
-  foreach my $resident (split /,/,$hash->{RESIDENTS})
+  for my $resident (split /,/,$hash->{RESIDENTS})
   {
     my $devtype = HOMEMODE_ID($resident,"ROOMMATE|GUEST|PET") ? $defs{$resident}->{TYPE} : "";
     next unless ($devtype);
@@ -1529,14 +1531,14 @@ sub HOMEMODE_userattr($)
       my $states = "absent";
       $states .= ",$HOMEMODE_UserModesAll" if ($devtype =~ /^ROOMMATE|PET$/);
       $states .= ",home,$HOMEMODE_UserModes" if ($devtype eq "GUEST");
-      foreach (split /,/,$states)
+      for (split /,/,$states)
       {
         push @userattrAll,"HomeCMDmode-$_-$resident";
       }
       push @userattrAll,"HomeCMDpresence-absent-$resident";
       push @userattrAll,"HomeCMDpresence-present-$resident";
       my $locs = $devtype eq "ROOMMATE" ? AttrVal($resident,"rr_locations","") : $devtype eq "GUEST" ? AttrVal($resident,"rg_locations","") : AttrVal($resident,"rp_locations","");
-      foreach (split/,/,$locs)
+      for (split/,/,$locs)
       {
         push @userattrAll,"HomeCMDlocation-$_-$resident";
         push @userattrAll,"HomeCMDlocation-$_-resident" if (!grep(/^HomeCMDlocation-$_-resident$/,@userattrAll));
@@ -1547,7 +1549,7 @@ sub HOMEMODE_userattr($)
     {
       my $count;
       my $numbers;
-      foreach (@presdevs)
+      for (@presdevs)
       {
         $count++;
         $numbers .= "," if ($numbers);
@@ -1557,7 +1559,7 @@ sub HOMEMODE_userattr($)
       push @userattrAll,"HomePresenceDevicePresentCount-$resident:$numbers";
       if ($adv)
       {
-        foreach (@presdevs)
+        for (@presdevs)
         {
           push @userattrAll,"HomeCMDpresence-absent-$resident-device";
           push @userattrAll,"HomeCMDpresence-present-$resident-device";
@@ -1567,7 +1569,7 @@ sub HOMEMODE_userattr($)
       }
     }
   }
-  foreach (split " ",HOMEMODE_AttrCheck($hash,"HomeDaytimes",$HOMEMODE_Daytimes))
+  for (split " ",HOMEMODE_AttrCheck($hash,"HomeDaytimes",$HOMEMODE_Daytimes))
   {
     my $text = (split /\|/)[1];
     my $d = "HomeCMDdaytime-$text";
@@ -1575,14 +1577,14 @@ sub HOMEMODE_userattr($)
     push @userattrAll,$d if (!grep /^$d$/,@userattrAll);
     push @userattrAll,$m if (!grep /^$m$/,@userattrAll);
   }
-  foreach (split " ",HOMEMODE_AttrCheck($hash,"HomeSeasons",$HOMEMODE_Seasons))
+  for (split " ",HOMEMODE_AttrCheck($hash,"HomeSeasons",$HOMEMODE_Seasons))
   {
     my $text = (split /\|/)[1];
     my $s = "HomeCMDseason-$text";
     push @userattrAll,$s if (!grep /^$s$/,@userattrAll);
   }
   my @list;
-  foreach my $attrib (@userattrAll)
+  for my $attrib (@userattrAll)
   {
     $attrib = $attrib =~ /^.+:.+$/ ? $attrib : "$attrib:textField-long";
     push @list,$attrib if (!grep /^$attrib$/,@list);
@@ -1590,7 +1592,7 @@ sub HOMEMODE_userattr($)
   my $lo = join " ",sort @homeattr;
   my $ln = join " ",sort @list;
   return if ($lo eq $ln);
-  foreach (@stayattr)
+  for (@stayattr)
   {
     push @list,$_;
   }
@@ -1605,13 +1607,13 @@ sub HOMEMODE_cleanUserattr($$;$)
   my @devspec = devspec2array($devs);
   return if (!@devspec);
   my @newdevspec = devspec2array($newdevs) if ($newdevs);
-  foreach my $dev (@devspec)
+  for my $dev (@devspec)
   {
     my $userattr = AttrVal($dev,"userattr","");
     if ($userattr)
     {
       my @stayattr;
-      foreach (split " ",$userattr)
+      for (split " ",$userattr)
       {
         if ($_ =~ /^Home/)
         {
@@ -1707,7 +1709,7 @@ sub HOMEMODE_Attr(@)
     elsif ($attr_name =~ /^HomeEvents(Holiday|Calendar)Devices$/ && $init_done)
     {
       my @wd;
-      foreach (devspec2array($attr_value))
+      for (devspec2array($attr_value))
       {
         next unless (!HOMEMODE_ID($_,"holiday|Calendar"));
         push @wd,$_ ;
@@ -1773,7 +1775,7 @@ sub HOMEMODE_Attr(@)
         "Anzahl von $attr_name Werten ($t) ungleich zu den verfügbaren Jahreszeiten ($s) im Attribut HomeSeasons!":
         "Number of $attr_name values ($t) not matching the number of available seasons ($s) in attribute HomeSeasons!";
       return $trans if ($s != $t);
-      foreach (@times)
+      for (@times)
       {
         $trans = $HOMEMODE_de?
           "Teiler dürfen nicht 0 sein, denn Division durch 0 ist nicht definiert!":
@@ -1794,7 +1796,7 @@ sub HOMEMODE_Attr(@)
         "Ungültiger Wert $attr_value für Attribut $attr_name. Es werden Leerzeichen separierte Zahlen benötigt, z.B. 5 10 15 17.5":
         "Invalid value $attr_value for attribute $attr_name. You have to provide space separated numbers, e.g. 5 10 15 17.5";
       return $trans if ($attr_value !~ /^\d{1,4}(\.\d)?((\s\d{1,4}(\.\d)?)?){0,}$/);
-      foreach (split " ",$attr_value)
+      for (split " ",$attr_value)
       {
         $trans = $HOMEMODE_de?
           "Teiler dürfen nicht 0 sein, denn Division durch 0 ist nicht definiert!":
@@ -1906,7 +1908,7 @@ sub HOMEMODE_Attr(@)
       if ($attr_value_old ne $attr_value)
       {
         my @ts;
-        foreach (split " ",$attr_value)
+        for (split " ",$attr_value)
         {
           my $time = (split /\|/)[0];
           my ($h,$m) = split /:/,$time;
@@ -1936,7 +1938,7 @@ sub HOMEMODE_Attr(@)
       if ($attr_value_old ne $attr_value)
       {
         my @ds;
-        foreach (split " ",$attr_value)
+        for (split " ",$attr_value)
         {
           my $time = (split /\|/)[0];
           my ($m,$d) = split /\./,$time;
@@ -2233,31 +2235,31 @@ sub HOMEMODE_replacePlaceholders($$;$)
   $cmd =~ s/%DEVICEP%/$ppdevice/g;
   $cmd =~ s/%DISABLED%/$disabled/g;
   $cmd =~ s/%DND%/$dnd/g;
-  if (AttrVal($name,"HomeEventsHolidayDevices",undef) || AttrVal($name,"HomeEventsHolidayDevices",undef))
+  if (AttrVal($name,"HomeEventsHolidayDevices",undef) || AttrVal($name,"HomeEventsCalendarDevices",undef))
   {
     my @cals;
     if (AttrVal($name,"HomeEventsHolidayDevices",""))
     {
-      foreach my $c (devspec2array(AttrVal($name,"HomeEventsHolidayDevices","")))
+      for my $c (devspec2array(AttrVal($name,"HomeEventsHolidayDevices","")))
       {
         push @cals,$c if (!grep /^$c$/,@cals);
       }
     }
     else
     {
-      foreach my $c (devspec2array(AttrVal($name,"HomeEventsCalendarDevices","")))
+      for my $c (devspec2array(AttrVal($name,"HomeEventsCalendarDevices","")))
       {
         push @cals,$c if (!grep /^$c$/,@cals);
       }
     }
-    foreach my $cal (@cals)
+    for my $cal (@cals)
     {
       my $state = ReadingsVal($name,"event-$cal","none") ne "none" ? ReadingsVal($name,"event-$cal","") : "";
       $cmd =~ s/%$cal%/$state/g;
       my $events = HOMEMODE_CalendarEvents($name,$cal);
       if (HOMEMODE_ID($cal,"holiday"))
       {
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
           my $val = $state eq $evt ? 1 : "";
           $cmd =~ s/%$cal-$evt%/$val/g;
@@ -2265,9 +2267,9 @@ sub HOMEMODE_replacePlaceholders($$;$)
       }
       else
       {
-        foreach my $evt (@{$events})
+        for my $evt (@{$events})
         {
-          foreach my $e (split /,/,$state)
+          for my $e (split /,/,$state)
           {
             my $val = $e eq $evt ? 1 : "";
             $cmd =~ s/%$cal-$evt%/$val/g;
@@ -2343,11 +2345,11 @@ sub HOMEMODE_serializeCMD($@)
   my ($hash,@cmds) = @_;
   my $name = $hash->{NAME};
   my @newcmds;
-  foreach my $cmd (@cmds)
+  for my $cmd (@cmds)
   {
     $cmd =~ s/\r\n/\n/gm;
     my @newcmd;
-    foreach (split /\n+/,$cmd)
+    for (split /\n+/,$cmd)
     {
       next unless ($_ !~ /^\s*(#|$)/);
       $_ =~ s/\s{2,}/ /g;
@@ -2479,7 +2481,7 @@ sub HOMEMODE_CheckIfIsValidDevspec($;$)
 {
   my ($spec,$read) = @_;
   my @names;
-  foreach (devspec2array($spec))
+  for (devspec2array($spec))
   {
     next unless (HOMEMODE_ID($_,undef,$read));
     push @names,$_;
@@ -2540,7 +2542,7 @@ sub HOMEMODE_DayTime($)
   my $loctime = $hour * 60 + $min;
   my @texts;
   my @times;
-  foreach (split " ",$daytimes)
+  for (split " ",$daytimes)
   {
     my ($dt,$text) = split /\|/;
     my ($h,$m) = split /:/,$dt;
@@ -2551,8 +2553,7 @@ sub HOMEMODE_DayTime($)
   my $daytime = $texts[scalar @texts - 1];
   for (my $x = 0; $x < scalar @times; $x++)
   {
-    my $y = $x + 1;
-    $y = 0 if ($x == scalar @times - 1);
+    my $y = $x==scalar(@times)-1?0:$x+1;
     $daytime = $texts[$x] if ($y > $x && $loctime >= $times[$x] && $loctime < $times[$y]);
   }
   return $daytime;
@@ -2582,7 +2583,7 @@ sub HOMEMODE_SetSeason($)
   my $locdays = ($month + 1) * 31 + $mday;
   my @texts;
   my @dates;
-  foreach (split " ",$seasons)
+  for (split " ",$seasons)
   {
     my ($date,$text) = split /\|/;
     my ($m,$d) = split /\./,$date;
@@ -2590,11 +2591,10 @@ sub HOMEMODE_SetSeason($)
     push @dates,$days;
     push @texts,$text;
   }
-  my $season = $texts[scalar @texts - 1];
+  my $season = $texts[scalar(@texts)-1];
   for (my $x = 0; $x < scalar @dates; $x++)
   {
-    my $y = $x + 1;
-    $y = 0 if ($x == scalar @dates - 1);
+    my $y = $x==scalar(@dates)-1?0:$x+1;
     $season = $texts[$x] if ($y > $x && $locdays >= $dates[$x] && $locdays < $dates[$y]);
   }
   if (ReadingsVal($name,"season","") ne $season)
@@ -2631,7 +2631,7 @@ sub HOMEMODE_addSensorsuserattr($$;$)
   my @devspec = devspec2array($devs);
   my @olddevspec = devspec2array($olddevs) if ($olddevs);
   HOMEMODE_cleanUserattr($hash,$olddevs,$devs) if (@olddevspec);
-  foreach my $sensor (@devspec)
+  for my $sensor (@devspec)
   {
     my $inolddevspec = @olddevspec && grep /^$sensor$/,@olddevspec ? 1 : 0;
     my $alias = AttrVal($sensor,"alias","");
@@ -2691,7 +2691,7 @@ sub HOMEMODE_Luminance($;$$)
   my $read = AttrVal($name,"HomeSensorsLuminanceReading","luminance");
   $lum = 0 if (!$lum);
   my @sensorsa;
-  foreach (@sensors)
+  for (@sensors)
   {
     next unless (!HOMEMODE_IsDisabled($hash,$_));
     push @sensorsa,$_;
@@ -2735,7 +2735,7 @@ sub HOMEMODE_TriggerState($;$$$)
   my $amode = ReadingsVal($name,"modeAlarm","");
   if ($contacts)
   {
-    foreach my $sensor (devspec2array($contacts))
+    for my $sensor (devspec2array($contacts))
     {
       next if (HOMEMODE_IsDisabled($hash,$sensor));
       my ($oread,$tread) = split " ",AttrVal($sensor,"HomeReadings",AttrVal($name,"HomeSensorsContactReadings","state sabotageError")),2;
@@ -2788,7 +2788,7 @@ sub HOMEMODE_TriggerState($;$$$)
   }
   if ($motions)
   {
-    foreach my $sensor (devspec2array($motions))
+    for my $sensor (devspec2array($motions))
     {
       next if (HOMEMODE_IsDisabled($hash,$sensor));
       my ($oread,$tread) = split " ",AttrVal($sensor,"HomeReadings",AttrVal($name,"HomeSensorsMotionReadings","state sabotageError")),2;
@@ -2911,9 +2911,10 @@ sub HOMEMODE_name2alias($;$)
   my ($name,$witharticle) = @_;
   my $alias = AttrVal($name,"alias",$name);
   my $art;
-  $art = "der" if ($alias =~ /sensor|dete[ck]tor|melder/i);
   $art = "die" if ($alias =~ /t(ü|ue)r/i);
   $art = "das" if ($alias =~ /fenster/i);
+  $art = "der" if ($alias =~ /(sensor|dete[ck]tor|melder|kontakt)$/i);
+  $art = "der" if ($alias =~ /^(sensor|dete[ck]tor|melder|kontakt)\s.+/i);
   my $ret = $witharticle && $art ? "$art $alias" : $alias;
   return $ret;
 }
@@ -2932,7 +2933,7 @@ sub HOMEMODE_ContactOpenCheck($$;$$)
     $donttrigger = 1 if ($dtmode && $mode =~ /^($dtmode)$/);
     if (!$donttrigger && $dtmode && $dtres)
     {
-      foreach (devspec2array($dtres))
+      for (devspec2array($dtres))
       {
         next if (HOMEMODE_IsDisabled(undef,$_));
         $donttrigger = 1 if (ReadingsVal($_,"state","") =~ /^($dtmode)$/);
@@ -2956,7 +2957,7 @@ sub HOMEMODE_ContactOpenCheck($$;$$)
       my @divs = split " ",$dividers;
       my $divider;
       my $count = 0;
-      foreach (split " ",$seasons)
+      for (split " ",$seasons)
       {
         my ($date,$text) = split /\|/;
         $divider = $divs[$count] if ($season eq $text);
@@ -3012,7 +3013,7 @@ sub HOMEMODE_ContactOpenCheckAfterModeChange($$$;$)
   my $pstate = ReadingsVal($resident,"lastState","") if ($resident);
   if ($contacts)
   {
-    foreach (split /,/,$contacts)
+    for (split /,/,$contacts)
     {
       my $m = AttrVal($_,"HomeOpenDontTriggerModes","");
       my $r = AttrVal($_,"HomeOpenDontTriggerModesResidents","");
@@ -3043,7 +3044,7 @@ sub HOMEMODE_ContactCommands($$$$)
   push @cmds,AttrVal($name,"HomeCMDcontactDoormainClosed","") if (AttrVal($name,"HomeCMDcontactDoormainClosed",undef) && $kind eq "doormain" && $state eq "closed");
   if (@cmds)
   {
-    foreach (@cmds)
+    for (@cmds)
     {
       my ($c,$o) = split /\|/,AttrVal($name,"HomeTextClosedOpen","closed|open");
       my $sta = $state eq "open" ? $o : $c;
@@ -3066,7 +3067,7 @@ sub HOMEMODE_MotionCommands($$$)
   push @cmds,AttrVal($name,"HomeCMDmotion-off","") if (AttrVal($name,"HomeCMDmotion-off",undef) && $state eq "closed");
   if (@cmds)
   {
-    foreach (@cmds)
+    for (@cmds)
     {
       my ($c,$o) = split /\|/,AttrVal($name,"HomeTextClosedOpen","closed|open");
       $state = $state eq "open" ? $o : $c;
@@ -3101,7 +3102,7 @@ sub HOMEMODE_EventCommands($$$$)
       push @cmds,AttrVal($name,"HomeCMDevent-$cal-$pevt-end","") if (AttrVal($name,"HomeCMDevent-$cal-$pevt-end",undef));
       push @cmds,AttrVal($name,"HomeCMDevent-$cal-$evt-begin","") if (AttrVal($name,"HomeCMDevent-$cal-$evt-begin",undef));
       readingsSingleUpdate($hash,"event-$cal",$event,1);
-      foreach (@cmds)
+      for (@cmds)
       {
         $_ =~ s/%EVENT%/$event/gm;
         $_ =~ s/%PREVEVENT%/$prevevent/gm;
@@ -3112,14 +3113,14 @@ sub HOMEMODE_EventCommands($$$$)
   {
     my @prevevents;
     @prevevents = split /,/,$prevevent if ($prevevent ne "none");
-    foreach (split /;/,$event)
+    for (split /;/,$event)
     {
       $event =~ s/[\s ]//g;
       my $summary;
       my $description = "";
       my $t = time();
       my @filters = ( { ref => \&filter_true, param => undef } );
-      foreach (Calendar_GetEvents($defs{$cal},$t,@filters))
+      for (Calendar_GetEvents($defs{$cal},$t,@filters))
       {
         next unless ($_->{uid} eq $event);
         $summary = $_->{summary};
@@ -3142,7 +3143,7 @@ sub HOMEMODE_EventCommands($$$$)
         if (grep /^$summary$/,@prevevents)
         {
           my @sevents;
-          foreach (@prevevents)
+          for (@prevevents)
           {
             push @sevents,$_ if ($_ ne $summary);
           }
@@ -3153,7 +3154,7 @@ sub HOMEMODE_EventCommands($$$$)
       {
         push @prevevents,$summary if (!grep /^$summary$/,@prevevents);
       }
-      foreach (@cmds)
+      for (@cmds)
       {
         if ($read eq "start")
         {
@@ -3173,7 +3174,7 @@ sub HOMEMODE_EventCommands($$$$)
     $update = join ",",@prevevents if (@prevevents);
     readingsSingleUpdate($hash,"event-$cal",$update,1);
   }
-  foreach (@cmds)
+  for (@cmds)
   {
     $_ =~ s/%CALENDAR%/$cal/gm;
   }
@@ -3188,7 +3189,7 @@ sub HOMEMODE_UWZCommands($$)
   my $uwz = AttrVal($name,"HomeUWZ","");
   my $count;
   my $warning;
-  foreach my $evt (@{$events})
+  for my $evt (@{$events})
   {
     next unless (grep /^WarnCount:\s[0-9]$/,$evt);
     $count = $evt;
@@ -3241,7 +3242,7 @@ sub HOMEMODE_PowerEnergy($;$$$)
     my @spec = devspec2array($hash->{SENSORSENERGY});
     if (@spec > 1)
     {
-      foreach (split /,/,$hash->{SENSORSENERGY})
+      for (split /,/,$hash->{SENSORSENERGY})
       {
         next unless ($_ ne $trigger);
         my $v = ReadingsNum($_,$read,0);
@@ -3258,7 +3259,7 @@ sub HOMEMODE_PowerEnergy($;$$$)
     my $power = 0;
     my $energy = 0;
     my ($pr,$er) = split " ",AttrVal($name,"HomeSensorsPowerEnergyReadings","power energy");
-    foreach (split /,/,$hash->{SENSORSENERGY})
+    for (split /,/,$hash->{SENSORSENERGY})
     {
       my $p = ReadingsNum($_,$pr,0);
       my $e = ReadingsNum($_,$er,0);
@@ -3281,7 +3282,7 @@ sub HOMEMODE_Smoke($;$$)
   my $r = AttrVal($name,"HomeSensorsSmokeReading","state");
   my $v = AttrVal($name,"HomeSensorsSmokeValue","on");
   my @sensors;
-  foreach (split /,/,$hash->{SENSORSSMOKE})
+  for (split /,/,$hash->{SENSORSSMOKE})
   {
     push @sensors,$_ if (ReadingsVal($_,$r,"") =~ /^$v$/);
   }
@@ -3299,7 +3300,7 @@ sub HOMEMODE_Smoke($;$$)
     }
     if (@cmds)
     {
-      foreach (@cmds)
+      for (@cmds)
       {
         my ($n,$s) = split /\|/,AttrVal($name,"HomeTextNosmokeSmoke","no smoke|smoke");
         my $sta = $state eq $v ? $s : $n;
@@ -3353,7 +3354,7 @@ sub HOMEMODE_Twilight($$;$)
   else
   {
     my $pevent = ReadingsVal($name,"twilightEvent","");
-    foreach my $event (@{$events})
+    for my $event (@{$events})
     {
       my $val = (split " ",$event)[1];
       readingsBeginUpdate($hash);
@@ -3406,7 +3407,7 @@ sub HOMEMODE_CalendarEvents($$)
   {
     my $fname = AttrVal("global","modpath",".")."/FHEM/".$cal.".holiday";
     my (undef,@holidayfile) = FileRead($fname);
-    foreach (@holidayfile)
+    for (@holidayfile)
     {
       next unless ($_ !~ /^\s*(#|$)/);
       my @parts = split;
@@ -3423,7 +3424,7 @@ sub HOMEMODE_CalendarEvents($$)
   {
     my $t = time();
     my @filters = ( { ref => \&filter_true, param => undef } );
-    foreach (Calendar_GetEvents($defs{$cal},$t,@filters))
+    for (Calendar_GetEvents($defs{$cal},$t,@filters))
     {
       my $evt = $_->{summary};
       Log3 $name,5,"Calendar_GetEvents event: $evt";
@@ -3498,7 +3499,7 @@ sub HOMEMODE_ToggleDevice($$)
     {
       push @cmds,AttrVal($name,"HomeCMDdeviceEnable","") if (AttrVal($name,"HomeCMDdeviceEnable",""));
       my @new;
-      foreach (@disabled)
+      for (@disabled)
       {
         push @new,$_ if ($_ ne $devname);
       }
@@ -3509,12 +3510,11 @@ sub HOMEMODE_ToggleDevice($$)
       push @cmds,AttrVal($name,"HomeCMDdeviceDisable","") if (AttrVal($name,"HomeCMDdeviceDisable",""));
       push @disabled,$devname;
     }
-    my $dis = "";
-    $dis = join(",",@disabled) if (@disabled);
+    my $dis = @disabled?join(",",@disabled):"";
     readingsSingleUpdate($hash,"devicesDisabled",$dis,1);
     if (@cmds)
     {
-      foreach (@cmds)
+      for (@cmds)
       {
         my $a = HOMEMODE_name2alias($devname);
         $_ =~ s/%ALIAS%/$a/gm;
@@ -3524,12 +3524,12 @@ sub HOMEMODE_ToggleDevice($$)
     }
   }
   my @list;
-  foreach my $d (split /,/,$hash->{NOTIFYDEV})
+  for my $d (split /,/,$hash->{NOTIFYDEV})
   {
     push @list,$d if (!grep /^$d$/,@disabled);
   }
   $hash->{helper}{enabledDevices} = join ",",@list;
-  return undef;
+  return;
 }
 
 sub HOMEMODE_IsDisabled($$)
@@ -3615,7 +3615,7 @@ sub HOMEMODE_Details($$$)
 =item summary_DE Zuhause Ger&auml;t mit ROOMMATE/GUEST/PET Integration
 =begin html
 
-<a name="HOMEMODE"></a>
+<a id="HOMEMODE"></a>
 <h3>HOMEMODE</h3>
 <ul>
   <i>HOMEMODE</i> is designed to represent the overall home state(s) in one device.<br>
@@ -3657,123 +3657,123 @@ sub HOMEMODE_Details($$$)
   <br>
   <p>A german Wiki page is also available at <a href="https://wiki.fhem.de/wiki/Modul_HOMEMODE" target="_blank">https://wiki.fhem.de/wiki/Modul_HOMEMODE</a>. There you can find lots of example code.</p>
   <br>
-  <a name="HOMEMODE_define"></a>
+  <a id="HOMEMODE-define"></a>
   <p><b>define [optional]</b></p>
   <ul>
     <code>define &lt;name&gt; HOMEMODE</code><br><br>
     <code>define &lt;name&gt; HOMEMODE [RESIDENTS-MASTER-DEVICE]</code><br>
   </ul>
   <br>
-  <a name="HOMEMODE_set"></a>
+  <a id="HOMEMODE-set"></a>
   <p><b>set &lt;required&gt; [optional]</b></p>
   <ul>
     <li>
-      <b><i>anyoneElseAtHome &lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-set-anyoneElseAtHome">anyoneElseAtHome &lt;on/off&gt;</a><br>
       turn this on if anyone else is alone at home who is not a registered resident<br>
       e.g. an animal or unregistered guest<br>
       if turned on the alarm mode will be set to armhome instead of armaway while leaving, if turned on after leaving the alarm mode will change from armaway to armhome, e.g. to disable motion sensors alerts<br>
       placeholder %AEAH% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>deviceDisable &lt;DEVICE&gt;</i></b><br>
+      <a id="HOMEMODE-set-deviceDisable">deviceDisable &lt;DEVICE&gt;</a><br>
       disable HOMEMODE integration for given device<br>
       placeholder %DISABLED% is available in all HomeCMD attributes<br>
       placeholders %DEVICE% and %ALIAS% are available in HomeCMDdeviceDisable attribute
     </li>
     <li>
-      <b><i>deviceEnable &lt;DEVICE&gt;</i></b><br>
+      <a id="HOMEMODE-set-deviceEnable">deviceEnable &lt;DEVICE&gt;</a><br>
       enable HOMEMODE integration for given device<br>
       placeholder %DISABLED% is available in all HomeCMD attributes<br>
       placeholders %DEVICE% and %ALIAS% are available in HomeCMDdeviceEnable attribute
     </li>
     <li>
-      <b><i>dnd &lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-set-dnd">dnd &lt;on/off&gt;</a><br>
       turn "do not disturb" mode on or off<br>
       e.g. to disable notification or alarms or, or, or...<br>
       placeholder %DND% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>dnd-for-minutes &lt;MINUTES&gt;</i></b><br>
+      <a id="HOMEMODE-set-dnd-for-minutes">dnd-for-minutes &lt;MINUTES&gt;</a><br>
       turn "do not disturb" mode on for given minutes<br>
       will return to the current (daytime) mode
     </li>
     <li>
-      <b><i>location &lt;arrival/home/bed/underway/wayhome&gt;</i></b><br>
+      <a id="HOMEMODE-set-location">location &lt;arrival/home/bed/underway/wayhome&gt;</a><br>
       switch to given location manually<br>
       placeholder %LOCATION% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>mode &lt;morning/day/afternoon/evening/night/gotosleep/asleep/absent/gone/home&gt;</i></b><br>
+      <a id="HOMEMODE-set-mode">mode &lt;morning/day/afternoon/evening/night/gotosleep/asleep/absent/gone/home&gt;</a><br>
       switch to given mode manually<br>
       placeholder %MODE% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>modeAlarm &lt;armaway/armhome/armnight/confirm/disarm&gt;</i></b><br>
+      <a id="HOMEMODE-set-modeAlarm">modeAlarm &lt;armaway/armhome/armnight/confirm/disarm&gt;</a><br>
       switch to given alarm mode manually<br>
       placeholder %MODEALARM% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>modeAlarm-for-minutes &lt;armaway/armhome/armnight/disarm&gt; &lt;MINUTES&gt;</i></b><br>
+      <a id="HOMEMODE-set-modeAlarm-for-minutes">modeAlarm-for-minutes &lt;armaway/armhome/armnight/disarm&gt; &lt;MINUTES&gt;</a><br>
       switch to given alarm mode for given minutes<br>
       will return to the previous alarm mode
     </li>
     <li>
-      <b><i>panic &lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-set-panic">panic &lt;on/off&gt;</a><br>
       turn panic mode on or off<br>
       placeholder %PANIC% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>updateHomebridgeMapping</i></b><br>
+      <a id="HOMEMODE-set-updateHomebridgeMapping">updateHomebridgeMapping</a><br>
       will update the attribute homebridgeMapping of the HOMEMODE device depending on the available informations
     </li>
     <li>
-      <b><i>updateInternalForce</i></b><br>
+      <a id="HOMEMODE-set-updateInternalsForce">updateInternalsForce</a><br>
       will force update all internals of the HOMEMODE device<br>
       use this if you just reload this module after an update or if you made changes on any HOMEMODE monitored device, e.g. after adding residents/guest or after adding new sensors with the same devspec as before
     </li>
   </ul>
   <br>
-  <a name="HOMEMODE_get"></a>
+  <a id="HOMEMODE-get"></a>
   <p><b>get &lt;required&gt; [optional]</b></p>
   <ul>
     <li>
-      <b><i>contactsOpen &lt;all/doorsinside/doorsoutside/doorsmain/outside/windows&gt;</i></b><br>
+      <a id="HOMEMODE-get-contactsOpen">contactsOpen &lt;all/doorsinside/doorsoutside/doorsmain/outside/windows&gt;</a><br>
       get a list of all/doorsinside/doorsoutside/doorsmain/outside/windows open contacts<br>
       placeholders %OPEN% (open contacts outside) and %OPENCT% (open contacts outside count) are available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>devicesDisabled</i></b><br>
+      <a id="HOMEMODE-get-devicesDisabled">devicesDisabled</a><br>
       get new line separated list of currently disabled devices<br>
       placeholder %DISABLED% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>mode</i></b><br>
+      <a id="HOMEMODE-get-mode">mode</a><br>
       get current mode<br>
       placeholder %MODE% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>modeAlarm</i></b><br>
+      <a id="HOMEMODE-get-modeAlarm">modeAlarm</a><br>
       get current modeAlarm<br>
       placeholder %MODEALARM% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>publicIP</i></b><br>
+      <a id="HOMEMODE-get-publicIP">publicIP</a><br>
       get the public IP address<br>
       placeholder %IP% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>sensorsTampered</i></b><br>
+      <a id="HOMEMODE-get-sensorsTampered">sensorsTampered</a><br>
       get a list of all tampered sensors<br>
       placeholder %TAMPERED% is available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>weather &lt;long/short&gt;</i></b><br>
+      <a id="HOMEMODE-get-weather">weather &lt;long/short&gt;</a><br>
       get weather information in given format<br>
       please specify the outputs in attributes HomeTextWeatherLong and HomeTextWeatherShort<br>
       placeholders %WEATHER% and %WEATHERLONG% are available in all HomeCMD attributes
     </li>
     <li>
-      <b><i>weatherForecast [DAY]</i></b><br>
+      <a id="HOMEMODE-get-weatherForecast">weatherForecast [DAY]</a><br>
       get weather forecast for given day<br>
       if DAY is omitted the forecast for tomorrow (2) will be returned<br>
       please specify the outputs in attributes HomeTextWeatherForecastToday, HomeTextWeatherForecastTomorrow and HomeTextWeatherForecastInSpecDays<br>
@@ -3781,25 +3781,30 @@ sub HOMEMODE_Details($$$)
     </li>
   </ul>
   <br>
-  <a name="HOMEMODE_attr"></a>
+  <a id="HOMEMODE-attr"></a>
   <p><b>Attributes</b></p>
   <ul>
     <li>
-      <b><i>HomeAdvancedDetails</i></b><br>
+      <a id="HOMEMODE-attr-HomeAdvancedDetails">HomeAdvancedDetails</a><br>
       show more details depending on the monitored devices<br>
       value detail will only show advanced details in detail view, value both will show advanced details also in room view, room will show advanced details only in room view<br>
       values: none, detail, both, room<br>
       default: none
     </li>
     <li>
-      <b><i>HomeAdvancedUserAttr</i></b><br>
+      <a id="HOMEMODE-attr-HomeAdvancedUserAttr">HomeAdvancedUserAttr</a><br>
       more HomeCMD userattr will be provided<br>
       additional attributes for each resident and each calendar event<br>
       values: 0 or 1<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAutoAlarmModes</i></b><br>
+      <a id="HOMEMODE-attr-HomeAtTmpRoom">HomeAtTmpRoom</a><br>
+      add this room to temporary at(s) (generated by HOMEMODE)<br>
+      default:
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeAutoAlarmModes">HomeAutoAlarmModes</a><br>
       set modeAlarm automatically depending on mode<br>
       if mode is set to "home", modeAlarm will be set to "disarm"<br>
       if mode is set to "absent", modeAlarm will be set to "armaway"<br>
@@ -3809,426 +3814,441 @@ sub HOMEMODE_Details($$$)
       default: 1
     </li>
     <li>
-      <b><i>HomeAutoArrival</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoArrival">HomeAutoArrival</a><br>
       set resident's location to arrival (on arrival) and after given minutes to home<br>
       values from 0 to 5999.9 in minutes, value 0 disables automatically set arrival<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAutoAsleep</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoAsleep">HomeAutoAsleep</a><br>
       set user from gotosleep to asleep after given minutes<br>
       values from 0 to 5999.9 in minutes, value 0 disables automatically set asleep<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAutoAwoken</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoAwoken">HomeAutoAwoken</a><br>
       force set resident from asleep to awoken, even if changing from alseep to home<br>
       after given minutes awoken will change to home<br>
       values from 0 to 5999.9 in minutes, value 0 disables automatically set awoken after asleep<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAutoDaytime</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoDaytime">HomeAutoDaytime</a><br>
       daytime depending home mode<br>
       values 0 or 1, value 0 disables automatically set daytime<br>
       default: 1
     </li>
     <li>
-      <b><i>HomeAutoPresence</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoPresence">HomeAutoPresence</a><br>
       automatically change the state of residents between home and absent depending on their associated presence device<br>
       values 0 or 1, value 0 disables auto presence<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAutoPresenceSuppressState</i></b><br>
+      <a id="HOMEMODE-attr-HomeAutoPresenceSuppressState">HomeAutoPresenceSuppressState</a><br>
       suppress state(s) for HomeAutoPresence (p.e. gotosleep|asleep)<br>
       if set this/these state(s) of a resident will not affect the residents to change to absent by its presence device<br>
       p.e. for misteriously disappearing presence devices in the middle of the night<br>
       default:
     </li>
     <li>
-      <b><i>HomeCMDalarmSmoke</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmSmoke">HomeCMDalarmSmoke</a><br>
       cmds to execute on any smoke alarm state
     </li>
     <li>
-      <b><i>HomeCMDalarmSmoke-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmSmoke-" data-pattern="HomeCMDalarmSmoke-.*">HomeCMDalarmSmoke-&lt;on/off&gt;</a><br>
       cmds to execute on smoke alarm state on/off
     </li>
     <li>
-      <b><i>HomeCMDalarmTampered</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmTampered">HomeCMDalarmTampered</a><br>
       cmds to execute on any tamper alarm state
     </li>
     <li>
-      <b><i>HomeCMDalarmTampered-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmTampered-" data-pattern="HomeCMDalarmTampered-.*">HomeCMDalarmTampered-&lt;on/off&gt;</a><br>
       cmds to execute on tamper alarm state on/off
     </li>
     <li>
-      <b><i>HomeCMDalarmTriggered</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmTriggered">HomeCMDalarmTriggered</a><br>
       cmds to execute on any alarm state
     </li>
     <li>
-      <b><i>HomeCMDalarmTriggered-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDalarmTriggered-" data-pattern="HomeCMDalarmTriggered-.*">HomeCMDalarmTriggered-&lt;on/off&gt;</a><br>
       cmds to execute on alarm state on/off
     </li>
     <li>
-      <b><i>HomeCMDanyoneElseAtHome</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDanyoneElseAtHome">HomeCMDanyoneElseAtHome</a><br>
       cmds to execute on any anyoneElseAtHome state
     </li>
     <li>
-      <b><i>HomeCMDanyoneElseAtHome-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDanyoneElseAtHome-" data-pattern="HomeCMDanyoneElseAtHome-.*">HomeCMDanyoneElseAtHome-&lt;on/off&gt;</a><br>
       cmds to execute on anyoneElseAtHome state on/off
     </li>
     <li>
-      <b><i>HomeCMDcontact</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontact">HomeCMDcontact</a><br>
       cmds to execute if any contact has been triggered (open/tilted/closed)
     </li>
     <li>
-      <b><i>HomeCMDbattery</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDbattery">HomeCMDbattery</a><br>
       cmds to execute on any battery change of a battery sensor
     </li>
     <li>
-      <b><i>HomeCMDbatteryLow</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDbatteryLow">HomeCMDbatteryLow</a><br>
       cmds to execute if any battery sensor has low battery
     </li>
     <li>
-      <b><i>HomeCMDbatteryNormal</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDbatteryNormal">HomeCMDbatteryNormal</a><br>
       cmds to execute if any battery sensor returns to normal battery
     </li>
     <li>
-      <b><i>HomeCMDcontactClosed</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactClosed">HomeCMDcontactClosed</a><br>
       cmds to execute if any contact has been closed
     </li>
     <li>
-      <b><i>HomeCMDcontactOpen</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactOpen">HomeCMDcontactOpen</a><br>
       cmds to execute if any contact has been opened
     </li>
     <li>
-      <b><i>HomeCMDcontactDoormain</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactDoormain">HomeCMDcontactDoormain</a><br>
       cmds to execute if any contact of type doormain has been triggered (open/tilted/closed)
     </li>
     <li>
-      <b><i>HomeCMDcontactDoormainClosed</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactDoormainClosed">HomeCMDcontactDoormainClosed</a><br>
       cmds to execute if any contact of type doormain has been closed
     </li>
     <li>
-      <b><i>HomeCMDcontactDoormainOpen</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactDoormainOpen">HomeCMDcontactDoormainOpen</a><br>
       cmds to execute if any contact of type doormain has been opened
     </li>
     <li>
-      <b><i>HomeCMDcontactOpenWarning1</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactOpenWarning1">HomeCMDcontactOpenWarning1</a><br>
       cmds to execute on first contact open warning
     </li>
     <li>
-      <b><i>HomeCMDcontactOpenWarning2</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactOpenWarning2">HomeCMDcontactOpenWarning2</a><br>
       cmds to execute on second (and more) contact open warning
     </li>
     <li>
-      <b><i>HomeCMDcontactOpenWarningLast</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDcontactOpenWarningLast">HomeCMDcontactOpenWarningLast</a><br>
       cmds to execute on last contact open warning
     </li>
     <li>
-      <b><i>HomeCMDdaytime</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDdaytime">HomeCMDdaytime</a><br>
       cmds to execute on any daytime change
     </li>
     <li>
-      <b><i>HomeCMDdaytime-&lt;%DAYTIME%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDdaytime-" data-pattern="HomeCMDdaytime-.*">HomeCMDdaytime-&lt;%DAYTIME%&gt;</a><br>
       cmds to execute on specific day time change
     </li>
     <li>
-      <b><i>HomeCMDdnd</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDdeviceDisable">HomeCMDdeviceDisable</a><br>
+      cmds to execute on set HOMEMODE deviceDisable
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeCMDdeviceEnable">HomeCMDdeviceEnable</a><br>
+      cmds to execute on set HOMEMODE deviceEnable
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeCMDdnd">HomeCMDdnd</a><br>
       cmds to execute on any dnd state
     </li>
     <li>
-      <b><i>HomeCMDdnd-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDdnd-" data-pattern="HomeCMDdnd-.*">HomeCMDdnd-&lt;on/off&gt;</a><br>
       cmds to execute on dnd state on/off
     </li>
     <li>
-      <b><i>HomeCMDevent</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDevent">HomeCMDevent</a><br>
       cmds to execute on each calendar event
     </li>
     <li>
-      <b><i>HomeCMDevent-&lt;%CALENDAR%&gt;-each</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDevent-" data-pattern="HomeCMDevent-.*-each">HomeCMDevent-&lt;%CALENDAR%&gt;-each</a><br>
       cmds to execute on each event of the calendar
     </li>
     <li>
-      <b><i>HomeCMDevent-&lt;%CALENDAR%&gt;-&lt;%EVENT%&gt;-begin</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDevent-" data-pattern="HomeCMDevent-.*-.*-begin">HomeCMDevent-&lt;%CALENDAR%&gt;-&lt;%EVENT%&gt;-begin</a><br>
       cmds to execute on start of a specific calendar event
     </li>
     <li>
-      <b><i>HomeCMDevent-&lt;%CALENDAR%&gt;-&lt;%EVENT%&gt;-end</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDevent-" data-pattern="HomeCMDevent-.*-.*-end">HomeCMDevent-&lt;%CALENDAR%&gt;-&lt;%EVENT%&gt;-end</a><br>
       cmds to execute on end of a specific calendar event
     </li>
     <li>
-      <b><i>HomeCMDfhemDEFINED</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDfhemDEFINED">HomeCMDfhemDEFINED</a><br>
       cmds to execute on any defined device
     </li>
     <li>
-      <b><i>HomeCMDfhemINITIALIZED</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDfhemINITIALIZED">HomeCMDfhemINITIALIZED</a><br>
       cmds to execute on fhem start
     </li>
     <li>
-      <b><i>HomeCMDfhemSAVE</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDfhemSAVE">HomeCMDfhemSAVE</a><br>
       cmds to execute on fhem save
     </li>
     <li>
-      <b><i>HomeCMDfhemUPDATE</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDfhemUPDATE">HomeCMDfhemUPDATE</a><br>
       cmds to execute on fhem update
     </li>
     <li>
-      <b><i>HomeCMDicewarning</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDicewarning">HomeCMDicewarning</a><br>
       cmds to execute on any ice warning state
     </li>
     <li>
-      <b><i>HomeCMDicewarning-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDicewarning-" data-pattern="HomeCMDicewarning-.*">HomeCMDicewarning-&lt;on/off&gt;</a><br>
       cmds to execute on ice warning state on/off
     </li>
     <li>
-      <b><i>HomeCMDlocation</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDlocation">HomeCMDlocation</a><br>
       cmds to execute on any location change of the HOMEMODE device
     </li>
     <li>
-      <b><i>HomeCMDlocation-&lt;%LOCATION%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDlocation-" data-pattern="HomeCMDlocation-.*">HomeCMDlocation-&lt;%LOCATION%&gt;</a><br>
       cmds to execute on specific location change of the HOMEMODE device
     </li>
     <li>
-      <b><i>HomeCMDlocation-resident</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDlocation-resident">HomeCMDlocation-resident</a><br>
       cmds to execute on any location change of any RESIDENT/GUEST/PET device
     </li>
     <li>
-      <b><i>HomeCMDlocation-&lt;%LOCATIONR%&gt;-resident</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDlocation-" data-pattern="HomeCMDlocation-.*-resident">HomeCMDlocation-&lt;%LOCATIONR%&gt;-resident</a><br>
       cmds to execute on specific location change of any RESIDENT/GUEST/PET device
     </li>
     <li>
-      <b><i>HomeCMDlocation-&lt;%LOCATIONR%&gt;-&lt;%RESIDENT%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDlocation-" data-pattern="HomeCMDlocation-.*-.*">HomeCMDlocation-&lt;%LOCATIONR%&gt;-&lt;%RESIDENT%&gt;</a><br>
       cmds to execute on specific location change of a specific RESIDENT/GUEST/PET device
     </li>
     <li>
-      <b><i>HomeCMDmode</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmode">HomeCMDmode</a><br>
       cmds to execute on any mode change of the HOMEMODE device
     </li>
     <li>
-      <b><i>HomeCMDmode-absent-belated</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmode-absent-belated">HomeCMDmode-absent-belated</a><br>
       cmds to execute belated to absent<br>
       belated time can be adjusted with attribute "HomeModeAbsentBelatedTime"
     </li>
     <li>
-      <b><i>HomeCMDmode-&lt;%MODE%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmode-" data-pattern="HomeCMDmode-.*">HomeCMDmode-&lt;%MODE%&gt;</a><br>
       cmds to execute on specific mode change of the HOMEMODE device
     </li>
     <li>
-      <b><i>HomeCMDmode-&lt;%MODE%&gt;-resident</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmode-" data-pattern="HomeCMDmode-.*-resident">HomeCMDmode-&lt;%MODE%&gt;-resident</a><br>
       cmds to execute on specific mode change of the HOMEMODE device triggered by any resident
     </li>
     <li>
-      <b><i>HomeCMDmode-&lt;%MODE%&gt;-&lt;%RESIDENT%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmode-" data-pattern="HomeCMDmode-.*-.*">HomeCMDmode-&lt;%MODE%&gt;-&lt;%RESIDENT%&gt;</a><br>
       cmds to execute on specific mode change of the HOMEMODE device triggered by a specific resident
     </li>
     <li>
-      <b><i>HomeCMDmodeAlarm</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmodeAlarm">HomeCMDmodeAlarm</a><br>
       cmds to execute on any alarm mode change
     </li>
     <li>
-      <b><i>HomeCMDmodeAlarm-&lt;armaway/armhome/armnight/confirm/disarm&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmodeAlarm-" data-pattern="HomeCMDmodeAlarm-.*">HomeCMDmodeAlarm-&lt;armaway/armhome/armnight/confirm/disarm&gt;</a><br>
       cmds to execute on specific alarm mode change
     </li>
     <li>
-      <b><i>HomeCMDmotion</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmotion">HomeCMDmotion</a><br>
       cmds to execute on any recognized motion of any motion sensor
     </li>
     <li>
-      <b><i>HomeCMDmotion-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDmotion-" data-pattern="HomeCMDmotion-.*">HomeCMDmotion-&lt;on/off&gt;</a><br>
       cmds to execute if any recognized motion of any motion sensor ends/starts
     </li>
     <li>
-      <b><i>HomeCMDpanic</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpanic">HomeCMDpanic</a><br>
       cmds to execute on any panic state
     </li>
     <li>
-      <b><i>HomeCMDpanic-&lt;on/off&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpanic-" data-pattern="HomeCMDpanic-.*">HomeCMDpanic-&lt;on/off&gt;</a><br>
       cmds to execute on if panic is turned on/off
     </li>
     <li>
-      <b><i>HomeCMDpresence-&lt;absent/present&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpresence-" data-pattern="HomeCMDpresence-(absent|present)">HomeCMDpresence-&lt;absent/present&gt;</a><br>
       cmds to execute on specific presence change of the HOMEMODE device
     </li>
     <li>
-      <b><i>HomeCMDpresence-&lt;absent/present&gt;-device</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpresence-" data-pattern="HomeCMDpresence-(absent|present)-device">HomeCMDpresence-&lt;absent/present&gt;-device</a><br>
       cmds to execute on specific presence change of any presence device
     </li>
     <li>
-      <b><i>HomeCMDpresence-&lt;absent/present&gt;-resident</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpresence-" data-pattern="HomeCMDpresence-(absent|present)-resident">HomeCMDpresence-&lt;absent/present&gt;-resident</a><br>
       cmds to execute on specific presence change of a specific resident
     </li>
     <li>
-      <b><i>HomeCMDpresence-&lt;absent/present&gt;-&lt;%RESIDENT%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpresence-" data-pattern="HomeCMDpresence-(absent|present)-.+">HomeCMDpresence-&lt;absent/present&gt;-&lt;%RESIDENT%&gt;</a><br>
       cmds to execute on specific presence change of a specific resident
     </li>
     <li>
-      <b><i>HomeCMDpresence-&lt;absent/present&gt;-&lt;%RESIDENT%&gt;-&lt;%DEVICE%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpresence-" data-pattern="HomeCMDpresence-(absent|present)-.+-.+">HomeCMDpresence-&lt;absent/present&gt;-&lt;%RESIDENT%&gt;-&lt;%DEVICE%&gt;</a><br>
       cmds to execute on specific presence change of a specific resident's presence device<br>
       only available if more than one presence device is available for a resident
     </li>
     <li>
-      <b><i>HomeCMDseason</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDpublic-ip-change">HomeCMDpublic-ip-change</a><br>
+      cmds to execute on any detected public IP change
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeCMDseason">HomeCMDseason</a><br>
       cmds to execute on any season change
     </li>
     <li>
-      <b><i>HomeCMDseason-&lt;%SEASON%&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDseason-" data-pattern="HomeCMDseason-.+">HomeCMDseason-&lt;%SEASON%&gt;</a><br>
       cmds to execute on specific season change
     </li>
     <li>
-      <b><i>HomeCMDuwz-warn</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDtwilight">HomeCMDtwilight</a><br>
+      cmds to execute on any twilight event
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeCMDtwilight-" data-pattern="HomeCMDtwilight-.+">HomeCMDtwilight-&lt;EVENT&gt;</a><br>
+      cmds to execute on a specific twilight event
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeCMDuwz-warn">HomeCMDuwz-warn</a><br>
       cmds to execute on any UWZ warning state
     </li>
     <li>
-      <b><i>HomeCMDuwz-warn-&lt;begin/end&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomeCMDuwz-warn-" data-pattern="HomeCMDuwz-warn-.+">HomeCMDuwz-warn-&lt;begin/end&gt;</a><br>
       cmds to execute on UWZ warning state begin/end
     </li>
     <li>
-      <b><i>HomeDaytimes</i></b><br>
+      <a id="HOMEMODE-attr-HomeDaytimes">HomeDaytimes</a><br>
       space separated list of time|text pairs for possible daytimes starting with the first event of the day (lowest time)<br>
       default: 05:00|morning 10:00|day 14:00|afternoon 18:00|evening 23:00|night
     </li>
     <li>
-      <b><i>HomeEventsHolidayDevices</i></b><br>
+      <a id="HOMEMODE-attr-HomeEventsHolidayDevices">HomeEventsHolidayDevices</a><br>
       devspec of Calendar/holiday calendars
     </li>
     <li>
-      <b><i>HomeEventsCalendarDevices</i></b><br>
+      <a id="HOMEMODE-attr-HomeEventsCalendarDevices">HomeEventsCalendarDevices</a><br>
       devspec of Calendar/holiday calendars
     </li>
     <li>
-      <b><i>HomeIcewarningOnOffTemps</i></b><br>
+      <a id="HOMEMODE-attr-HomeIcewarningOnOffTemps">HomeIcewarningOnOffTemps</a><br>
       2 space separated temperatures for ice warning on and off<br>
       default: 2 3
     </li>
     <li>
-      <b><i>HomeLanguage</i></b><br>
+      <a id="HOMEMODE-attr-HomeLanguage">HomeLanguage</a><br>
       overwrite language from gloabl device<br>
       default: EN (language setting from global device)
     </li>
     <li>
-      <b><i>HomeModeAbsentBelatedTime</i></b><br>
+      <a id="HOMEMODE-attr-HomeModeAbsentBelatedTime">HomeModeAbsentBelatedTime</a><br>
       time in minutes after changing to absent to execute "HomeCMDmode-absent-belated"<br>
       if mode changes back (to home e.g.) in this time frame "HomeCMDmode-absent-belated" will not be executed<br>
       default:
     </li>
     <li>
-      <b><i>HomeModeAlarmArmDelay</i></b><br>
+      <a id="HOMEMODE-attr-HomeModeAlarmArmDelay">HomeModeAlarmArmDelay</a><br>
       time in seconds for delaying modeAlarm arm... commands<br>
       must be a single number (valid for all modeAlarm arm... commands) or 3 space separated numbers for each modeAlarm arm... command individually (order: armaway armnight armhome)<br>
       values from 0 to 99999<br>
       default: 0
     </li>
     <li>
-      <b><i>HomeAtTmpRoom</i></b><br>
-      add this room to temporary at(s) (generated from HOMEMODE)<br>
-      default:
-    </li>
-    <li>
-      <b><i>HomePresenceDeviceAbsentCount-&lt;ROOMMATE/GUEST/PET&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomePresenceDeviceAbsentCount-" data-pattern="HomePresenceDeviceAbsentCount-.+">HomePresenceDeviceAbsentCount-&lt;ROOMMATE/GUEST/PET&gt;</a><br>
       number of resident associated presence device to turn resident to absent<br>
       default: maximum number of available presence device for each resident
     </li>
     <li>
-      <b><i>HomePresenceDevicePresentCount-&lt;ROOMMATE/GUEST/PET&gt;</i></b><br>
+      <a id="HOMEMODE-attr-HomePresenceDevicePresentCount-" data-pattern="HomePresenceDevicePresentCount-.+">HomePresenceDevicePresentCount-&lt;ROOMMATE/GUEST/PET&gt;</a><br>
       number of resident associated presence device to turn resident to home<br>
       default: 1
     </li>
     <li>
-      <b><i>HomePresenceDeviceType</i></b><br>
+      <a id="HOMEMODE-attr-HomePresenceDeviceType">HomePresenceDeviceType</a><br>
       comma separated list of presence device types<br>
       default: PRESENCE
     </li>
     <li>
-      <b><i>HomePublicIpCheckInterval</i></b><br>
+      <a id="HOMEMODE-attr-HomePublicIpCheckInterval">HomePublicIpCheckInterval</a><br>
       numbers from 1-99999 for interval in minutes for public IP check<br>
       default: 0 (disabled)
     </li>
     <li>
-      <b><i>HomeResidentCmdDelay</i></b><br>
+      <a id="HOMEMODE-attr-HomeResidentCmdDelay">HomeResidentCmdDelay</a><br>
       time in seconds to delay the execution of specific residents commands after the change of the residents master device<br>
       normally the resident events occur before the HOMEMODE events, to restore this behavior set this value to 0<br>
       default: 1 (second)
     </li>
     <li>
-      <b><i>HomeSeasons</i></b><br>
+      <a id="HOMEMODE-attr-HomeSeasons">HomeSeasons</a><br>
       space separated list of date|text pairs for possible seasons starting with the first season of the year (lowest date)<br>
       default: 01.01|spring 06.01|summer 09.01|autumn 12.01|winter
     </li>
     <li>
-      <b><i>HomeSensorAirpressure</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorAirpressure">HomeSensorAirpressure</a><br>
       main outside airpressure sensor
     </li>
     <li>
-      <b><i>HomeSensorWindspeed</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorWindspeed">HomeSensorWindspeed</a><br>
       main outside wind speed sensor
     </li>
     <li>
-      <b><i>HomeSensorsBattery</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsBattery">HomeSensorsBattery</a><br>
       devspec of battery sensors with a battery reading<br>
       all sensors with a percentage battery value or a ok/low/nok battery value are applicable
     </li>
     <li>
-      <b><i>HomeSensorsBatteryLowPercentage</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsBatteryLowPercentage">HomeSensorsBatteryLowPercentage</a><br>
       percentage to recognize a sensors battery as low (only percentage based sensors)<br>
       default: 50
     </li>
     <li>
-      <b><i>HomeSensorsBatteryReading</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsBatteryReading">HomeSensorsBatteryReading</a><br>
       a single word for the battery reading<br>
       this is only here available as global setting for all devices<br>
       default: battery
     </li>
     <li>
-      <b><i>HomeSensorsContact</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContact">HomeSensorsContact</a><br>
       devspec of contact sensors<br>
       each applied contact sensor will get the following attributes, attributes will be removed after removing the contact sensors from the HOMEMODE device.<br>
       <ul>
         <li>
-          <b><i>HomeContactType</i></b><br>
+          <a id="HOMEMODE-attr-HomeContactType">HomeContactType</a><br>
           specify each contacts sensor's type, choose one of: doorinside, dooroutside, doormain, window<br>
           while applying contact sensors to the HOMEMODE device, the value of this attribute will be guessed by device name or device alias
         </li>
         <li>
-          <b><i>HomeModeAlarmActive</i></b><br>
+          <a id="HOMEMODE-attr-HomeModeAlarmActive">HomeModeAlarmActive</a><br>
           specify the alarm mode(s) by regex in which the contact sensor should trigger open/tilted as alerts<br>
           while applying contact sensors to the HOMEMODE device, the value of this attribute will be set to armaway by default<br>
           choose one or a combination of: armaway|armhome|armnight<br>
           default: armaway
         </li>
         <li>
-          <b><i>HomeOpenDontTriggerModes</i></b><br>
+          <a id="HOMEMODE-attr-HomeOpenDontTriggerModes">HomeOpenDontTriggerModes</a><br>
           specify the HOMEMODE mode(s)/state(s) by regex in which the contact sensor should not trigger open warnings<br>
           choose one or a combination of all available modes of the HOMEMODE device<br>
           if you don't want open warnings while sleeping a good choice would be: gotosleep|asleep<br>
           default:
         </li>
         <li>
-          <b><i>HomeOpenDontTriggerModesResidents</i></b><br>
+          <a id="HOMEMODE-attr-HomeOpenDontTriggerModesResidents">HomeOpenDontTriggerModesResidents</a><br>
           comma separated list of residents whose state should be the reference for HomeOpenDontTriggerModes instead of the mode of the HOMEMODE device<br>
           if one of the listed residents is in the state given by attribute HomeOpenDontTriggerModes, open warnings will not be triggered for this contact sensor<br>
           default:
         </li>
         <li>
-          <b><i>HomeOpenMaxTrigger</i></b><br>
+          <a id="HOMEMODE-attr-HomeOpenMaxTrigger">HomeOpenMaxTrigger</a><br>
           maximum number how often open warning should be triggered<br>
           default: 0
         </li>
         <li>
-          <b><i>HomeReadings</i></b><br>
+          <a id="HOMEMODE-attr-HomeReadings">HomeReadings</a><br>
           2 space separated readings for contact sensors open state and tamper alert<br>
           this is the device setting which will override the global setting from attribute HomeSensorsContactReadings from the HOMEMODE device<br>
           default: state sabotageError
         </li>
         <li>
-          <b><i>HomeValues</i></b><br>
+          <a id="HOMEMODE-attr-HomeValues">HomeValues</a><br>
           regex of open, tilted and tamper values for contact sensors<br>
           this is the device setting which will override the global setting from attribute HomeSensorsContactValues from the HOMEMODE device<br>
           default: open|tilted|on
         </li>
         <li>
-          <b><i>HomeOpenTimes</i></b><br>
+          <a id="HOMEMODE-attr-HomeOpenTimes">HomeOpenTimes</a><br>
           space separated list of minutes after open warning should be triggered<br>
           first value is for first warning, second value is for second warning, ...<br>
           if less values are available than the number given by HomeOpenMaxTrigger, the very last available list entry will be used<br>
@@ -4236,7 +4256,7 @@ sub HOMEMODE_Details($$$)
           default: 10
         </li>
         <li>
-          <b><i>HomeOpenTimeDividers</i></b><br>
+          <a id="HOMEMODE-attr-HomeOpenTimeDividers">HomeOpenTimeDividers</a><br>
           space separated list of trigger time dividers for contact sensor open warnings depending on the season of the HOMEMODE device.<br>
           dividers in same order and same number as seasons in attribute HomeSeasons<br>
           dividers are not used for contact sensors of type doormain and doorinside!<br>
@@ -4247,33 +4267,33 @@ sub HOMEMODE_Details($$$)
       </ul>
     </li>
     <li>
-      <b><i>HomeSensorsContactReadings</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContactReadings">HomeSensorsContactReadings</a><br>
       2 space separated readings for contact sensors open state and tamper alert<br>
       this is the global setting, you can also set these readings in each contact sensor individually in attribute HomeReadings once they are added to the HOMEMODE device<br>
       default: state sabotageError
     </li>
     <li>
-      <b><i>HomeSensorsContactValues</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContactValues">HomeSensorsContactValues</a><br>
       regex of open, tilted and tamper values for contact sensors<br>
       this is the global setting, you can also set these values in each contact sensor individually in attribute HomeValues once they are added to the HOMEMODE device<br>
       default: open|tilted|on
     </li>
     <li>
-      <b><i>HomeSensorsContactOpenTimeDividers</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContactOpenTimeDividers">HomeSensorsContactOpenTimeDividers</a><br>
       space separated list of trigger time dividers for contact sensor open warnings depending on the season of the HOMEMODE device.<br>
       dividers in same order and same number as seasons in attribute HomeSeasons<br>
       dividers are not used for contact sensors of type doormain and doorinside!<br>
-      this is the global setting, you can also set these dividers in each contact sensor individually in attribute HomeOpenTimesDividers once they are added to the HOMEMODE device<br>
+      this is the global setting, you can also set these dividers in each contact sensor individually in attribute HomeOpenTimeDividers once they are added to the HOMEMODE device<br>
       values from 0.001 to 99.999<br>
       default:
     </li>
     <li>
-      <b><i>HomeSensorsContactOpenTimeMin</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContactOpenTimeMin">HomeSensorsContactOpenTimeMin</a><br>
       minimal open time for contact sensors open wanings<br>
       default:
     </li>
     <li>
-      <b><i>HomeSensorsContactOpenTimes</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsContactOpenTimes">HomeSensorsContactOpenTimes</a><br>
       space separated list of minutes after open warning should be triggered<br>
       first value is for first warning, second value is for second warning, ...<br>
       if less values are available than the number given by HomeOpenMaxTrigger, the very last available list entry will be used<br>
@@ -4281,52 +4301,52 @@ sub HOMEMODE_Details($$$)
       default: 10
     </li>
     <li>
-      <b><i>HomeSensorHumidityOutside</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorHumidityOutside">HomeSensorHumidityOutside</a><br>
       main outside humidity sensor<br>
       if HomeSensorTemperatureOutside also has a humidity reading, you don't need to add the same sensor here
     </li>
     <li>
-      <b><i>HomeSensorTemperatureOutside</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorTemperatureOutside">HomeSensorTemperatureOutside</a><br>
       main outside temperature sensor<br>
       if this sensor also has a humidity reading, you don't need to add the same sensor to HomeSensorHumidityOutside
     </li>
     <li>
-      <b><i>HomeSensorsLuminance</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsLuminance">HomeSensorsLuminance</a><br>
       devspec of sensors with luminance measurement capabilities<br>
       these devices will be used for total luminance calculations<br>
       please set the corresponding reading for luminance in attribute HomeSensorsLuminanceReading (if different to luminance) before applying snesors here
     </li>
     <li>
-      <b><i>HomeSensorsLuminanceReading</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsLuminanceReading">HomeSensorsLuminanceReading</a><br>
       a single word for the luminance reading<br>
       this is only here available as global setting for all devices<br>
       default: luminance
     </li>
     <li>
-      <b><i>HomeSensorsMotion</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsMotion">HomeSensorsMotion</a><br>
       devspec of motion sensors<br>
       each applied motion sensor will get the following attributes, attributes will be removed after removing the motion sensors from the HOMEMODE device.<br>
       <ul>
         <li>
-          <b><i>HomeModeAlarmActive</i></b><br>
+          <a id="HOMEMODE-attr-HomeModeAlarmActive">HomeModeAlarmActive</a><br>
           specify the alarm mode(s) by regex in which the motion sensor should trigger motions as alerts<br>
           while applying motion sensors to the HOMEMODE device, the value of this attribute will be set to armaway by default<br>
           choose one or a combination of: armaway|armhome|armnight<br>
           default: armaway (if sensor is of type inside)
         </li>
         <li>
-          <b><i>HomeSensorLocation</i></b><br>
+          <a id="HOMEMODE-attr-HomeSensorLocation">HomeSensorLocation</a><br>
           specify each motion sensor's location, choose one of: inside, outside<br>
           default: inside
         </li>
         <li>
-          <b><i>HomeReadings</i></b><br>
+          <a id="HOMEMODE-attr-HomeReadings">HomeReadings</a><br>
           2 space separated readings for motion sensors open/closed state and tamper alert<br>
           this is the device setting which will override the global setting from attribute HomeSensorsMotionReadings from the HOMEMODE device<br>
           default: state sabotageError
         </li>
         <li>
-          <b><i>HomeValues</i></b><br>
+          <a id="HOMEMODE-attr-HomeValues">HomeValues</a><br>
           regex of open and tamper values for motion sensors<br>
           this is the device setting which will override the global setting from attribute HomeSensorsMotionValues from the HOMEMODE device<br>
           default: open|on
@@ -4334,912 +4354,906 @@ sub HOMEMODE_Details($$$)
       </ul>
     </li>
     <li>
-      <b><i>HomeSensorsMotionReadings</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsMotionReadings">HomeSensorsMotionReadings</a><br>
       2 space separated readings for motion sensors open/closed state and tamper alert<br>
       this is the global setting, you can also set these readings in each motion sensor individually in attribute HomeReadings once they are added to the HOMEMODE device<br>
       default: state sabotageError
     </li>
     <li>
-      <b><i>HomeSensorsMotionValues</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsMotionValues">HomeSensorsMotionValues</a><br>
       regex of open and tamper values for motion sensors<br>
       this is the global setting, you can also set these values in each contact sensor individually in attribute HomeValues once they are added to the HOMEMODE device<br>
       default: open|on
     </li>
     <li>
-      <b><i>HomeSensorsPowerEnergy</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsPowerEnergy">HomeSensorsPowerEnergy</a><br>
       devspec of sensors with power and energy readings<br>
       these devices will be used for total calculations
     </li>
     <li>
-      <b><i>HomeSensorsPowerEnergyReadings</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsPowerEnergyReadings">HomeSensorsPowerEnergyReadings</a><br>
       2 space separated readings for power/energy sensors power and energy readings<br>
       default: power energy
     </li>
     <li>
-      <b><i>HomeSensorsSmoke</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsSmoke">HomeSensorsSmoke</a><br>
       devspec of smoke sensors<br>
     </li>
     <li>
-      <b><i>HomeSensorsSmokeReading</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsSmokeReading">HomeSensorsSmokeReading</a><br>
       reading for smoke sensors on/off state<br>
       default: state
     </li>
     <li>
-      <b><i>HomeSensorsSmokeValue</i></b><br>
+      <a id="HOMEMODE-attr-HomeSensorsSmokeValue">HomeSensorsSmokeValue</a><br>
       regex of on values for smoke sensors<br>
       default: on
     </li>
     <li>
-      <b><i>HomeSpecialLocations</i></b><br>
+      <a id="HOMEMODE-attr-HomeSpecialLocations">HomeSpecialLocations</a><br>
       comma separated list of additional locations<br>
       default:
     </li>
     <li>
-      <b><i>HomeSpecialModes</i></b><br>
+      <a id="HOMEMODE-attr-HomeSpecialModes">HomeSpecialModes</a><br>
       comma separated list of additional modes<br>
       default:
     </li>
     <li>
-      <b><i>HomeTextAndAreIs</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextAndAreIs">HomeTextAndAreIs</a><br>
       pipe separated list of your local translations for "and", "are" and "is"<br>
       default: and|are|is
     </li>
     <li>
-      <b><i>HomeTextClosedOpen</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextClosedOpen">HomeTextClosedOpen</a><br>
       pipe separated list of your local translation for "closed" and "open"<br>
       default: closed|open
     </li>
     <li>
-      <b><i>HomeTextRisingConstantFalling</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextRisingConstantFalling">HomeTextRisingConstantFalling</a><br>
       pipe separated list of your local translation for "rising", "constant" and "falling"<br>
       default: rising|constant|falling
     </li>
     <li>
-      <b><i>HomeTextNosmokeSmoke</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextNosmokeSmoke">HomeTextNosmokeSmoke</a><br>
       pipe separated list of your local translation for "no smoke" and "smoke"<br>
       default: so smoke|smoke
     </li>
     <li>
-      <b><i>HomeTextTodayTomorrowAfterTomorrow</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextTodayTomorrowAfterTomorrow">HomeTextTodayTomorrowAfterTomorrow</a><br>
       pipe separated list of your local translations for "today", "tomorrow" and "day after tomorrow"<br>
       this is used by weather forecast<br>
       default: today|tomorrow|day after tomorrow
     </li>
     <li>
-      <b><i>HomeTextWeatherForecastInSpecDays</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherForecastInSpecDays">HomeTextWeatherForecastInSpecDays</a><br>
       your text for weather forecast in specific days<br>
       placeholders can be used!<br>
       default:
     </li>
     <li>
-      <b><i>HomeTextWeatherForecastToday</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherForecastToday">HomeTextWeatherForecastToday</a><br>
       your text for weather forecast today<br>
       placeholders can be used!<br>
       default:
     </li>
     <li>
-      <b><i>HomeTextWeatherForecastTomorrow</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherForecastTomorrow">HomeTextWeatherForecastTomorrow</a><br>
       your text for weather forecast tomorrow and the day after tomorrow<br>
       placeholders can be used!<br>
       default:
     </li>
     <li>
-      <b><i>HomeTextWeatherNoForecast</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherNoForecast">HomeTextWeatherNoForecast</a><br>
       your text for no available weather forecast<br>
       default: No forecast available
     </li>
     <li>
-      <b><i>HomeTextWeatherLong</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherLong">HomeTextWeatherLong</a><br>
       your text for long weather information<br>
       placeholders can be used!<br>
       default:
     </li>
     <li>
-      <b><i>HomeTextWeatherShort</i></b><br>
+      <a id="HOMEMODE-attr-HomeTextWeatherShort">HomeTextWeatherShort</a><br>
       your text for short weather information<br>
       placeholders can be used!<br>
       default:
     </li>
     <li>
-      <b><i>HomeTrendCalcAge</i></b><br>
+      <a id="HOMEMODE-attr-HomeTrendCalcAge">HomeTrendCalcAge</a><br>
       time in seconds for the max age of the previous measured value for calculating trends<br>
       default: 900
     </li>
     <li>
-      <b><i>HomeTriggerAnyoneElseAtHome</i></b><br>
+      <a id="HOMEMODE-attr-HomeTriggerAnyoneElseAtHome">HomeTriggerAnyoneElseAtHome</a><br>
       your anyoneElseAtHome trigger device (device:reading:valueOn:valueOff)<br>
       default:
     </li>
     <li>
-      <b><i>HomeTriggerPanic</i></b><br>
+      <a id="HOMEMODE-attr-HomeTriggerPanic">HomeTriggerPanic</a><br>
       your panic alarm trigger device (device:reading:valueOn[:valueOff])<br>
       valueOff is optional<br>
       valueOn will toggle panic mode if valueOff is not given<br>
       default:
     </li>
     <li>
-      <b><i>HomeUWZ</i></b><br>
+      <a id="HOMEMODE-attr-HomeTwilightDevice">HomeTwilightDevice</a><br>
+      your local Twilight device<br>
+      default:
+    </li>
+    <li>
+      <a id="HOMEMODE-attr-HomeUWZ">HomeUWZ</a><br>
       your local UWZ device<br>
       default:
     </li>
     <li>
-      <b><i>HomeWeatherDevice</i></b><br>
+      <a id="HOMEMODE-attr-HomeWeatherDevice">HomeWeatherDevice</a><br>
       your local Weather device<br>
-      default:
-    </li>
-    <li>
-      <b><i>disable</i></b><br>
-      disable HOMEMODE device and stop executing CMDs<br>
-      values 0 or 1<br>
-      default: 0
-    </li>
-    <li>
-      <b><i>disabledForIntervals</i></b><br>
-      disable the HOMEMODE device for intervals
       default:
     </li>
   </ul>
   <br>
-  <a name="HOMEMODE_read"></a>
+  <a id="HOMEMODE-read"></a>
   <p><b>Readings</b></p>
   <ul>
     <li>
-      <b><i>alarmSmoke</i></b><br>
+      <a id="HOMEMODE-read-alarmSmoke">alarmSmoke</a><br>
       list of triggered smoke sensors
     </li>
     <li>
-      <b><i>alarmSmoke_ct</i></b><br>
+      <a id="HOMEMODE-read-alarmSmoke_ct">alarmSmoke_ct</a><br>
       count of triggered smoke sensors
     </li>
     <li>
-      <b><i>alarmSmoke_hr</i></b><br>
+      <a id="HOMEMODE-read-alarmSmoke_hr">alarmSmoke_hr</a><br>
       (human readable) list of triggered smoke sensors
     </li>
     <li>
-      <b><i>alarmState</i></b><br>
+      <a id="HOMEMODE-read-alarmState">alarmState</a><br>
       current state of alarm system (includes current alarms - for homebridgeMapping)
     </li>
     <li>
-      <b><i>alarmTriggered</i></b><br>
+      <a id="HOMEMODE-read-alarmTriggered">alarmTriggered</a><br>
       list of triggered alarm sensors (contact/motion sensors)
     </li>
     <li>
-      <b><i>alarmTriggered_ct</i></b><br>
+      <a id="HOMEMODE-read-alarmTriggered_ct">alarmTriggered_ct</a><br>
       count of triggered alarm sensors (contact/motion sensors)
     </li>
     <li>
-      <b><i>alarmTriggered_hr</i></b><br>
+      <a id="HOMEMODE-read-alarmTriggered_hr">alarmTriggered_hr</a><br>
       (human readable) list of triggered alarm sensors (contact/motion sensors)
     </li>
     <li>
-      <b><i>anyoneElseAtHome</i></b><br>
+      <a id="HOMEMODE-read-anyoneElseAtHome">anyoneElseAtHome</a><br>
       anyoneElseAtHome on or off
     </li>
     <li>
-      <b><i>contactsDoorsInsideOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsInsideOpen">contactsDoorsInsideOpen</a><br>
       list of names of open contact sensors of type doorinside
     </li>
     <li>
-      <b><i>batteryLow</i></b><br>
+      <a id="HOMEMODE-read-batteryLow">batteryLow</a><br>
       list of names of sensors with low battery
     </li>
     <li>
-      <b><i>batteryLow_ct</i></b><br>
+      <a id="HOMEMODE-read-batteryLow_ct">batteryLow_ct</a><br>
       count of sensors with low battery
     </li>
     <li>
-      <b><i>batteryLow_hr</i></b><br>
+      <a id="HOMEMODE-read-batteryLow_hr">batteryLow_hr</a><br>
       (human readable) list of sensors with low battery
     </li>
     <li>
-      <b><i>contactsDoorsInsideOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsInsideOpen_ct">contactsDoorsInsideOpen_ct</a><br>
       count of open contact sensors of type doorinside
     </li>
     <li>
-      <b><i>contactsDoorsInsideOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsInsideOpen_hr">contactsDoorsInsideOpen_hr</a><br>
       (human readable) list of open contact sensors of type doorinside
     </li>
     <li>
-      <b><i>contactsDoorsMainOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsMainOpen">contactsDoorsMainOpen</a><br>
       list of names of open contact sensors of type doormain
     </li>
     <li>
-      <b><i>contactsDoorsMainOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsMainOpen_ct">contactsDoorsMainOpen_ct</a><br>
       count of open contact sensors of type doormain
     </li>
     <li>
-      <b><i>contactsDoorsMainOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsMainOpen_hr">contactsDoorsMainOpen_hr</a><br>
       (human readable) list of open contact sensors of type doormain
     </li>
     <li>
-      <b><i>contactsDoorsOutsideOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsOutsideOpen">contactsDoorsOutsideOpen</a><br>
       list of names of open contact sensors of type dooroutside
     </li>
     <li>
-      <b><i>contactsDoorsOutsideOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsOutsideOpen_ct">contactsDoorsOutsideOpen_ct</a><br>
       count of open contact sensors of type dooroutside
     </li>
     <li>
-      <b><i>contactsDoorsOutsideOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsDoorsOutsideOpen_hr">contactsDoorsOutsideOpen_hr</a><br>
       (human readable) list of contact sensors of type dooroutside
     </li>
     <li>
-      <b><i>contactsOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsOpen">contactsOpen</a><br>
       list of names of all open contact sensors
     </li>
     <li>
-      <b><i>contactsOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsOpen_ct">contactsOpen_ct</a><br>
       count of all open contact sensors
     </li>
     <li>
-      <b><i>contactsOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsOpen_hr">contactsOpen_hr</a><br>
       (human readable) list of all open contact sensors
     </li>
     <li>
-      <b><i>contactsOutsideOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsOutsideOpen">contactsOutsideOpen</a><br>
       list of names of open contact sensors outside (sensor types: dooroutside,doormain,window)
     </li>
     <li>
-      <b><i>contactsOutsideOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsOutsideOpen_ct">contactsOutsideOpen_ct</a><br>
       count of open contact sensors outside (sensor types: dooroutside,doormain,window)
     </li>
     <li>
-      <b><i>contactsOutsideOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsOutsideOpen_hr">contactsOutsideOpen_hr</a><br>
       (human readable) list of open contact sensors outside (sensor types: dooroutside,doormain,window)
     </li>
     <li>
-      <b><i>contactsWindowsOpen</i></b><br>
+      <a id="HOMEMODE-read-contactsWindowsOpen">contactsWindowsOpen</a><br>
       list of names of open contact sensors of type window
     </li>
     <li>
-      <b><i>contactsWindowsOpen_ct</i></b><br>
+      <a id="HOMEMODE-read-contactsWindowsOpen_ct">contactsWindowsOpen_ct</a><br>
       count of open contact sensors of type window
     </li>
     <li>
-      <b><i>contactsWindowsOpen_hr</i></b><br>
+      <a id="HOMEMODE-read-contactsWindowsOpen_hr">contactsWindowsOpen_hr</a><br>
       (human readable) list of open contact sensors of type window
     </li>
     <li>
-      <b><i>daytime</i></b><br>
+      <a id="HOMEMODE-read-daytime">daytime</a><br>
       current daytime (as configured in HomeDaytimes) - independent from the mode of the HOMEMODE device<br>
     </li>
     <li>
-      <b><i>dnd</i></b><br>
+      <a id="HOMEMODE-read-dnd">dnd</a><br>
       dnd (do not disturb) on or off
     </li>
     <li>
-      <b><i>devicesDisabled</i></b><br>
+      <a id="HOMEMODE-read-devicesDisabled">devicesDisabled</a><br>
       comma separated list of disabled devices
     </li>
     <li>
-      <b><i>energy</i></b><br>
+      <a id="HOMEMODE-read-energy">energy</a><br>
       calculated total energy
     </li>
     <li>
-      <b><i>event-&lt;%CALENDAR%&gt;</i></b><br>
+      <a id="HOMEMODE-read-event-" data-pattern="event-.+">event-&lt;%CALENDAR%&gt;</a><br>
       current event of the (holiday) CALENDAR device(s)
     </li>
     <li>
-      <b><i>humidty</i></b><br>
+      <a id="HOMEMODE-read-humidty">humidty</a><br>
       current humidty of the Weather device or of your own sensor (if available)
     </li>
     <li>
-      <b><i>humidtyTrend</i></b><br>
+      <a id="HOMEMODE-read-humidtyTrend">humidtyTrend</a><br>
       trend of the humidty over the last hour<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>icawarning</i></b><br>
+      <a id="HOMEMODE-read-icawarning">icawarning</a><br>
       ice warning<br>
       values: 0 if off and 1 if on
     </li>
     <li>
-      <b><i>lastAbsentByPresenceDevice</i></b><br>
+      <a id="HOMEMODE-read-lastAbsentByPresenceDevice">lastAbsentByPresenceDevice</a><br>
       last presence device which went absent
     </li>
     <li>
-      <b><i>lastAbsentByResident</i></b><br>
+      <a id="HOMEMODE-read-lastAbsentByResident">lastAbsentByResident</a><br>
       last resident who went absent
     </li>
     <li>
-      <b><i>lastActivityByPresenceDevice</i></b><br>
+      <a id="HOMEMODE-read-lastActivityByPresenceDevice">lastActivityByPresenceDevice</a><br>
       last active presence device
     </li>
     <li>
-      <b><i>lastActivityByResident</i></b><br>
+      <a id="HOMEMODE-read-lastActivityByResident">lastActivityByResident</a><br>
       last active resident
     </li>
     <li>
-      <b><i>lastAsleepByResident</i></b><br>
+      <a id="HOMEMODE-read-lastAsleepByResident">lastAsleepByResident</a><br>
       last resident who went asleep
     </li>
     <li>
-      <b><i>lastAwokenByResident</i></b><br>
+      <a id="HOMEMODE-read-lastAwokenByResident">lastAwokenByResident</a><br>
       last resident who went awoken
     </li>
     <li>
-      <b><i>lastBatteryNormal</i></b><br>
+      <a id="HOMEMODE-read-lastBatteryNormal">lastBatteryNormal</a><br>
       last sensor with normal battery
     </li>
     <li>
-      <b><i>lastBatteryLow</i></b><br>
+      <a id="HOMEMODE-read-lastBatteryLow">lastBatteryLow</a><br>
       last sensor with low battery
     </li>
     <li>
-      <b><i>lastCMDerror</i></b><br>
+      <a id="HOMEMODE-read-lastCMDerror">lastCMDerror</a><br>
       last occured error and command(chain) while executing command(chain)
     </li>
     <li>
-      <b><i>lastContact</i></b><br>
+      <a id="HOMEMODE-read-lastContact">lastContact</a><br>
       last contact sensor which triggered open
     </li>
     <li>
-      <b><i>lastContactClosed</i></b><br>
+      <a id="HOMEMODE-read-lastContactClosed">lastContactClosed</a><br>
       last contact sensor which triggered closed
     </li>
     <li>
-      <b><i>lastGoneByResident</i></b><br>
+      <a id="HOMEMODE-read-lastGoneByResident">lastGoneByResident</a><br>
       last resident who went gone
     </li>
     <li>
-      <b><i>lastGotosleepByResident</i></b><br>
+      <a id="HOMEMODE-read-lastGotosleepByResident">lastGotosleepByResident</a><br>
       last resident who went gotosleep
     </li>
     <li>
-      <b><i>lastInfo</i></b><br>
+      <a id="HOMEMODE-read-lastInfo">lastInfo</a><br>
       last shown item on infopanel (HomeAdvancedDetails)
     </li>
     <li>
-      <b><i>lastMotion</i></b><br>
+      <a id="HOMEMODE-read-lastMotion">lastMotion</a><br>
       last sensor which triggered motion
     </li>
     <li>
-      <b><i>lastMotionClosed</i></b><br>
+      <a id="HOMEMODE-read-lastMotionClosed">lastMotionClosed</a><br>
       last sensor which triggered motion end
     </li>
     <li>
-      <b><i>lastPresentByPresenceDevice</i></b><br>
+      <a id="HOMEMODE-read-lastPresentByPresenceDevice">lastPresentByPresenceDevice</a><br>
       last presence device which came present
     </li>
     <li>
-      <b><i>lastPresentByResident</i></b><br>
+      <a id="HOMEMODE-read-lastPresentByResident">lastPresentByResident</a><br>
       last resident who came present
     </li>
     <li>
-      <b><i>light</i></b><br>
+      <a id="HOMEMODE-read-light">light</a><br>
       current light reading value
     </li>
     <li>
-      <b><i>location</i></b><br>
+      <a id="HOMEMODE-read-location">location</a><br>
       current location
     </li>
     <li>
-      <b><i>luminance</i></b><br>
+      <a id="HOMEMODE-read-luminance">luminance</a><br>
       average luminance of all motion sensors (if available)
     </li>
     <li>
-      <b><i>luminanceTrend</i></b><br>
+      <a id="HOMEMODE-read-luminanceTrend">luminanceTrend</a><br>
       trend of the luminance over the last hour<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>mode</i></b><br>
+      <a id="HOMEMODE-read-mode">mode</a><br>
       current mode
     </li>
     <li>
-      <b><i>modeAlarm</i></b><br>
+      <a id="HOMEMODE-read-modeAlarm">modeAlarm</a><br>
       current mode of alarm system
     </li>
     <li>
-      <b><i>motionsInside</i></b><br>
+      <a id="HOMEMODE-read-motionsInside">motionsInside</a><br>
       list of names of open motion sensors of type inside
     </li>
     <li>
-      <b><i>motionsInside_ct</i></b><br>
+      <a id="HOMEMODE-read-motionsInside_ct">motionsInside_ct</a><br>
       count of open motion sensors of type inside
     </li>
     <li>
-      <b><i>motionsInside_hr</i></b><br>
+      <a id="HOMEMODE-read-motionsInside_hr">motionsInside_hr</a><br>
       (human readable) list of open motion sensors of type inside
     </li>
     <li>
-      <b><i>motionsOutside</i></b><br>
+      <a id="HOMEMODE-read-motionsOutside">motionsOutside</a><br>
       list of names of open motion sensors of type outside
     </li>
     <li>
-      <b><i>motionsOutside_ct</i></b><br>
+      <a id="HOMEMODE-read-motionsOutside_ct">motionsOutside_ct</a><br>
       count of open motion sensors of type outside
     </li>
     <li>
-      <b><i>motionsOutside_hr</i></b><br>
+      <a id="HOMEMODE-read-motionsOutside_hr">motionsOutside_hr</a><br>
       (human readable) list of open motion sensors of type outside
     </li>
     <li>
-      <b><i>motionsSensors</i></b><br>
+      <a id="HOMEMODE-read-motionsSensors">motionsSensors</a><br>
       list of all names of open motion sensors
     </li>
     <li>
-      <b><i>motionsSensors_ct</i></b><br>
+      <a id="HOMEMODE-read-motionsSensors_ct">motionsSensors_ct</a><br>
       count of all open motion sensors
     </li>
     <li>
-      <b><i>motionsSensors_hr</i></b><br>
+      <a id="HOMEMODE-read-motionsSensors_hr">motionsSensors_hr</a><br>
       (human readable) list of all open motion sensors
     </li>
     <li>
-      <b><i>power</i></b><br>
+      <a id="HOMEMODE-read-power">power</a><br>
       calculated total power
     </li>
     <li>
-      <b><i>prevMode</i></b><br>
+      <a id="HOMEMODE-read-prevMode">prevMode</a><br>
       previous mode
     </li>
     <li>
-      <b><i>presence</i></b><br>
+      <a id="HOMEMODE-read-presence">presence</a><br>
       presence of any resident
     </li>
     <li>
-      <b><i>pressure</i></b><br>
+      <a id="HOMEMODE-read-pressure">pressure</a><br>
       current air pressure of the Weather device
     </li>
     <li>
-      <b><i>prevActivityByResident</i></b><br>
+      <a id="HOMEMODE-read-prevActivityByResident">prevActivityByResident</a><br>
       previous active resident
     </li>
     <li>
-      <b><i>prevContact</i></b><br>
+      <a id="HOMEMODE-read-prevContact">prevContact</a><br>
       previous contact sensor which triggered open
     </li>
     <li>
-      <b><i>prevContactClosed</i></b><br>
+      <a id="HOMEMODE-read-prevContactClosed">prevContactClosed</a><br>
       previous contact sensor which triggered closed
     </li>
     <li>
-      <b><i>prevLocation</i></b><br>
+      <a id="HOMEMODE-read-prevLocation">prevLocation</a><br>
       previous location
     </li>
     <li>
-      <b><i>prevMode</i></b><br>
+      <a id="HOMEMODE-read-prevMode">prevMode</a><br>
       previous mode
     </li>
     <li>
-      <b><i>prevMotion</i></b><br>
+      <a id="HOMEMODE-read-prevMotion">prevMotion</a><br>
       previous sensor which triggered motion
     </li>
     <li>
-      <b><i>prevMotionClosed</i></b><br>
+      <a id="HOMEMODE-read-prevMotionClosed">prevMotionClosed</a><br>
       previous sensor which triggered motion end
     </li>
     <li>
-      <b><i>prevModeAlarm</i></b><br>
+      <a id="HOMEMODE-read-prevModeAlarm">prevModeAlarm</a><br>
       previous alarm mode
     </li>
     <li>
-      <b><i>publicIP</i></b><br>
+      <a id="HOMEMODE-read-publicIP">publicIP</a><br>
       last checked public IP address
     </li>
     <li>
-      <b><i>season</i></b><br>
+      <a id="HOMEMODE-read-season">season</a><br>
       current season as configured in HomeSeasons<br>
     </li>
     <li>
-      <b><i>sensorsTampered</i></b><br>
+      <a id="HOMEMODE-read-sensorsTampered">sensorsTampered</a><br>
       list of names of tampered sensors
     </li>
     <li>
-      <b><i>sensorsTampered_ct</i></b><br>
+      <a id="HOMEMODE-read-sensorsTampered_ct">sensorsTampered_ct</a><br>
       count of tampered sensors
     </li>
     <li>
-      <b><i>sensorsTampered_hr</i></b><br>
+      <a id="HOMEMODE-read-sensorsTampered_hr">sensorsTampered_hr</a><br>
       (human readable) list of tampered sensors
     </li>
     <li>
-      <b><i>state</i></b><br>
+      <a id="HOMEMODE-read-state">state</a><br>
       current state
     </li>
     <li>
-      <b><i>temperature</i></b><br>
+      <a id="HOMEMODE-read-temperature">temperature</a><br>
       current temperature of the Weather device or of your own sensor (if available)
     </li>
     <li>
-      <b><i>temperatureTrend</i></b><br>
+      <a id="HOMEMODE-read-temperatureTrend">temperatureTrend</a><br>
       trend of the temperature over the last hour<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>twilight</i></b><br>
+      <a id="HOMEMODE-read-twilight">twilight</a><br>
       current twilight reading value
     </li>
     <li>
-      <b><i>twilightEvent</i></b><br>
+      <a id="HOMEMODE-read-twilightEvent">twilightEvent</a><br>
       current twilight event
     </li>
     <li>
-      <b><i>uwz_warnCount</i></b><br>
+      <a id="HOMEMODE-read-uwz_warnCount">uwz_warnCount</a><br>
       current UWZ warn count
     </li>
     <li>
-      <b><i>wind</i></b><br>
+      <a id="HOMEMODE-read-wind">wind</a><br>
       current wind speed of the Weather device
     </li>
   </ul>
-  <a name="HOMEMODE_placeholders"></a>
+  <a id="HOMEMODE-placeholders"></a>
   <p><b>Placeholders</b></p>
   <p>These placeholders can be used in all HomeCMD attributes</p>
   <ul>
     <li>
-      <b><i>%ADDRESS%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ADDRESS%">%ADDRESS%</a><br>
       mac address of the last triggered presence device
     </li>
     <li>
-      <b><i>%ALIAS%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALIAS%">%ALIAS%</a><br>
       alias of the last triggered resident
     </li>
     <li>
-      <b><i>%ALARM%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALARM%">%ALARM%</a><br>
       value of the alarmTriggered reading of the HOMEMODE device<br>
       will return 0 if no alarm is triggered or a list of triggered sensors if alarm is triggered
     </li>
     <li>
-      <b><i>%ALARMCT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALARMCT%">%ALARMCT%</a><br>
       value of the alarmTriggered_ct reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%ALARMHR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALARMHR%">%ALARMHR%</a><br>
       value of the alarmTriggered_hr reading of the HOMEMODE device<br>
       will return 0 if no alarm is triggered or a (human readable) list of triggered sensors if alarm is triggered<br>
       can be used for sending msg e.g.
     </li>
     <li>
-      <b><i>%AMODE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%AMODE%">%AMODE%</a><br>
       current alarm mode
     </li>
     <li>
-      <b><i>%AEAH%</i></b><br>
+      <a id="HOMEMODE-placeholders-%AEAH%">%AEAH%</a><br>
       state of anyoneElseAtHome, will return 1 if on and 0 if off
     </li>
     <li>
-      <b><i>%ARRIVERS%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ARRIVERS%">%ARRIVERS%</a><br>
       will return a list of aliases of all registered residents/guests with location arrival<br>
       this can be used to welcome residents after main door open/close<br>
       e.g. Peter, Paul and Marry
     </li>
     <li>
-      <b><i>%AUDIO%</i></b><br>
+      <a id="HOMEMODE-placeholders-%AUDIO%">%AUDIO%</a><br>
       audio device of the last triggered resident (attribute msgContactAudio)<br>
       if attribute msgContactAudio of the resident has no value the value is trying to be taken from device globalMsg (if available)<br>
       can be used to address resident specific msg(s) of type audio, e.g. night/morning wishes
     </li>
     <li>
-      <b><i>%BE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%BE%">%BE%</a><br>
       is or are of condition reading of monitored Weather device<br>
       can be used for weather (forecast) output
     </li>
     <li>
-      <b><i>%BATTERYLOW%</i></b><br>
+      <a id="HOMEMODE-placeholders-%BATTERYLOW%">%BATTERYLOW%</a><br>
       alias (or name if alias is not set) of the last battery sensor which reported low battery
     </li>
     <li>
-      <b><i>%BATTERYLOWALL%</i></b><br>
+      <a id="HOMEMODE-placeholders-%BATTERYLOWALL%">%BATTERYLOWALL%</a><br>
       list of aliases (or names if alias is not set) of all battery sensor which reported low battery currently
     </li>
     <li>
-      <b><i>%BATTERYLOWCT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%BATTERYLOWCT%">%BATTERYLOWCT%</a><br>
       number of battery sensors which reported low battery currently
     </li>
     <li>
-      <b><i>%BATTERYNORMAL%</i></b><br>
+      <a id="HOMEMODE-placeholders-%BATTERYNORMAL%">%BATTERYNORMAL%</a><br>
       alias (or name if alias is not set) of the last battery sensor which reported normal battery
     </li>
     <li>
-      <b><i>%CONDITION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%CONDITION%">%CONDITION%</a><br>
       value of the condition reading of monitored Weather device<br>
       can be used for weather (forecast) output
     </li>
     <li>
-      <b><i>%CONTACT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%CONTACT%">%CONTACT%</a><br>
       value of the lastContact reading (last opened sensor)
     </li>
     <li>
-      <b><i>%DEFINED%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DEFINED%">%DEFINED%</a><br>
       name of the previously defined device<br>
       can be used to trigger actions based on the name of the defined device<br>
       only available within HomeCMDfhemDEFINED
     </li>
     <li>
-      <b><i>%DAYTIME%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DAYTIME%">%DAYTIME%</a><br>
       value of the daytime reading of the HOMEMODE device<br>
       can be used to trigger day time specific actions
     </li>
     <li>
-      <b><i>%DEVICE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DEVICE%">%DEVICE%</a><br>
       name of the last triggered presence device<br>
       can be used to trigger actions depending on the last present/absent presence device
     </li>
     <li>
-      <b><i>%DEVICEA%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DEVICEA%">%DEVICEA%</a><br>
       name of the last triggered absent presence device
     </li>
     <li>
-      <b><i>%DEVICEP%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DEVICEP%">%DEVICEP%</a><br>
       name of the last triggered present presence device
     </li>
     <li>
-      <b><i>%DISABLED%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DISABLED%">%DISABLED%</a><br>
       comma separated list of disabled devices
     </li>
     <li>
-      <b><i>%DND%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DND%">%DND%</a><br>
       state of dnd, will return 1 if on and 0 if off
     </li>
     <li>
-      <b><i>%DURABSENCE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURABSENCE%">%DURABSENCE%</a><br>
       value of the durTimerAbsence_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%DURABSENCELAST%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURABSENCELAST%">%DURABSENCELAST%</a><br>
       value of the lastDurAbsence_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%DURPRESENCE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURPRESENCE%">%DURPRESENCE%</a><br>
       value of the durTimerPresence_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%DURPRESENCELAST%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURPRESENCELAST%">%DURPRESENCELAST%</a><br>
       value of the lastDurPresence_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%DURSLEEP%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURSLEEP%">%DURSLEEP%</a><br>
       value of the durTimerSleep_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%DURSLEEPLAST%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DURSLEEPLAST%">%DURSLEEPLAST%</a><br>
       value of the lastDurSleep_cr reading of the last triggered resident
     </li>
     <li>
-      <b><i>%&lt;CALENDARNAME&gt;%</i></b><br>
+      <a id="HOMEMODE-placeholders-%CALENDARNAME%">%CALENDARNAME%</a><br>
       will return the current event of the given calendar name, will return 0 if event is none<br>
       can be used to trigger actions on any event of the given calendar
     </li>
     <li>
-      <b><i>&lt;%CALENDARNAME-EVENTNAME%&gt;</i></b><br>
+      <a id="HOMEMODE-placeholders-%CALENDARNAME-EVENTNAME%">%CALENDARNAME-EVENTNAME%</a><br>
       will return 1 if given event of given calendar is current, will return 0 if event is not current<br>
       can be used to trigger actions during specific events only (Christmas?)
     </li>
     <li>
-      <b><i>%FORECAST%</i></b><br>
+      <a id="HOMEMODE-placeholders-%FORECAST%">%FORECAST%</a><br>
       will return the weather forecast for tomorrow<br>
       can be used in msg or tts
     </li>
     <li>
-      <b><i>%FORECASTTODAY%</i></b><br>
+      <a id="HOMEMODE-placeholders-%FORECASTTODAY%">%FORECASTTODAY%</a><br>
       will return the weather forecast for today<br>
       can be used in msg or tts
     </li>
     <li>
-      <b><i>%HUMIDITY%</i></b><br>
+      <a id="HOMEMODE-placeholders-%HUMIDITY%">%HUMIDITY%</a><br>
       value of the humidity reading of the HOMEMODE device<br>
       can be used for weather info in HomeTextWeather attributes e.g.
     </li>
     <li>
-      <b><i>%HUMIDITYTREND%</i></b><br>
+      <a id="HOMEMODE-placeholders-%HUMIDITYTREND%">%HUMIDITYTREND%</a><br>
       value of the humidityTrend reading of the HOMEMODE device<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>%ICE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ICE%">%ICE%</a><br>
       will return 1 if ice warning is on, will return 0 if ice warning is off<br>
       can be used to send ice warning specific msg(s) in specific situations, e.g. to warn leaving residents
     </li>
     <li>
-      <b><i>%IP%</i></b><br>
+      <a id="HOMEMODE-placeholders-%IP%">%IP%</a><br>
       value of reading publicIP<br>
       can be used to send msg(s) with (new) IP address
     </li>
     <li>
-      <b><i>%LIGHT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LIGHT%">%LIGHT%</a><br>
       value of the light reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%LOCATION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LOCATION%">%LOCATION%</a><br>
       value of the location reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%LOCATIONR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LOCATIONR%">%LOCATIONR%</a><br>
       value of the location reading of the last triggered resident
     </li>
     <li>
-      <b><i>%LUMINANCE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LUMINANCE%">%LUMINANCE%</a><br>
       average luminance of motion sensors (if available)
     </li>
     <li>
-      <b><i>%LUMINANCETREND%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LUMINANCETREND%">%LUMINANCETREND%</a><br>
       value of the luminanceTrend reading of the HOMEMODE device<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>%MODE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%MODE%">%MODE%</a><br>
       current mode of the HOMEMODE device
     </li>
     <li>
-      <b><i>%MODEALARM%</i></b><br>
+      <a id="HOMEMODE-placeholders-%MODEALARM%">%MODEALARM%</a><br>
       current alarm mode
     </li>
     <li>
-      <b><i>%MOTION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%MOTION%">%MOTION%</a><br>
       value of the lastMotion reading (last opened sensor)
     </li>
     <li>
-      <b><i>%NAME%</i></b><br>
+      <a id="HOMEMODE-placeholders-%NAME%">%NAME%</a><br>
       name of the HOMEMODE device itself (same as %SELF%)
     </li>
     <li>
-      <b><i>%OPEN%</i></b><br>
+      <a id="HOMEMODE-placeholders-%OPEN%">%OPEN%</a><br>
       value of the contactsOutsideOpen reading of the HOMEMODE device<br>
       can be used to send msg(s) in specific situations, e.g. to warn leaving residents of open contact sensors
     </li>
     <li>
-      <b><i>%OPENCT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%OPENCT%">%OPENCT%</a><br>
       value of the contactsOutsideOpen_ct reading of the HOMEMODE device<br>
       can be used to send msg(s) in specific situations depending on the number of open contact sensors, maybe in combination with placeholder %OPEN%
     </li>
     <li>
-      <b><i>%OPENHR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%OPENHR%">%OPENHR%</a><br>
       value of the contactsOutsideOpen_hr reading of the HOMEMODE device<br>
       can be used to send msg(s)
     </li>
     <li>
-      <b><i>%PANIC%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PANIC%">%PANIC%</a><br>
       state of panic, will return 1 if on and 0 if off
     </li>
     <li>
-      <b><i>%RESIDENT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%RESIDENT%">%RESIDENT%</a><br>
       name of the last triggered resident
     </li>
     <li>
-      <b><i>%PRESENT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PRESENT%">%PRESENT%</a><br>
       presence of the HOMEMODE device<br>
       will return 1 if present or 0 if absent
     </li>
     <li>
-      <b><i>%PRESENTR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PRESENTR%">%PRESENTR%</a><br>
       presence of last triggered resident<br>
       will return 1 if present or 0 if absent
     </li>
     <li>
-      <b><i>%PRESSURE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PRESSURE%">%PRESSURE%</a><br>
       value of the pressure reading of the HOMEMODE device<br>
       can be used for weather info in HomeTextWeather attributes e.g.
     </li>
     <li>
-      <b><i>%PREVAMODE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVAMODE%">%PREVAMODE%</a><br>
       previous alarm mode of the HOMEMODE device
     </li>
     <li>
-      <b><i>%PREVCONTACT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVCONTACT%">%PREVCONTACT%</a><br>
       previous open contact sensor
     </li>
     <li>
-      <b><i>%PREVMODE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVMODE%">%PREVMODE%</a><br>
       previous mode of the HOMEMODE device
     </li>
     <li>
-      <b><i>%PREVMODER%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVMODER%">%PREVMODER%</a><br>
       previous state of last triggered resident
     </li>
     <li>
-      <b><i>%PREVMOTION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVMOTION%">%PREVMOTION%</a><br>
       previous open motion sensor
     </li>
     <li>
-      <b><i>%SEASON%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SEASON%">%SEASON%</a><br>
       value of the season reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%SELF%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SELF%">%SELF%</a><br>
       name of the HOMEMODE device itself (same as %NAME%)
     </li>
     <li>
-      <b><i>%SENSORSBATTERY%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSORSBATTERY%">%SENSORSBATTERY%</a><br>
       all battery sensors from internal SENSORSBATTERY
     </li>
     <li>
-      <b><i>%SENSORSCONTACT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSORSCONTACT%">%SENSORSCONTACT%</a><br>
       all contact sensors from internal SENSORSCONTACT
     </li>
     <li>
-      <b><i>%SENSORSENERGY%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSORSENERGY%">%SENSORSENERGY%</a><br>
       all energy sensors from internal SENSORSENERGY
     </li>
     <li>
-      <b><i>%SENSORSMOTION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSORSMOTION%">%SENSORSMOTION%</a><br>
       all motion sensors from internal SENSORSMOTION
     </li>
     <li>
-      <b><i>%SENSORSSMOKE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSORSSMOKE%">%SENSORSSMOKE%</a><br>
       all smoke sensors from internal SENSORSSMOKE
     </li>
     <li>
-      <b><i>%SMOKE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SMOKE%">%SMOKE%</a><br>
       value of the alarmSmoke reading of the HOMEMODE device<br>
       will return 0 if no smoke alarm is triggered or a list of triggered sensors if smoke alarm is triggered
     </li>
     <li>
-      <b><i>%SMOKECT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SMOKECT%">%SMOKECT%</a><br>
       value of the alarmSmoke_ct reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%SMOKEHR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SMOKEHR%">%SMOKEHR%</a><br>
       value of the alarmSmoke_hr reading of the HOMEMODE device<br>
       will return 0 if no smoke  alarm is triggered or a (human readable) list of triggered sensors if smoke alarm is triggered<br>
       can be used for sending msg e.g.
     </li>
     <li>
-      <b><i>%TAMPERED%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TAMPERED%">%TAMPERED%</a><br>
       value of the sensorsTampered reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%TAMPEREDCT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TAMPEREDCT%">%TAMPEREDCT%</a><br>
       value of the sensorsTampered_ct reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%TAMPEREDHR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TAMPEREDHR%">%TAMPEREDHR%</a><br>
       value of the sensorsTampered_hr reading of the HOMEMODE device<br>
       can be used for sending msg e.g.
     </li>
     <li>
-      <b><i>%TEMPERATURE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TEMPERATURE%">%TEMPERATURE%</a><br>
       value of the temperature reading of the HOMEMODE device<br>
       can be used for weather info in HomeTextWeather attributes e.g.
     </li>
     <li>
-      <b><i>%TEMPERATURETREND%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TEMPERATURETREND%">%TEMPERATURETREND%</a><br>
       value of the temperatureTrend reading of the HOMEMODE device<br>
       possible values: constant, rising, falling
     </li>
     <li>
-      <b><i>%TWILIGHT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TWILIGHT%">%TWILIGHT%</a><br>
       value of the twilight reading of the HOMEMODE device
     </li>
     <li>
-      <b><i>%TWILIGHTEVENT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TWILIGHTEVENT%">%TWILIGHTEVENT%</a><br>
       current twilight event
     </li>
     <li>
-      <b><i>%TOBE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%TOBE%">%TOBE%</a><br>
       are or is of the weather condition<br>
-      useful for phrasing sentens
+      useful for phrasing sentences
     </li>
     <li>
-      <b><i>%UWZ%</i></b><br>
+      <a id="HOMEMODE-placeholders-%UWZ%">%UWZ%</a><br>
       UWZ warnings count
     </li>
     <li>
-      <b><i>%UWZLONG%</i></b><br>
+      <a id="HOMEMODE-placeholders-%UWZLONG%">%UWZLONG%</a><br>
       all current UWZ warnings as long text
     </li>
     <li>
-      <b><i>%UWZSHORT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%UWZSHORT%">%UWZSHORT%</a><br>
       all current UWZ warnings as short text
     </li>
     <li>
-      <b><i>%WEATHER%</i></b><br>
+      <a id="HOMEMODE-placeholders-%WEATHER%">%WEATHER%</a><br>
       value of "get &lt;HOMEMODE&gt; weather short"<br>
       can be used for for msg weather info e.g.
     </li>
     <li>
-      <b><i>%WEATHERLONG%</i></b><br>
+      <a id="HOMEMODE-placeholders-%WEATHERLONG%">%WEATHERLONG%</a><br>
       value of "get &lt;HOMEMODE&gt; weather long"<br>
       can be used for for msg weather info e.g.
     </li>
     <li>
-      <b><i>%WIND%</i></b><br>
+      <a id="HOMEMODE-placeholders-%WIND%">%WIND%</a><br>
       value of the wind reading of the HOMEMODE device<br>
       can be used for weather info in HomeTextWeather attributes e.g.
     </li>
     <li>
-      <b><i>%WINDCHILL%</i></b><br>
+      <a id="HOMEMODE-placeholders-%WINDCHILL%">%WINDCHILL%</a><br>
       value of the apparentTemperature reading of the Weather device<br>
       can be used for weather info in HomeTextWeather attributes e.g.
     </li>
@@ -5247,64 +5261,64 @@ sub HOMEMODE_Details($$$)
   <p>These placeholders can only be used within HomeTextWeatherForecast attributes</p>
   <ul>
     <li>
-      <b><i>%CONDITION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%CONDITION%">%CONDITION%</a><br>
       value of weather forecast condition
     </li>
     <li>
-      <b><i>%DAY%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DAY%">%DAY%</a><br>
       day number of weather forecast
     </li>
     <li>
-      <b><i>%HIGH%</i></b><br>
+      <a id="HOMEMODE-placeholders-%HIGH%">%HIGH%</a><br>
       value of maximum weather forecast temperature
     </li>
     <li>
-      <b><i>%LOW%</i></b><br>
+      <a id="HOMEMODE-placeholders-%LOW%">%LOW%</a><br>
       value of minimum weather forecast temperature
     </li>
   </ul>
   <p>These placeholders can only be used within HomeCMDcontact, HomeCMDmotion and HomeCMDalarm attributes</p>
   <ul>
     <li>
-      <b><i>%ALIAS%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALIAS%">%ALIAS%</a><br>
       alias of the last triggered contact/motion/smoke sensor
     </li>
     <li>
-      <b><i>%SENSOR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%SENSOR%">%SENSOR%</a><br>
       name of the last triggered contact/motion/smoke sensor
     </li>
     <li>
-      <b><i>%STATE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%STATE%">%STATE%</a><br>
       state of the last triggered contact/motion/smoke sensor
     </li>
   </ul>
   <p>These placeholders can only be used within calendar event related HomeCMDevent attributes</p>
   <ul>
     <li>
-      <b><i>%CALENDAR%</i></b><br>
+      <a id="HOMEMODE-placeholders-%CALENDAR%">%CALENDAR%</a><br>
       name of the calendar
     </li>
     <li>
-      <b><i>%DESCRIPTION%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DESCRIPTION%">%DESCRIPTION%</a><br>
       description of current event of the calendar (not applicable for holiday devices)
     </li>
     <li>
-      <b><i>%EVENT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%EVENT%">%EVENT%</a><br>
       summary of current event of the calendar
     </li>
     <li>
-      <b><i>%PREVEVENT%</i></b><br>
+      <a id="HOMEMODE-placeholders-%PREVEVENT%">%PREVEVENT%</a><br>
       summary of previous event of the calendar
     </li>
   </ul>
   <p>These placeholders can only be used within HomeCMDdeviceDisable and HomeCMDdeviceEnable attributes</p>
   <ul>
     <li>
-      <b><i>%DEVICE%</i></b><br>
+      <a id="HOMEMODE-placeholders-%DEVICE%">%DEVICE%</a><br>
       name of the disabled/enabled device
     </li>
     <li>
-      <b><i>%ALIAS%</i></b><br>
+      <a id="HOMEMODE-placeholders-%ALIAS%">%ALIAS%</a><br>
       alias of the disabled/enabled device
     </li>
   </ul>

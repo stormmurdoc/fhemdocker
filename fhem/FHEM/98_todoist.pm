@@ -1,5 +1,5 @@
 ﻿##############################################
-# $Id: 98_todoist.pm 21042 2020-01-24 08:05:46Z marvin78 $
+# $Id: 98_todoist.pm 24386 2021-05-05 08:18:00Z marvin78 $
 
 
 package main;
@@ -17,7 +17,7 @@ eval "use Date::Parse;1" or $missingModule .= "Date::Parse ";
 
 #######################
 # Global variables
-my $version = "1.3.5";
+my $version = "1.3.11";
 
 my $srandUsed;
 
@@ -397,6 +397,9 @@ sub todoist_UpdateTask($$$) {
   ## use task content
   elsif (@temp && $temp[0] =~ /title/i) {
     $title = encode_utf8($temp[1]);
+    $title = $h->{"title"} if ($h->{"title"});
+    $title = $h->{"TITLE"} if ($h->{"TITLE"});
+    $title = $h->{"Title"} if ($h->{"Title"});
     $taskId = $hash->{helper}{"TITLES"}{$title} if ($hash->{helper}{"TITLES"});
   }
   ## use Task-Number 
@@ -632,6 +635,8 @@ sub todoist_CreateTask($$) {
   my @tmp = split( ":", join(" ",@$a) );
   
   my $title=encode_utf8($tmp[0]);
+  
+  $title = encode_utf8($h->{"title"}) if ($h->{"title"});
   
   my $check=1;
   
@@ -984,7 +989,7 @@ sub todoist_GetTasksCallback($$$){
       
       # set some internals (project data)
       if ($project) {
-        $hash->{PROJECT_NAME}=$project->{name};
+        $hash->{PROJECT_NAME}=encode_utf8($project->{name});
         $hash->{PROJECT_COLOR}=$project->{color};
         $hash->{PROJECT_ORDER}=$project->{child_order};
         if ($project->{user_id}) {
@@ -1145,15 +1150,14 @@ sub todoist_GetTasksCallback($$$){
       }
     }
   }
-
+  
+  readingsEndUpdate( $hash, 1 );
+  
   ## list Text for TTS, Text-Message...
   if ($param->{completed} != 1) {
     $lText="-" if ($lText eq "");
-    readingsBulkUpdate($hash,"listText",$lText) if ($lText ne "");
+    readingsSingleUpdate($hash,"listText",$lText,1) if ($lText ne "");
   }
-  
-  
-  readingsEndUpdate( $hash, 1 );
     
   RemoveInternalTimer($hash,"todoist_GetTasks");
   InternalTimer(gettimeofday()+$hash->{INTERVAL}, "todoist_GetTasks", $hash, 0); ## loop with Interval
@@ -1859,7 +1863,7 @@ sub todoist_Get($@) {
 sub todoist_setPwd($$@) {
   my ($hash, $name, @pwd) = @_;
    
-  return "Password can't be empty" if (!@pwd);
+  return "todoist: Password can't be empty" if (!@pwd);
   
   my $pwdString=$pwd[0];
   my $enc_pwd = "";
@@ -2197,7 +2201,7 @@ sub todoist_Html(;$$$) {
         my $dueDate = defined($hash->{helper}{DUE_DATE}{$_})?$hash->{helper}{DUE_DATE}{$_}:"";       
         my $responsibleUid = defined($hash->{helper}{RESPONSIBLE_UID}{$_})?$hash->{helper}{RESPONSIBLE_UID}{$_}:"";
         
-        $responsibleUid = $hash->{helper}{USER}{NAME}{$responsibleUid} if ($responsibleUid ne "");
+        $responsibleUid = $hash->{helper}{USER}{NAME}{$responsibleUid} if ($responsibleUid ne "" && defined($hash->{helper}{USER}{NAME}{$responsibleUid}));
         
         my $dueDateClass = $dueDate ne ""?" todoist_dueDate":"";
         my $responsibleUidClass = $responsibleUid ne ""?" todoist_responsibleUid":"";
@@ -2344,6 +2348,7 @@ sub todoist_genUUID() {
         <code>set &lt;DEVICE&gt; addTask &lt;TASK_TITLE&gt;[:&lt;DUE_DATE&gt;]</code><br ><br />
         Additional Parameters are:<br />
         <ul>
+         <li>title="&lt;TITLE&gt;" (string)</li>
          <li>dueDate (due_date)=&lt;DUE_DATE&gt; (can be free form text or format: YYYY-MM-DDTHH:MM)</li>
          <li>priority=the priority of the task (a number between 1 and 4, 4 for very urgent and 1 for natural).</li>
          <li>responsibleUid=the todoist-ID of the user who is responsible for accomplishing the current task</li>
@@ -2382,20 +2387,24 @@ sub todoist_genUUID() {
         <li><b>completeTask</b> - completes a task. Needs number of task (reading 'Task_NUMBER'), the title (TITLE:&lt;TITLE&gt;) or the 
         todoist-Task-ID (ID:&lt;ID&gt;) as parameter<br /><br />
         <code>set &lt;DEVICE&gt; completeTask &lt;TASK-ID&gt;</code> - completes a task by number<br >
-        <code>set &lt;DEVICE&gt; completeTask ID:&lt;todoist-TASK-ID&gt;</code> - completes a task by todoist-Task-ID
-        <code>set &lt;DEVICE&gt; completeTask TITLE:&lt;Task title&gt;</code> - completes a task by title<br /><br /></li>
+        <code>set &lt;DEVICE&gt; completeTask ID:&lt;todoist-TASK-ID&gt;</code> - completes a task by todoist-Task-ID<br/>
+        <code>set &lt;DEVICE&gt; completeTask TITLE:&lt;Task title&gt;</code> - completes a task by title (one word)<br />
+        <code>set &lt;DEVICE&gt; completeTask title=&lt;Task title&gt;</code> - completes a task by title (multiple words)<br />
+        <br /></li>
         <li><b>closeTask</b> - closes a task. Needs number of task (reading 'Task_NUMBER')m the title (TITLE:&lt;TITLE&gt;) or the 
         todoist-Task-ID (ID:<ID>) as parameter<br />
         Difference to complete is: regular task is completed and moved to history, subtask is checked (marked as done, but not moved to history),<br /> 
         recurring task is moved forward (due date is updated).<br /><br />
         <code>set &lt;DEVICE&gt; closeTask &lt;TASK-ID&gt;</code> - completes a task by number<br />
-        <code>set &lt;DEVICE&gt; closeTask ID:&lt;todoist-TASK-ID&gt;</code> - completes a task by todoist-Task-ID
-        <code>set &lt;DEVICE&gt; closeTask TITLE:&lt;Task title&gt;</code> - completes a task by title<br /><br /></li>
+        <code>set &lt;DEVICE&gt; closeTask ID:&lt;todoist-TASK-ID&gt;</code> - completes a task by todoist-Task-ID<br />
+        <code>set &lt;DEVICE&gt; closeTask TITLE:&lt;Task title&gt;</code> - completes a task by title (one word)<br />
+        <code>set &lt;DEVICE&gt; closeTask title=&lt;Task title&gt;</code> - completes a task by title (multiple words)<br /><br /></li>
         <li><b>uncompleteTask</b> - uncompletes a Task. Use it like complete.<br /><br /></li>
         <li><b>deleteTask</b> - deletes a task. Needs number of task (reading 'Task_NUMBER'), title (TITLE:&lt;TITLE&gt;) or the todoist-Task-ID (ID:&lt;ID&gt;) as parameter<br /><br />
         <code>set &lt;DEVICE&gt; deleteTask &lt;TASK-ID&gt;</code> - deletes a task by number<br />
-        <code>set &lt;DEVICE&gt; deleteTask ID:&lt;todoist-TASK-ID&gt;</code> - deletes a task by todoist-Task-ID
-        <code>set &lt;DEVICE&gt; deleteTask TITLE:&lt;Task title&gt;</code> - deletes a task by title<br /><br /></li>
+        <code>set &lt;DEVICE&gt; deleteTask ID:&lt;todoist-TASK-ID&gt;</code> - deletes a task by todoist-Task-ID<br />
+        <code>set &lt;DEVICE&gt; deleteTask TITLE:&lt;Task title&gt;</code> - deletes a task by title (one word)<br />
+        <code>set &lt;DEVICE&gt; deleteTask title=&lt;Task title&gt;</code> - completes a task by title (multiple words)<br /><br /></li>
         <li><b>sortTasks</b> - sort Tasks alphabetically<br /><br /></li>
         <li><b>clearList</b> - <b><u>deletes</u></b> all Tasks from the list (only FHEM listed Tasks can be deleted)<br /><br /></li>
         <li><b>cChildProjects</b> - searches for children and defines them if possible, deletes lists that are deleted 

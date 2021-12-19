@@ -1,8 +1,8 @@
-﻿# $Id: 98_DSBMobile.pm 21200 2020-02-14 21:51:19Z KernSani $
+﻿# $Id: 98_DSBMobile.pm 24194 2021-04-08 21:39:38Z KernSani $
 ##############################################################################
 #
 #      98_DSBMobile.pm
-#     An FHEM Perl module that supports parental control for Nintendo Switch
+#     An FHEM Perl module that retrieves information from DSBMobile
 #
 #     Copyright by KernSani
 #
@@ -21,6 +21,8 @@
 #
 ##############################################################################
 #     Changelog:
+#     0.0.09: Minor fix in UTF8-conversion
+#     0.0.08: Minor fix, added versioning
 ##############################################################################
 ##############################################################################
 #     Todo:
@@ -36,15 +38,17 @@ use HttpUtils;
 use Data::Dumper;
 use FHEM::Meta;
 
+my $version = "0.0.09";
 my $missingModul = "";
 
 #eval "use Blocking;1" or $missingModul .= "Blocking ";
 #eval "use UUID::Random;1"                      or $missingModul .= "install UUID::Random ";
-eval "use IO::Compress::Gzip qw(gzip);1"       or $missingModul .= "IO::Compress::Gzip ";
-eval "use IO::Uncompress::Gunzip qw(gunzip);1" or $missingModul .= "IO::Compress::Gunzip ";
-eval "use MIME::Base64;1"                      or $missingModul .= "MIME::Base64 ";
-eval "use HTML::TableExtract;1"                or $missingModul .= "HTML::TableExtract ";
-eval "use HTML::TreeBuilder;1"                 or $missingModul .= "HTML::TreeBuilder ";
+eval "use IO::Compress::Gzip qw(gzip);1"           or $missingModul .= "IO::Compress::Gzip ";
+eval "use IO::Uncompress::Gunzip qw(gunzip);1"     or $missingModul .= "IO::Compress::Gunzip ";
+eval "use MIME::Base64;1"                          or $missingModul .= "MIME::Base64 ";
+eval "use HTML::TableExtract;1"                    or $missingModul .= "HTML::TableExtract ";
+eval "use HTML::TreeBuilder;1"                     or $missingModul .= "HTML::TreeBuilder ";
+eval "use JSON::XS qw (encode_json decode_json);1" or $missingModul .= "JSON::XS ";
 
 #####################################
 sub DSBMobile_Initialize($) {
@@ -52,7 +56,8 @@ sub DSBMobile_Initialize($) {
 
     $hash->{DefFn}   = "DSBMobile_Define";
     $hash->{UndefFn} = "DSBMobile_Undefine";
-    $hash->{GetFn}   = "DSBMobile_Get";
+
+    $hash->{GetFn} = "DSBMobile_Get";
 
     #$hash->{SetFn}   = "DSBMobile_Set";
     $hash->{AttrFn} = "DSBMobile_Attr";
@@ -65,7 +70,9 @@ sub DSBMobile_Initialize($) {
             . "dsb_classReading "
             . "dsb_outputFormat:textField-long " );
     $hash->{AttrList} = join( " ", @DSBMobile_attr ) . " " . $readingFnAttributes;
+
     return FHEM::Meta::InitMod( __FILE__, $hash );
+
 }
 
 #####################################
@@ -87,12 +94,21 @@ sub DSBMobile_Define($@) {
     Log3 $name, 3, "[$name] DSBMobile defined $name";
 
     $hash->{NAME} = $name;
+    $hash->{VERSION} = $version;
+
+    #Temporary death of DSBMobile module ###
+
+    #Log3 $name, 3, "[$name] DSBMobile API was changed thus the Module currently can't be used and is disabled";
+    #CommandAttr( undef, $name . " dsb_interval 0" );
+    #$hash->{STATE} = 'Currently unavailable';
+    #return;
 
     #start timer
     if ( AttrNum( $name, "dsb_interval", 0 ) > 0 && $init_done ) {
         my $next = int( gettimeofday() ) + 1;
         InternalTimer( $next, 'DSBMobile_ProcessTimer', $hash, 0 );
     }
+    return;
 }
 ###################################
 sub DSBMobile_Undefine($$) {
@@ -131,7 +147,7 @@ sub DSBMobile_Get($@) {
 
     if ( $a[1] eq "timetable" ) {
         $hash->{helper}{forceRead} = 1;
-        return DSBMobile_query($hash);
+        return DSBMobile_queryv2($hash);
     }
 
     # return usage hint
@@ -141,62 +157,80 @@ sub DSBMobile_Get($@) {
     return undef;
 }
 
-#####################################
-sub DSBMobile_query($) {
-    my ($hash) = @_;
+sub DSBMobile_queryv2 {
+    my ($hash) = shift;
     my $name = $hash->{NAME};
-    Log3 $name, 5, "[$name] Getting data";
-
-    my $uuid = DSBMobileUUID();
-    my $date = strftime "%Y-%m-%dT%H:%M:%S.999+0100", localtime time;
-    my $user = AttrVal( $name, "dsb_user", "" );
-    my $pw   = AttrVal( $name, "dsb_password", "" );
-
-    if ( $user eq "" or $pw eq "" ) {
+    my $user = AttrVal( $name, "dsb_user",     q{} );
+    my $pw   = AttrVal( $name, "dsb_password", q{} );
+    if ( $user eq q{} or $pw eq q{} ) {
         return "User and password have to be maintained in the attributes";
     }
-
     my %arg = (
         "UserId"     => $user,
         "UserPw"     => $pw,
-        "Language"   => "de",
-        "Device"     => "Nexus 4",
-        "AppId"      => $uuid,
-        "appversion" => "2.5.9",
-        "OsVersion"  => "27 8.1.0",
-        "PushId"     => "",
-        "BundleId"   => "de.heinekingmedia.dsbmobile",
-        "Date"       => $date,
-        "LastUpdate" => $date
+        "appversion" => "3.6.2",
+        "osversion"  => "14.4",
+        "bundleid"   => "bundleid=de.digitales-schwarzes-brett.dsblight",
     );
-
-    my $json = encode_json \%arg;
-    Log3 $name, 5, "[$name] Arguments (in json) to encode" . Dumper($json);
-    my $zip;
-    IO::Compress::Gzip::gzip \$json => \$zip;
-    my $b64  = encode_base64($zip);
-    my $body = '{"req": {"Data": "' . $b64 . '","DataType": 1}}';
-
     my $header = {
-        'Host'            => 'app.dsbcontrol.de',
-        'Content-Type'    => 'application/json; charset=utf-8',
-        'User-Agent'      => 'DSBmobile/9759 (iPhone; iOS 13.3; Scale/3.00)',
+
+        #'Host'            => 'mobileapi.dsbcontrol.de',
+        'User-Agent'      => 'DSBmobile/2678 CFNetwork/1220.1 Darwin/20.3.0',
         'Connection'      => 'keep-alive',
         'Accept'          => '*/*',
-        'Accept-Language' => 'de-DE;q=1, en-DE;q=0.9',
-        'Accept-Encoding' => 'gzip, deflate',
+        'Accept-Language' => 'de-de',
+        'Accept-Encoding' => 'zip, deflate, br',
     };
+    my $url
+        = "https://mobileapi.dsbcontrol.de/authid?user=$user&password=$pw&appversion=3.6.&osversion=14.4&bundleid=de.digitales-schwarzes-brett.dsblight&pushid=";
+
     my $param = {
         header   => $header,
-        url      => 'https://www.dsbmobile.de/JsonHandler.ashx/GetData',
-        method   => "POST",
+        url      => $url,
+        method   => "GET",
         hash     => $hash,
-        data     => $body,
+        callback => \&DSBMobile_getDataCallbackv2
+    };
+    HttpUtils_NonblockingGet($param);
+
+    return;
+}
+
+sub DSBMobile_getDataCallbackv2 {
+    my ( $param, $err, $data ) = @_;
+    my $hash = $param->{hash};
+    my $name = $hash->{NAME};
+
+    if ( $err ne q{} ) {
+        Log3( $name, 3, "[$name] Error while requesting " . $param->{url} . " - $err" );
+        readingsSingleUpdate( $hash, "error", $err, 0 );
+        return;
+    }
+
+    $data =~ s/"//g;
+    Log3 $name, 4, "[$name] GetData - received $data";
+    readingsSingleUpdate( $hash, "authid", $data, 0 );
+
+    my $url = "https://mobileapi.dsbcontrol.de/dsbtimetables?authid=" . $data;
+
+    my $newparams = {
+        url      => $url,
+        method   => "GET",
+        hash     => $hash,
         callback => \&DSBMobile_getDataCallback
     };
-    Log3 $name, 5, "[$name] 1st nonblocking HTTP Call starting";
-    HttpUtils_NonblockingGet($param);
-    return undef;
+    HttpUtils_NonblockingGet($newparams);
+
+    $url = "https://mobileapi.dsbcontrol.de/dsbdocuments?authid=" . $data;
+
+    $newparams = {
+        url      => $url,
+        method   => "GET",
+        hash     => $hash,
+        callback => \&DSBMobile_getDocsCallback
+    };
+    HttpUtils_NonblockingGet($newparams);
+    return;
 }
 
 #####################################
@@ -213,40 +247,33 @@ sub DSBMobile_getDataCallback($) {
 
     Log3 $name, 5, "[$name] 1st nonblocking HTTP Call returning";
     Log3 $name, 5, "[$name] GetData - received $data";
-    my $j   = decode_json($data);
-    my $d64 = decode_base64( $j->{d} );
-    my $json;
-    IO::Uncompress::Gunzip::gunzip \$d64 => \$json;
-    $json = latin1ToUtf8($json);
-    my $res = decode_json($json);
+    my $json = DSBMobile_safe_decode_json( $hash, $data );
+    return unless defined($json);
 
+    #my $d64 = decode_base64( $j->{d} );
+    #my $json;
+    #IO::Uncompress::Gunzip::gunzip \$d64 => \$json;
+    my $res = latin1ToUtf8($json);
+    
+    #if ( $res->{Resultcode} == 1 ) {
+    #    readingsSingleUpdate( $hash, "error", $res->{ResultStatusInfo}, 0 );
+    #    return undef;
+    #}
     Log3 $name, 5, "[$name] JSON received: " . Dumper($res);
+
+    ##my $subtt = @$res->{Childs};
+
     my $url;
     my $udate;
-    my $test = $res->{ResultMenuItems}[0]->{Childs};
-    my @aus;
-    foreach my $c (@$test) {
+    my %ttpages = ();    # hash to get unique urls
 
-        #if ($c->{Title} eq "Pläne") {
-
-        #$ret .= Dumper($c->{root}{Childs}[0]->{Childs}[0]->{Detail});
-        foreach my $topic ($c) {
-            if ( $c->{MethodName} eq "timetable" ) {
-                $url   = $topic->{Root}{Childs}[0]->{Childs}[0]->{Detail};
-                $udate = $topic->{Root}{Childs}[0]->{Childs}[0]->{Date};
-            }
-            if ( $c->{MethodName} eq "tiles" ) {
-                my $d = $topic->{Root}{Childs};
-
-                for my $tile (@$d) {
-                    my %au = (
-                        title => $tile->{Title},
-                        url   => $tile->{Childs}[0]->{Detail},
-                        date  => $tile->{Childs}[0]->{Date}
-                    );
-                    push( @aus, \%au );
-                }
-            }
+    for my $tt (@$res) {
+        my $subtt = $tt->{Childs};
+        for my $stt (@$subtt) {
+            $url           = $stt->{Detail};
+            $udate         = $stt->{Date};
+            $ttpages{$url} = 1;
+            Log3 $name, 5, "[$name] found url $url";
         }
     }
 
@@ -267,11 +294,58 @@ sub DSBMobile_getDataCallback($) {
     readingsEndUpdate( $hash, 1 );
 
     if ( time_str2num( $udate . ":00" ) < time_str2num( $lastCheck . ":00" ) ) {
-        Log3 $name, 4, "[$name] Last update from $udate, now it's $today. Quitting.";
+        Log3 $name, 4, "[$name] Last update from $udate, now it's $today. Quitting." unless $hash->{helper}{forceRead};
         return undef unless $hash->{helper}{forceRead};
     }
     delete $hash->{helper}{forceRead};
 
+    # build an array from url hash
+    my @ttpages = keys %ttpages;
+
+    if ( @ttpages == 1 ) {
+        Log3 $name, 4, "[$name] Extracted the url: " . $url;
+    }
+    else {
+        Log3 $name, 4, "[$name] Extracted multiple urls: " . Dumper(@ttpages);
+    }
+    $hash->{helper}{tturl} = \@ttpages;
+    DSBMobile_processTTPages($hash);
+    return undef;
+}
+
+#################################################################################
+sub DSBMobile_getDocsCallback($) {
+    my ( $param, $err, $data ) = @_;
+    my $hash = $param->{hash};
+    my $name = $hash->{NAME};
+
+    if ( $err ne "" ) {
+        Log3 $name, 3, "[$name] Error while requesting " . $param->{url} . " - $err";
+        readingsSingleUpdate( $hash, "error", $err, 0 );
+        return undef;
+    }
+
+    Log3 $name, 5, "[$name] 2nd nonblocking HTTP Call returning";
+    Log3 $name, 5, "[$name] GetData - received $data";
+    my $json = DSBMobile_safe_decode_json( $hash, latin1ToUtf8($data) );
+    return unless defined($json);
+
+    my $res = latin1ToUtf8($json);
+    
+    Log3 $name, 5, "[$name] JSON received: " . Dumper($res);
+
+    my @aus;
+
+    for my $tile (@$res) {
+        my %au = (
+            title => $tile->{Title},
+            url   => $tile->{Childs}[0]->{Detail},
+            date  => $tile->{Childs}[0]->{Date}
+        );
+        push( @aus, \%au );
+    }
+
+ 
     my $i = 0;
     CommandDeleteReading( undef, $name . " i.*" );
     readingsBeginUpdate($hash);
@@ -288,22 +362,36 @@ sub DSBMobile_getDataCallback($) {
     readingsBulkUpdate( $hash, ".lastAResult", encode_json( \@aus ) );
     readingsEndUpdate( $hash, 1 );
 
-    Log3 $name, 4, "[$name] Extracted the url: " . $url;
+    return;
+}
 
-    my $nparam = {
-        url      => $url,
-        method   => "GET",
-        hash     => $hash,
-        callback => \&DSBMobile_getTTCallback
-    };
-    Log3 $name, 5, "[$name] 2nd nonblocking HTTP Call starting";
-    HttpUtils_NonblockingGet($nparam);
+#####################################
+sub DSBMobile_processTTPages($) {
+    my ($hash) = @_;
+    my $name = $hash->{NAME};
 
+    my $ttpage = shift @{ $hash->{helper}{tturl} };
+
+    if ($ttpage) {
+        Log3 $name, 5, "[$name] processing page " . $ttpage;
+        my $nparam = {
+            url      => $ttpage,
+            method   => "GET",
+            hash     => $hash,
+            callback => \&DSBMobile_TTpageCallback
+        };
+        Log3 $name, 5, "[$name] 2nd nonblocking HTTP Call starting for " . $ttpage;
+
+        HttpUtils_NonblockingGet($nparam);
+    }
+    else {
+        delete $hash->{helper}{tturl};
+        DSBMobile_getTTCallback($hash);
+    }
     return undef;
-
 }
 #####################################
-sub DSBMobile_getTTCallback($) {
+sub DSBMobile_TTpageCallback($) {
     my ( $param, $err, $data ) = @_;
     my $hash = $param->{hash};
     my $name = $hash->{NAME};
@@ -315,6 +403,18 @@ sub DSBMobile_getTTCallback($) {
         readingsSingleUpdate( $hash, "error", $err, 0 );
         return undef;
     }
+
+    $hash->{helper}{ttdata} .= $data;
+    DSBMobile_processTTPages($hash);
+}
+
+#####################################
+sub DSBMobile_getTTCallback($) {
+    my ($hash) = @_;
+    my $name = $hash->{NAME};
+
+    my $data = $hash->{helper}{ttdata};
+    delete $hash->{helper}{ttdata};
 
     $data =~ s/&nbsp;/-/g;
     $data = latin1ToUtf8($data);
@@ -328,16 +428,34 @@ sub DSBMobile_getTTCallback($) {
     #$te->parse($data);
     my @tabs;
     foreach my $ttab (@tt) {
-        my $te = HTML::TableExtract->new();
+        my $te = HTML::TableExtract->new( slice_columns => 0, gridmap => 0 );
         $te->parse($ttab);
         push( @tabs, $te->tables() );
     }
+
+    #Log3 $name, 4, "[$name] Extracted Tables". Dumper(@tabs);
 
     Log3 $name, 4, "[$name] Starting extraction info";
 
     # Extract the Info of the day
     my $idata = $data;
     my @dinfo = $idata =~ m/(<table class="info" >(?:(?:\r\n|[\r\n])[^\r\n]+?)*\/table>)/g;
+
+    my $jdata = $data;
+	my @einfo = $jdata =~ m/<div class="mon_title">(.*)<\/div>\s*(<table class="info" >(?:(?:\r\n|[\r\n])[^\r\n]+?)*\/table>)/g;
+	Log3 $name, 5, "[$name] Found info of the Day with Date: " . Dumper(@einfo);
+
+	my %jtabs;
+    foreach my $ein (@einfo) {
+		Log3 $name, 5, "[$name] Looping at: " . Dumper($ein);    	
+		next;
+        my ( $date, undef ) = split( " ", $ein );
+        my ( $d, $m, $y ) = split( /\./, $date );
+        my $fdate = $y . "-" . sprintf( "%02s", $m ) . "-" . sprintf( "%02s", $d );
+		my $tinfo = HTML::TableExtract->new();
+        $tinfo->parse(@$ein[1]);
+        $jtabs{$fdate} = $tinfo;
+    }
 
     my @itabs;
     foreach my $din (@dinfo) {
@@ -379,10 +497,11 @@ sub DSBMobile_getTTCallback($) {
         my $fdate = $y . "-" . sprintf( "%02s", $m ) . "-" . sprintf( "%02s", $d );
 
         my $t    = $tabs[$i];
-        my $info = $itabs[$i];
+        #my $info = $itabs[$i];
+        my $info = $jtabs{fdate};
         $i++;
-        my $j = 0;
-
+        my $j     = 0;
+        my $group = undef;
         if ($t) {
             foreach my $r ( $t->rows() ) {
                 my @f = @$r;
@@ -393,30 +512,31 @@ sub DSBMobile_getTTCallback($) {
                     @ch = map { makeReadingName($_) } @f;
                     next;
                 }
+
+                #check if we have a single row (grouping by class)
+                if ( !defined( $f[1] ) ) {
+
+                    # create the reading if we didn't have a group before
+                    unshift( @ch, makeReadingName($class) ) unless $group;
+                    $group = $f[0];
+                    next;
+                }
+
                 my %tst = ();
                 my $k   = 0;
+
+                # Add the group as "class"
+                if ($group) {
+                    $tst{$class} = $group;
+                }
+
                 foreach my $cl (@ch) {
+                    next if $group && $class eq $cl;
                     $tst{$cl} = $f[$k];
                     $k++;
                 }
                 $tst{sdate} = $fdate;
 
-                # my %row = (
-                # sdate      => $fdate,
-                # class      => $f[0],
-                # hour       => $f[1],
-                # teacherNew => $f[2],
-                # topicNew   => $f[3],
-                # teacherOld => $f[4],
-                # roomNew    => $f[5],
-                # topicOld   => $f[6],
-                # substof    => $f[7],
-                # substto    => $f[8],
-                # roomOld    => $f[9],
-                # comment    => $f[10]
-                # );
-
-                #push( @result, \%roq ) if ( defined( $row{class} ) && $row{class} =~ /$filter/ );
                 push( @result, \%tst )
                     if ( defined( $tst{$class} )
                     && $tst{$class} =~ /$filter/ );
@@ -493,7 +613,7 @@ sub DSBMobile_ProcessTimer($) {
     my ($hash) = @_;
     my $name = $hash->{NAME};
 
-    DSBMobile_query($hash);
+    DSBMobile_queryv2($hash);
 
     my $now = int( gettimeofday() );
     my $interval = AttrNum( $name, "dsb_interval", 0 );
@@ -570,21 +690,43 @@ sub DSBMobile_simpleHTML($;$) {
     @days = sort { $a cmp $b } @days;
 
     my $date = "";
-    my $class;
+
     my $out = AttrVal( $name, "dsb_outputFormat", undef );
 
     foreach my $day (@days) {
-        $ret .= "</table><table><tr><td><b>" . $day . "</b></td></tr>";
+        my ( $y, $m, $d ) = split( '-', $day );
+        my $pday = sprintf( '%02d.%02d.%04d', $d, $m, $y );
+
+        my $row   = 0;
+        my $class = "even";
+        $ret .= "</table><table class='block wide'><tr class='$class'><td><b>" . $pday . "</b></td></tr>";
+        $row++;
         if ($infoDay) {
             foreach my $iline (@idata) {
                 if ( $iline->{sdate} eq $day ) {
-                    $ret .= "<tr><td>" . $iline->{topic} . ": " . $iline->{text} . "</td></tr>";
+                    if ( $row % 2 == 0 ) {
+                        $class = "even";
+                    }
+                    else {
+                        $class = "odd";
+                    }
+                    $row++;
+
+                    $ret .= "<tr class='$class'><td>" . $iline->{topic} . ": " . $iline->{text} . "</td></tr>";
                 }
             }
         }
         foreach my $line (@data) {
             if ( $line->{sdate} eq $day ) {
-                $ret .= "<tr><td>";
+                if ( $row % 2 == 0 ) {
+                    $class = "even";
+                }
+                else {
+                    $class = "odd";
+                }
+                $row++;
+
+                $ret .= "<tr class='$class'><td>";
                 if ($out) {
                     my $rep = $out;
                     foreach my $c (@cn) {
@@ -603,52 +745,153 @@ sub DSBMobile_simpleHTML($;$) {
         }
     }
 
-    # foreach my $line (@data) {
-    # next if ( $line->{sdate} lt $today );
-    # if ( $line->{sdate} ne $date ) {
-    # $date = $line->{sdate};
-    # $ret .= "</table><table><tr><td><b>" . $line->{sdate} . "</b></td></tr>";
-    # if ($infoDay) {
-    # foreach my $iline (@idata) {
-    # if ( $iline->{sdate} eq $date ) {
-    # $ret .= "<tr><td>" . $iline->{topic} . ": " . $iline->{text} . "</td></tr>";
-    # }
-    # }
-    # }
-    # }
-    # $ret .= "<tr><td>";
-    # my $out = AttrVal( $name, "dsb_outputFormat", undef );
-    # if ($out) {
-    # foreach my $c (@cn) {
-    # $out =~ s/\%$c\%/$line->{$c}/g;
-    # }
-    # $ret .= $out;
-    # }
-    # else {
-    # foreach my $c (@cn) {
-    # $ret .= $line->{$c} . " ";
-    # }
-    # }
-    # $ret .= "</td></tr>";
-    # }
     $ret .= "</table>";
     return $ret;
 
 }
+
+sub DSBMobile_safe_decode_json($$) {
+    my ( $hash, $data ) = @_;
+    my $name = $hash->{NAME};
+
+    my $json = undef;
+    eval {
+        $json = decode_json($data);
+        1;
+    } or do {
+        my $error = $@ || 'Unknown failure';
+        Log3 $name, 1, "[$name] - Received invalid JSON: $error";
+        return;
+
+    };
+    return $json;
+}
 ###################################
+sub DSBMobile_tableHTML($;$) {
+    my ( $name, $infoDay ) = @_;
+    my $dat  = ReadingsVal( $name, ".lastResult",  "" );
+    my $idat = ReadingsVal( $name, ".lastIResult", "" );
+    my @cn = split( ",", ReadingsVal( $name, "columnNames", "" ) );
+    my $classr = ReadingsVal( $name, "dsb_classReading", "Klasse_n_" );
+    my $ret = "<table>";
+
+    $dat  = decode_json($dat);
+    $idat = decode_json($idat);
+
+    my @data  = @$dat;
+    my @idata = @$idat;
+    return "no data found" if ( @data == 0 && ( @idata == 0 || !$infoDay ) );
+
+    if ( @data > 0 ) {
+        @data = sort { $a->{sdate} cmp $b->{sdate} or $a->{$classr} cmp $b->{$classr} } @data;
+    }
+
+    # get today
+    my ( $sec, $min, $hour, $mday, $month, $year, $wday, $yday, $isdst )
+        = localtime( gettimeofday() );
+    $month++;
+    $year += 1900;
+    my $today = sprintf( '%04d-%02d-%02d', $year, $month, $mday );
+
+    # build a sorted array of valid dates
+    my %hash = ();
+    foreach my $d (@data) {
+        $hash{ $d->{sdate} } = 1 if $d->{sdate} ge $today;
+    }
+    if ($infoDay) {
+        foreach my $d (@idata) {
+            $hash{ $d->{sdate} } = 1 if $d->{sdate} ge $today;
+        }
+    }
+    my @days = keys %hash;
+    @days = sort { $a cmp $b } @days;
+
+    my $date = "";
+    my $class;
+    my $out = AttrVal( $name, "dsb_outputFormat", undef );
+    my $cols = @cn;
+    foreach my $day (@days) {
+        my $row   = 0;
+        my $cols  = @cn;
+        my $class = "even";
+        $ret
+            .= "</table><table class='block wide'><tr class='$class'><td colspan = '$cols'><b>"
+            . $day
+            . "</b></td></tr>";
+        $row++;
+        if ($infoDay) {
+            foreach my $iline (@idata) {
+                if ( $row % 2 == 0 ) {
+                    $class = "even";
+                }
+                else {
+                    $class = "odd";
+                }
+                $row++;
+
+                if ( $iline->{sdate} eq $day ) {
+                    $ret
+                        .= "<tr class='$class'><td colspan ='$cols' align='middle'>"
+                        . $iline->{topic} . ": "
+                        . $iline->{text}
+                        . "</td></tr>";
+                }
+            }
+        }
+        $ret .= "<tr>";
+        foreach my $c (@cn) {
+            $ret .= "<td>" . $c . "</td>";
+        }
+        $ret .= "</tr>";
+        $row++;
+        foreach my $line (@data) {
+            if ( $line->{sdate} eq $day ) {
+                if ( $row % 2 == 0 ) {
+                    $class = "even";
+                }
+                else {
+                    $class = "odd";
+                }
+                $row++;
+
+                $ret .= "<tr class='$class'>";
+
+                foreach my $c (@cn) {
+                    $ret .= "<td>" . $line->{$c} . "</td>";
+
+                }
+                $ret .= "</tr>";
+
+            }
+        }
+    }
+
+    $ret .= "</table>";
+    return $ret;
+
+}
+#######################################
 sub DSBMobile_infoHTML($) {
     my ( $name, $infoDay ) = @_;
     my $dat = ReadingsVal( $name, ".lastAResult", "" );
-    my $ret = "<table>";
+    my $ret = "<table class='block wide'>";
 
     $dat = decode_json($dat);
 
     my @data = @$dat;
 
     @data = sort { $a->{date} cmp $b->{date} } @data;
-
+    my $row = 1;
+    my $class;
     foreach my $line (@data) {
-        $ret .= "<tr><td>"
+        if ( $row % 2 == 0 ) {
+            $class = "even";
+        }
+        else {
+            $class = "odd";
+        }
+        $row++;
+        $ret .= "<tr class='$class'><td>"
             . "$line->{date}:</td><td><a  target='_blank' href='$line->{url}'>$line->{title}</a></td></tr>";
     }
     $ret .= "</table>";
@@ -736,10 +979,14 @@ sub DSBMobileUUID() {
                 <li><a name="dsb_outputFormat">dsb_outputFormat</a>: can be used to format the output of the weblink. Takes the readingnames enclosed in % as variables, e.g. <code>%Klasse_n_%</code></li>
             </ul>
         </ul>
-        DSBMobile additionally provides two functions to display the information in weblinks:
+        DSBMobile additionally provides three functions to display the information in weblinks:
         <ul>
             <li>DSBMobile_simpleHTML($name ["dsb","showInfoOfTheDay"]): Shows the timetable changes, if the second optional parameter is "1", the Info of the Day will be displayed additionally.
+                The format may be defined with the dsb_outputFormat attribute
                 Example <code>defmod dsb_web weblink htmlCode {DSBMobile_simpleHTML("dsb",1)}</code>
+            </li>
+            <li>DSBMobile_tableHTML($name ["dsb","showInfoOfTheDay"]): Shows the timetable changes in a tabular format, if the second optional parameter is "1", the Info of the Day will be displayed additionally.
+                Example <code>defmod dsb_web weblink htmlCode {DSBMobile_tableHTML("dsb",1)}</code>
             </li>
             <li>DSBMobile_infoHTML($name): Shows the postings with links to the Details.
                 Example <code>defmod dsb_infoweb weblink htmlCode {DSBMobile_infoHTML("dsb")}</code>
@@ -812,10 +1059,14 @@ sub DSBMobileUUID() {
                 <li><a name="dsb_outputFormat">dsb_outputFormat</a>: Kann benutzt werden, um den Output des weblinks zu formatieren. Die Readingnamen von % umschlossen können als Variablen verwendet werden, z.B. <code>%Klasse_n_%</code></li>
             </ul>
         </ul>
-        DSBMobile bietet zusätzlich zwei Funktionen, um die Informationen in weblinks darzustellen:
+        DSBMobile bietet zusätzlich drei Funktionen, um die Informationen in weblinks darzustellen:
         <ul>
             <li>DSBMobile_simpleHTML($name ["dsb",showInfoOfTheDay]): Zeigt den Vertretungsplan, wenn der zweite optionale Parameter auf "1" gesetzt wird, wird die Info des Tages zusätzlich mit angezeigt.
+                Die Darstellung kann durch das Attribut dsb_outputFormat beeinflusst werden
                 Beispiel <code>defmod dsb_web weblink htmlCode {DSBMobile_simpleHTML("dsb",1)}</code>
+            </li>
+            <li>DSBMobile_tableHTML($name ["dsb",showInfoOfTheDay]): Zeigt den Vertretungsplan in einfacher tabellarischer Ansicht, wenn der zweite optionale Parameter auf "1" gesetzt wird, wird die Info des Tages zusätzlich mit angezeigt.
+                Beispiel <code>defmod dsb_web weblink htmlCode {DSBMobile_tableHTML("dsb",1)}</code>
             </li>
             <li>DSBMobile_infoHTML($name): Zeigt die Aushänge mit Links zu den Details.
                 Beispiel <code>defmod dsb_infoweb weblink htmlCode {DSBMobile_infoHTML("dsb")}</code>

@@ -1,5 +1,5 @@
 ##############################################
-# $Id: 00_ZWCUL.pm 16552 2018-04-04 19:24:18Z rudolfkoenig $
+# $Id: 00_ZWCUL.pm 24597 2021-06-07 16:05:33Z rudolfkoenig $
 package main;
 
 # TODO
@@ -92,6 +92,7 @@ ZWCUL_Define($$)
   my %matchList = ( "1:ZWave" => "^[0-9A-Fa-f]+\$",
                     "2:STACKABLE"=>"^\\*" );
   $hash->{MatchList} = \%matchList;
+  $hash->{devioNoSTATE} = 1;
 
   if($dev eq "none") {
     Log3 $name, 1, "$name device is none, commands will be echoed only";
@@ -629,7 +630,7 @@ ZWCUL_Ready($)
   return undef if (IsDisabled($hash->{NAME}));
 
   return DevIo_OpenDev($hash, 1, "ZWCUL_DoInit")
-            if(ReadingsVal($hash->{NAME}, "state","") eq "disconnected");
+            if(DevIo_getState($hash) eq "disconnected");
 
   # This is relevant for windows/USB only
   my $po = $hash->{USBDev};

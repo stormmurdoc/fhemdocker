@@ -1,5 +1,5 @@
 #############################################
-# $Id: 98_GAEBUS.pm 21134 2020-02-07 07:42:19Z jamesgo $
+# $Id: 98_GAEBUS.pm 23567 2021-01-20 16:43:25Z jamesgo $
 # derived from 00_TUL.pm
 #
 # 17.07.2015 : A.Goebel : initiale Version mit loop, readingname via attribut, keine writes
@@ -54,6 +54,8 @@
 # 09.01.2020 : A.Goebel : fix handling for valueFormat, give exact number of parameters to sprintf and shift all of them
 # 16.01.2020 : A.Goebel : add ignore error messages returned by ebusd
 # 05.02.2020 : A.Goebel : change substitute tilde by slash in attribute names (delimiter)
+# 16.02.2020 : A.Goebel : fix also request broadcast messages periodic call (fix from Tomy) 
+# 20.01.2021 : A.Goebel : fix remove deprecated attribute loglevel
 
 package main;
 
@@ -97,7 +99,7 @@ my $allGetParams           = "";
 my $allGetParamsForWriting = "";
 my $delimiter              = "_";
 
-my $attrsDefault = "do_not_notify:1,0 disable:1,0 dummy:1,0 showtime:1,0 loglevel:0,1,2,3,4,5,6 ebusWritesEnabled:0,1 valueFormat:textField-long $readingFnAttributes";
+my $attrsDefault = "do_not_notify:1,0 disable:1,0 dummy:1,0 showtime:1,0 ebusWritesEnabled:0,1 valueFormat:textField-long $readingFnAttributes";
 my %ebusCmd  = ();
 
 #####################################
@@ -268,8 +270,9 @@ GAEBUS_Set($@)
   my $type = shift @a;
   my $arg = join(" ", @a);
 
-  $type =~ s,\xe2\x88\xbc,$delimiter,g;
-  $arg  =~ s,\xe2\x88\xbc,$delimiter,g;
+  # UTF-8 tilde replacement
+  #$type =~ s,\xe2\x88\xbc,$delimiter,g;
+  #$arg  =~ s,\xe2\x88\xbc,$delimiter,g;
 
   #return "No $a[1] for dummies" if(IsDummy($name));
 
@@ -547,8 +550,9 @@ GAEBUS_Get($@)
 
   # other read commands
 
-  if (defined($a[1])) { $a[1] =~ s,\xe2\x88\xbc,$delimiter,g };
-  if (defined($a[2])) { $a[2] =~ s,\xe2\x88\xbc,$delimiter,g };
+  # UTF-8 tilde replacement
+  #if (defined($a[1])) { $a[1] =~ s,\xe2\x88\xbc,$delimiter,g };
+  #if (defined($a[2])) { $a[2] =~ s,\xe2\x88\xbc,$delimiter,g };
 
   if ($a[1] =~ /^[ru]$delimiter/ ) 
   {
@@ -1208,8 +1212,8 @@ GAEBUS_GetUpdatesDoit($)
 
   foreach my $oneattr (keys %{$attr{$name}})
   {
-    # only for "r" commands
-    if ($oneattr =~ /^r$delimiter[^$delimiter]{1,}$delimiter.*/)
+    # only for "r" commands and broadcasts ("u")
+    if ($oneattr =~ /^[ru]$delimiter[^$delimiter]{1,}$delimiter.*/)
     {
 
       my ($readingnameX, $cmdaddon) = split (" ", $attr{$name}{$oneattr}, 2);
@@ -1434,7 +1438,7 @@ GAEBUS_valueFormat(@)
     <li><a href="#attrdummy">disable</a></li><br>
     <li><a href="#attrdummy">dummy</a></li><br>
     <li><a href="#showtime">showtime</a></li><br>
-    <li><a href="#loglevel">loglevel</a></li><br>
+    <li><a href="#verbose">verbose</a></li><br>
     <li>ebusWritesEnabled 0,1<br>
         disable (0) or enable (1) that commands can be send to ebus devices<br>
         See also description for Set and Get<br>

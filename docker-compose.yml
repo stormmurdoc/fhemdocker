@@ -157,7 +157,7 @@ services:
      container_name: fhem_nginx
      restart: unless-stopped
      image: nginx:latest
-     command: bash -c "sleep 2 && until ping -qc1 fhem; do sleep 1; done &>/dev/null"
+       #command: bash -c "sleep 2 && until ping -qc1 fhem; do sleep 1; done &>/dev/null"
      environment:
       - TZ=Europe/Berlin
       - PGID=1000

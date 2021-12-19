@@ -1,7 +1,7 @@
 ################################################################
-# $Id: 24_TPLinkHS110.pm 21189 2020-02-13 11:24:15Z vk $
+# $Id: 24_TPLinkHS110.pm 25206 2021-11-09 11:55:44Z vk $
 #
-#  Release 2020-01-19 
+#  Release 2020-04-12
 #
 #  Copyright notice
 #
@@ -194,6 +194,18 @@ sub TPLinkHS110_Get($$) {
 	Log3 $hash, 3, "TPLinkHS110: $name Get called. Relay state: $json->{'system'}->{'get_sysinfo'}->{'relay_state'}, RSSI: $json->{'system'}->{'get_sysinfo'}->{'rssi'}";
 
 	my $hw_ver = $json->{'system'}->{'get_sysinfo'}->{'hw_ver'};
+
+
+	if ($json->{'system'}->{'get_sysinfo'}->{'model'} eq "KP115(EU)")
+	{
+		$hw_ver = '2.0';	
+	}
+	else
+	{
+		$hw_ver = $hw_ver;
+	}
+
+
 	my %hwMap = hwMapping();
 
 	foreach my $key (sort keys %{$json->{'system'}->{'get_sysinfo'}}) {
@@ -238,7 +250,13 @@ sub TPLinkHS110_Get($$) {
 
 	# If the device is a HS110, get realtime data:
 	#  if ( 1 == 0 ) {
-	if ($json->{'system'}->{'get_sysinfo'}->{'model'} eq "HS110(EU)" or $json->{'system'}->{'get_sysinfo'}->{'model'} eq "HS110(UK)") {
+	if (
+		$json->{'system'}->{'get_sysinfo'}->{'model'} eq "HS110(EU)"
+		or
+		$json->{'system'}->{'get_sysinfo'}->{'model'} eq "HS110(UK)"
+		or
+		$json->{'system'}->{'get_sysinfo'}->{'model'} eq "KP115(EU)"
+	) {
 		my $realtimejcommand = '{"emeter":{"get_realtime":{}}}';
 		my $rdata;
 		($errmsg, $rdata) = TPLinkHS110_SendCommand($hash, $realtimejcommand);
@@ -536,6 +554,17 @@ sub hwMapping {
 	$hwMap{'2.0'}{'emeter'}{'get_realtime'}{'err_code'}{'name'} = 'err_code';
 	$hwMap{'2.0'}{'emeter'}{'get_realtime'}{'err_code'}{'factor'} = 1;
 
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'power_mw'}{'name'} = 'power';
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'power_mw'}{'factor'} = 0.001;
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'voltage_mv'}{'name'} = 'voltage';
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'voltage_mv'}{'factor'} = 0.001;
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'current_ma'}{'name'} = 'current';
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'current_ma'}{'factor'} = 0.001;
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'total_wh'}{'name'} = 'total';
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'total_wh'}{'factor'} = 0.001;
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'err_code'}{'name'} = 'err_code';
+	$hwMap{'4.0'}{'emeter'}{'get_realtime'}{'err_code'}{'factor'} = 1;
+	
 	return %hwMap;
 }
 
