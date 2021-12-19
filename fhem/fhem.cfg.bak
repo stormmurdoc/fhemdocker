@@ -461,6 +461,7 @@ attr influxdb api v2
 attr influxdb disable 1
 attr influxdb event-on-change-reading failed_writes_last_error,failed_writes,
 attr influxdb fields $READINGNAME=$READINGVALUE
+attr influxdb icon it_storage
 attr influxdb measurement $DEVICE
 attr influxdb org privat
 attr influxdb room System->Dienste
