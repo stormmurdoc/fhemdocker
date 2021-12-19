@@ -5,8 +5,9 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 
 ## Todo
 
-+ Mosquitto user-/groupid problem
-+ DBLog Integration
++ [ ] Mosquitto user-/groupid problem
++ [ ] influx db Integration
++ [ ] Grafana integration
 
 ## Requirements
 
@@ -20,7 +21,7 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 Download the image of your choise: [Raspian Download](https://www.raspberrypi.org/software/operating-systems/)
 Unzip the image and install it with:
 
-      sudo dd bs=4M if=2019-09-26-raspbian-buster-full.img of=/dev/mmcblk0 conv=fsync
+      sudo dd bs=4M if=2021-10-30-raspios-bullseye-armhf-lite.img of=/dev/mmcblk0 conv=fsync
       sync
 
 Eject the card and insert it again to mount the filesystems boot & rootfs.

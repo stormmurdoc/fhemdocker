@@ -6,8 +6,8 @@ attr global dnsServer 127.0.0.11
 attr global logfile ./log/fhem-%Y-%m.log
 attr global modpath .
 attr global motd SecurityCheck:\
-  WEB is not password protected\
   telnetPort is not password protected\
+  WEB is not password protected\
 \
 Protect this FHEM installation by defining an allowed device with define allowed allowed\
 You can disable this message with attr global motd none
@@ -108,6 +108,7 @@ attr dummy homebridgeMapping homebridgeMapping On=state,cmdOn=on,cmdOff=off
 attr dummy mqttPublish *:topic={"$base/$name"} *:qos=2 *:retain=0
 attr dummy mqttSubscribe *:topic={"$base/$name"} *:qos=2 *:retain=0
 attr dummy room Homekit
+attr dummy siriName dummy
 attr dummy webCmd on:off
 
 define MQTT_Broker MQTT2_CLIENT broker:1883
