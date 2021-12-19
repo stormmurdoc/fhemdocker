@@ -111,10 +111,12 @@ After installation put your user pi into the docker group.
 
 ### git repository export and start all container
 
+Note: Please run the startup.sh script after cloning.
+
       cd
       git clone https://github.com/stormmurdoc/fhemdocker.git
       cd fhemdocker
-      docker-compose up
+      ./startup.sh
 
 ### Access the application
 
