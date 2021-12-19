@@ -3,13 +3,11 @@
 !["FHEM GUI"](./.media/fhem.png "FHEM gui")
 The stack contains everything to run FHEM on a Docker host. Mosquitto is used as message broker. SIRI functions are realized with the help of a homebridge container. The complete stack runs on x86 as well as arm architectures. It is very easy to clone its complete productive environment and has a simple way to build a test system.
 
-## Todo
-
-+ [ ] Mosquitto user-/groupid problem
-+ [ ] Grafana integration
-
 ## Table of content
 
+<!-- vim-markdown-toc GitLab -->
+
+* [Todo](#todo)
 * [Requirements](#requirements)
 * [Installation raspberrypi](#installation-raspberrypi)
     * [Raspian Download](#raspian-download)
@@ -43,10 +41,15 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
         * [arm Platform](#arm-platform)
 * [Known Issues](#known-issues)
     * [FHEM website not reachable](#fhem-website-not-reachable)
-* [Contributing to fhemdocker](#contributing-to-fhemdocker)
 * [Accessing the docker container via remote](#accessing-the-docker-container-via-remote)
-* [End](#end)
+* [Contributing to fhemdocker](#contributing-to-fhemdocker)
 
+<!-- vim-markdown-toc -->
+
+## Todo
+
++ [ ] Mosquitto user-/groupid problem
++ [ ] Grafana integration
 
 ## Requirements
 
@@ -271,9 +274,6 @@ Set the right to 644 with
 
       chmod 644 ./fhemdocker/reverseproxy/config/.htpasswd
 
-## Contributing to fhemdocker
-Contributions are encouraged and welcome!
-
 ## Accessing the docker container via remote
 
 If you want to commit a FHEM command via the local telnet daemon you can use the script fcmd.sh.
@@ -284,5 +284,7 @@ Note: Please change the hostname accordingly.
 
       fcmd.sh <FHEM Command>
 
+## Contributing to fhemdocker
+Contributions are encouraged and welcome!
 
-# End
+
