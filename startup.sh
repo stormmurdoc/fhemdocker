@@ -21,4 +21,5 @@ echo "+++ Starting docker-compose +++"
 docker-compose up -d
 
 echo "+++ Please open http://localhost:80 with username admin and passwort admin +++"
+echo "+++ Note: please keep in mind it take some time if fhem will be available - stay tuned :-) +++"
 echo "+++ $SCRIPT ended +++"
