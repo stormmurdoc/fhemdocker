@@ -218,6 +218,17 @@ services:
      #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER=mail@domain.tld
      #- WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=Secret
     restart: unless-stopped
+   influxdb:
+    image: influxdb:1.8.10
+    container_name: fhem_influxdb
+    ports:
+       - 8086:8086
+    volumes:
+       - ./influxdb:/var/lib/influxdb
+    restart: unless-stopped
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
 
 volumes:
   portainer_data:

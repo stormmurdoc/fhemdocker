@@ -6,7 +6,6 @@ The stack contains everything to run FHEM on a Docker host. Mosquitto is used as
 ## Todo
 
 + [ ] Mosquitto user-/groupid problem
-+ [ ] influx db Integration
 + [ ] Grafana integration
 
 ## Requirements
@@ -126,6 +125,12 @@ FHEM tmux session inside the container
 !["fhemtmux"](./.media/fhem_tmux.png "FHEM tmux session")
 
 http://localhost:80
+
+
+#### influxdb
+
+Further details about the influxdb module can be found here.
+[FHEM Wiki influxdb](https://wiki.fhem.de/wiki/InfluxDBLogger)
 
 ## Container
 
