@@ -19,4 +19,6 @@ chmod -R 755 ./reverseproxy
 
 echo "+++ Starting docker-compose +++"
 docker-compose up -d
+
+echo "+++ Please open http://localhost:80 with username admin and passwort admin +++"
 echo "+++ $SCRIPT ended +++"
