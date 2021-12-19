@@ -17,7 +17,8 @@ fhem/.npm/_cacache/
 mysql/data/*
 mosquitto/log/*
 mosquitto/data/*
-homebridge/logs/homebridge.log
+homebridge/logs/*
+homebridge/homebridge.log
 homebridge/accessories/*
 homebridge/persist/*
 homebridge/config.json
