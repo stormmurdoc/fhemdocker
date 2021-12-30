@@ -145,9 +145,9 @@ Disable all pool server and add your local time server
 
 After installation put your user pi into the docker group.
 
-      #curl -sSL https://get.docker.com | sh
-      #sudo systemctl enable docker
-      #sudo systemctl start docker
+      curl -sSL https://get.docker.com | sh
+      sudo systemctl enable docker
+      sudo systemctl start docker
       sudo apt-get install docker docker-compose
       sudo usermod -aG docker pi
       sudo reboot
